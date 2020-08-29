@@ -23,10 +23,10 @@ class Boid
 public:
 	Boid();
 
-	Boid(sf::Vector2f pos, sf::Vector2f size, sf::Vector3f color, float maxSpeed, float minDistance);
+	Boid(sf::Vector2f pos, sf::Vector2f size, sf::Vector3f color, float maxSpeed, float maxForce, float minDistance);
 	~Boid();
 
-	void Update(const sf::Window* window, const float& deltaTime, const std::vector<Boid>* boids);
+	void Update(const sf::Window* window, const float& deltaTime, const std::vector<Boid>& boids);
 
 	inline float GetRotation() const { return m_Rotation; }
 
@@ -46,11 +46,13 @@ public:
 	inline sf::Vector3f GetColor() const { return m_Color; }
 
 private:
+	void Flock(const std::vector<Boid>& boids);
+
 	void OutsideBorder(const sf::Window* window);
 
-	sf::Vector2f Seperate(const std::vector<Boid>* boids);
-	sf::Vector2f Align(const std::vector<Boid>* boids);
-	sf::Vector2f Cohesion(const std::vector<Boid>* boids);
+	sf::Vector2f Seperate(const std::vector<Boid>& boids);
+	sf::Vector2f Align(const std::vector<Boid>& boids);
+	sf::Vector2f Cohesion(const std::vector<Boid>& boids);
 
 	inline void ApplyForce(const sf::Vector2f& force)
 	{
@@ -68,6 +70,7 @@ private:
 
 	float m_Rotation;
 	float m_MaxSpeed;
+	float m_MaxForce;
 	float m_MinDistance;
 };
 

@@ -8,8 +8,8 @@
 
 #include "Boid.h"
 
-#define MAX_BOIDS_X 10
-#define MAX_BOIDS_Y 10
+#define MAX_BOIDS_X 30
+#define MAX_BOIDS_Y 30
 
 #define BOID_COUNT MAX_BOIDS_X * MAX_BOIDS_Y
 
@@ -33,7 +33,7 @@ void Update(sf::Window* window, std::vector<Boid>* boids, sf::Vector2f* mousePos
 		{
 			for (int i = (index * BOID_CHUNK); i < ((index + 1) * BOID_CHUNK); i++)
 			{
-				(*boids)[i].Update(window, deltaTime, boids);
+				(*boids)[i].Update(window, deltaTime, *boids);
 			}
 
 			accumulator -= deltaTime;
@@ -70,13 +70,16 @@ int main()
 		{
 			int i = y * MAX_BOIDS_X + x;
 
-			sf::Vector2f size = sf::Vector2f(6.0f, 3.0f);
-			sf::Vector2f pos = sf::Vector2f((float)(x * size.x) + 120.f, (float)(y * size.y) + 120.f);
-			sf::Vector3f color = sf::Vector3f(0.1f + ((float)(x * y) / count), 0.0f, 0.0f);
-			float maxSpeed = 10.0f;
-			float minDistance = 100.0f;
+			sf::Vector2f size = sf::Vector2f(3.0f, 1.5f);
+			sf::Vector2f pos = sf::Vector2f(
+				(float)(rand() % window.getSize().x), 
+				(float)(rand() % window.getSize().y));
+			sf::Vector3f color = sf::Vector3f(1.0f, 0.0f, 0.0f);
+			float maxSpeed = 5.0f;
+			float maxForce = 0.2f;
+			float minDistance = 50.0f;
 
-			boids->push_back(Boid(pos, size, color, maxSpeed, minDistance));
+			boids->push_back(Boid(pos, size, color, maxSpeed, maxForce, minDistance));
 		}
 	}
 
