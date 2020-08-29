@@ -84,8 +84,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Users\Tobias\Documents\GitHub\SFML_Project-00\SFML_Project-01\Dependencies\SFML\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\Tobias\Documents\GitHub\SFML_Project-01\SFML_Project-00\Dependencies\SFML\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\Tobias\Documents\GitHub\SFML_Project-01\SFML_Project-01\Dependencies\SFML\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\Tobias\Documents\GitHub\SFML_Project-01\SFML_Project-01\Dependencies\SFML\lib;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)bin\$(Configuration)\$(PlatformTarget)\</OutDir>
     <IntDir>$(SolutionDir)bin\$(Configuration)\$(PlatformTarget)\Intermediates\</IntDir>
   </PropertyGroup>

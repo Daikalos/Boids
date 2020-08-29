@@ -8,14 +8,16 @@
 
 #include "Boid.h"
 
-#define MAX_BOIDS_X 1000
-#define MAX_BOIDS_Y 1000
+#define MAX_BOIDS_X 10
+#define MAX_BOIDS_Y 10
 
 #define BOID_COUNT MAX_BOIDS_X * MAX_BOIDS_Y
 
 #define BOID_CHUNK BOID_COUNT / 4
 
-void Update(sf::Window* window, Boid* boids, sf::Vector2f* mousePos, int* force, int index)
+#define VERTEX_COUNT BOID_COUNT * 3
+
+void Update(sf::Window* window, std::vector<Boid>* boids, sf::Vector2f* mousePos, int* force, int index)
 {
 	sf::Clock clock;
 
@@ -31,9 +33,7 @@ void Update(sf::Window* window, Boid* boids, sf::Vector2f* mousePos, int* force,
 		{
 			for (int i = (index * BOID_CHUNK); i < ((index + 1) * BOID_CHUNK); i++)
 			{
-				boids[i].ApplyForce(Normalize(Direction(*mousePos, boids[i].GetPosition())) * 100.0f * (float)(*force));
-
-				boids[i].Update(window, deltaTime);
+				(*boids)[i].Update(window, deltaTime, boids);
 			}
 
 			accumulator -= deltaTime;
@@ -43,7 +43,7 @@ void Update(sf::Window* window, Boid* boids, sf::Vector2f* mousePos, int* force,
 
 int main()
 {
-	sf::Window window(sf::VideoMode(1600, 900), "boids");
+	sf::Window window(sf::VideoMode(1600, 900), "Boids");
 
 	window.setFramerateLimit(60);
 	window.setActive(true);
@@ -59,20 +59,24 @@ int main()
 	float cameraPositionY = 0.0f;
 	float cameraScale = 1.0f;
 
-	Boid* boids = new Boid[BOID_COUNT];
-	Triangle* triangles = new Triangle[BOID_COUNT];
+	std::vector<Boid>* boids = new std::vector<Boid>();
+	Vertex* vertices = new Vertex[VERTEX_COUNT];
+	Color* colors = new Color[VERTEX_COUNT];
 
-	float size = BOID_COUNT;
+	float count = BOID_COUNT;
 	for (int x = 0; x < MAX_BOIDS_X; x++)
 	{
 		for (int y = 0; y < MAX_BOIDS_Y; y++)
 		{
 			int i = y * MAX_BOIDS_X + x;
 
-			sf::Vector2f pos = sf::Vector2f((float)x, (float)y);
-			sf::Vector3f color = sf::Vector3f(0.1f + ((float)(x * y) / size), 0.0f, 0.0f);
+			sf::Vector2f size = sf::Vector2f(6.0f, 3.0f);
+			sf::Vector2f pos = sf::Vector2f((float)(x * size.x) + 120.f, (float)(y * size.y) + 120.f);
+			sf::Vector3f color = sf::Vector3f(0.1f + ((float)(x * y) / count), 0.0f, 0.0f);
+			float maxSpeed = 10.0f;
+			float minDistance = 100.0f;
 
-			boids[i] = Boid(pos, color);
+			boids->push_back(Boid(pos, size, color, maxSpeed, minDistance));
 		}
 	}
 
@@ -92,11 +96,6 @@ int main()
 	glLoadIdentity();
 	glScalef(1.0f, -1.0f, 1.0f);
 	gluOrtho2D(0, window.getSize().x, 0, window.getSize().y);
-
-	glEnable(GL_POINT_SMOOTH);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glPointSize(1.0f);
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
@@ -169,14 +168,56 @@ int main()
 			}
 		}
 
+		int v = 0;
+		for (int i = 0; i < boids->size(); i++)
+		{
+			const sf::Vector2f boidPos = (*boids)[i].GetPosition();
+			const sf::Vector2f boidSiz = (*boids)[i].GetSize();
+			const sf::Vector3f boidCol = (*boids)[i].GetColor();
+			const sf::Vector2f boidOri = (*boids)[i].GetOrigin();
+			const float boidRot = (*boids)[i].GetRotation();
+
+			sf::Vector2f pos0 = RotatePoint(sf::Vector2f(
+				boidPos.x, 
+				boidPos.y + (boidSiz.y / 2)), boidOri, boidRot);
+			sf::Vector2f pos1 = RotatePoint(sf::Vector2f(
+				boidPos.x + boidSiz.x,
+				boidPos.y), boidOri, boidRot);
+			sf::Vector2f pos2 = RotatePoint(sf::Vector2f(
+				boidPos.x + boidSiz.x,
+				boidPos.y + boidSiz.y), boidOri, boidRot);
+
+			vertices[v	  ].x = pos0.x;
+			vertices[v	  ].y = pos0.y;
+			vertices[v + 1].x = pos1.x;
+			vertices[v + 1].y = pos1.y;
+			vertices[v + 2].x = pos2.x;
+			vertices[v + 2].y = pos2.y;
+
+			colors[v    ].r	= boidCol.x;
+			colors[v    ].g	= boidCol.y;
+			colors[v    ].b	= boidCol.z;
+			colors[v + 1].r = boidCol.x;
+			colors[v + 1].g = boidCol.y;
+			colors[v + 1].b = boidCol.z;
+			colors[v + 2].r = boidCol.x;
+			colors[v + 2].g = boidCol.y;
+			colors[v + 2].b = boidCol.z;
+
+			v += 3;
+		}
+
 		glClear(GL_COLOR_BUFFER_BIT);
+
+		glVertexPointer(2, GL_FLOAT, sizeof(Vertex), vertices);
+		glColorPointer(3, GL_FLOAT, sizeof(Color), colors);
 
 		glPushMatrix();
 
 		glTranslatef(cameraPositionX, cameraPositionY, 0);
 		glScalef(cameraScale, cameraScale, 1.0f);
 
-
+		glDrawArrays(GL_TRIANGLES, 0, VERTEX_COUNT);
 
 		glPopMatrix();
 
