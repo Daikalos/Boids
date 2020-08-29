@@ -8,7 +8,7 @@
 
 #include "Boid.h"
 
-#define MAX_BOIDS_X 30
+#define MAX_BOIDS_X 100
 #define MAX_BOIDS_Y 30
 
 #define BOID_COUNT MAX_BOIDS_X * MAX_BOIDS_Y
@@ -70,7 +70,7 @@ int main()
 		{
 			int i = y * MAX_BOIDS_X + x;
 
-			sf::Vector2f size = sf::Vector2f(3.0f, 1.5f);
+			sf::Vector2f size = sf::Vector2f(4.0f, 2.0f);
 			sf::Vector2f pos = sf::Vector2f(
 				(float)(rand() % window.getSize().x), 
 				(float)(rand() % window.getSize().y));
@@ -176,8 +176,8 @@ int main()
 		{
 			const sf::Vector2f boidPos = (*boids)[i].GetPosition();
 			const sf::Vector2f boidSiz = (*boids)[i].GetSize();
-			const sf::Vector3f boidCol = (*boids)[i].GetColor();
 			const sf::Vector2f boidOri = (*boids)[i].GetOrigin();
+			const sf::Vector3f boidCol = (*boids)[i].GetColor();
 			const float boidRot = (*boids)[i].GetRotation();
 
 			sf::Vector2f pos0 = RotatePoint(sf::Vector2f(
@@ -197,15 +197,19 @@ int main()
 			vertices[v + 2].x = pos2.x;
 			vertices[v + 2].y = pos2.y;
 
-			colors[v    ].r	= boidCol.x;
-			colors[v    ].g	= boidCol.y;
-			colors[v    ].b	= boidCol.z;
-			colors[v + 1].r = boidCol.x;
-			colors[v + 1].g = boidCol.y;
-			colors[v + 1].b = boidCol.z;
-			colors[v + 2].r = boidCol.x;
-			colors[v + 2].g = boidCol.y;
-			colors[v + 2].b = boidCol.z;
+			float col0 = 0.5f + ((boidOri.x) / window.getSize().x);
+			float col1 = (boidOri.x * boidOri.y) / (window.getSize().x * window.getSize().y);
+			float col2 = 0.5f + ((boidOri.y) / window.getSize().y);
+
+			colors[v    ].r	= col0;
+			colors[v    ].g	= col1;
+			colors[v    ].b	= col2;
+			colors[v + 1].r = col0;
+			colors[v + 1].g = col1;
+			colors[v + 1].b = col2;
+			colors[v + 2].r = col0;
+			colors[v + 2].g = col1;
+			colors[v + 2].b = col2;
 
 			v += 3;
 		}
