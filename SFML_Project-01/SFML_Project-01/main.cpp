@@ -7,18 +7,22 @@
 #include <gl/GLU.h>
 
 #include "Boid.h"
+#include "Quadtree.h"
 
-#define MAX_BOIDS_X 100
-#define MAX_BOIDS_Y 30
-
-#define BOID_COUNT MAX_BOIDS_X * MAX_BOIDS_Y
+#define BOID_COUNT 3000
 
 #define BOID_CHUNK BOID_COUNT / 4
 
 #define VERTEX_COUNT BOID_COUNT * 3
 
-void Update(sf::Window* window, std::vector<Boid>* boids, sf::Vector2f* mousePos, int* force, int index)
+int Update(sf::Window* window, std::vector<Boid>* boids, sf::Vector2f* mousePos, int* force, int index)
 {
+	Quad* quadtree = new Quad(sf::Vector2i(0, 0), sf::Vector2i(window->getSize().x, window->getSize().y), 4);
+	for (int i = 0; i < BOID_COUNT; i++)
+	{
+		quadtree->Insert((*boids)[i]);
+	}
+
 	sf::Clock clock;
 
 	float deltaTime = (1.0f / 60.0f);
@@ -31,14 +35,30 @@ void Update(sf::Window* window, std::vector<Boid>* boids, sf::Vector2f* mousePos
 
 		while (accumulator >= deltaTime)
 		{
+			quadtree->~Quad();
+			quadtree = new Quad(sf::Vector2i(0, 0), sf::Vector2i(window->getSize().x, window->getSize().y), 4);
+			for (int i = 0; i < BOID_COUNT; i++)
+			{
+				quadtree->Insert((*boids)[i]);
+			}
+
 			for (int i = (index * BOID_CHUNK); i < ((index + 1) * BOID_CHUNK); i++)
 			{
-				(*boids)[i].Update(window, deltaTime, *boids);
+				const sf::Vector2f boidOri = (*boids)[i].GetOrigin();
+				const float boidMinDistance = (*boids)[i].GetMinDistance();
+
+				const std::vector<Boid> nearBoids = quadtree->Query(
+					sf::Vector2i((int)(boidOri.x - boidMinDistance), (int)(boidOri.y - boidMinDistance)), 
+					sf::Vector2i((int)(boidOri.x + boidMinDistance), (int)(boidOri.y + boidMinDistance)));
+
+				(*boids)[i].Update(window, deltaTime, nearBoids);
 			}
 
 			accumulator -= deltaTime;
 		}
 	}
+
+	return 0;
 }
 
 int main()
@@ -60,27 +80,23 @@ int main()
 	float cameraScale = 1.0f;
 
 	std::vector<Boid>* boids = new std::vector<Boid>();
+	Quad* quadtree = new Quad(sf::Vector2i(0, 0), sf::Vector2i(window.getSize().x, window.getSize().y), 4);
+
 	Vertex* vertices = new Vertex[VERTEX_COUNT];
 	Color* colors = new Color[VERTEX_COUNT];
 
-	float count = BOID_COUNT;
-	for (int x = 0; x < MAX_BOIDS_X; x++)
+	for (int i = 0; i < BOID_COUNT; i++)
 	{
-		for (int y = 0; y < MAX_BOIDS_Y; y++)
-		{
-			int i = y * MAX_BOIDS_X + x;
+		sf::Vector2f size = sf::Vector2f(4.0f, 2.0f);
+		sf::Vector2f pos = sf::Vector2f(
+			(float)(rand() % window.getSize().x), 
+			(float)(rand() % window.getSize().y));
+		sf::Vector3f color = sf::Vector3f(1.0f, 0.0f, 0.0f);
+		float maxSpeed = 5.0f;
+		float maxForce = 0.2f;
+		float minDistance = 50.0f;
 
-			sf::Vector2f size = sf::Vector2f(4.0f, 2.0f);
-			sf::Vector2f pos = sf::Vector2f(
-				(float)(rand() % window.getSize().x), 
-				(float)(rand() % window.getSize().y));
-			sf::Vector3f color = sf::Vector3f(1.0f, 0.0f, 0.0f);
-			float maxSpeed = 5.0f;
-			float maxForce = 0.2f;
-			float minDistance = 50.0f;
-
-			boids->push_back(Boid(pos, size, color, maxSpeed, maxForce, minDistance));
-		}
+		boids->push_back(Boid(pos, size, color, maxSpeed, maxForce, minDistance));
 	}
 
 	sf::Thread thread00(std::bind(&Update, &window, boids, &mousePos, &force, 0));

@@ -45,6 +45,8 @@ public:
 
 	inline sf::Vector3f GetColor() const { return m_Color; }
 
+	inline float GetMinDistance() const { return m_MinDistance; }
+
 private:
 	void Flock(const std::vector<Boid>& boids);
 
