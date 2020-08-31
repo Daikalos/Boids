@@ -13,7 +13,8 @@ Quad::Quad(sf::Vector2i topLeft, sf::Vector2i botRight, int capacity) :
 
 Quad::~Quad()
 {
-	Clear();
+	if (m_Divided)
+		Clear();
 }
 
 void Quad::Update()
@@ -86,26 +87,10 @@ bool Quad::Insert(const Boid& boid)
 
 void Quad::Clear()
 {
-	if (m_NorthWest != NULL)
-	{
-		delete m_NorthWest;
-		m_NorthWest = 0;
-	}
-	if (m_NorthEast != NULL)
-	{
-		delete m_NorthEast;
-		m_NorthEast = 0;
-	}
-	if (m_SouthWest != NULL)
-	{
-		delete m_SouthWest;
-		m_SouthWest = 0;
-	}
-	if (m_SouthEast != NULL)
-	{
-		delete m_SouthEast;
-		m_SouthEast = 0;
-	}
+	delete m_NorthWest;
+	delete m_NorthEast;
+	delete m_SouthWest;
+	delete m_SouthEast;
 }
 
 bool Quad::Contains(sf::Vector2f point) const

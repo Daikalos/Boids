@@ -50,15 +50,15 @@ void Boid::Flock(const std::vector<Boid>& boids)
 	sf::Vector2f coh = Cohesion(boids);
 
 	sep *= 1.5f;
-	ali *= 1.0f;
-	coh *= 1.3f;
+	ali *= 1.1f;
+	coh *= 1.7f;
 
 	ApplyForce(sep + ali + coh);
 }
 
 void Boid::OutsideBorder(const sf::Window* window)
 {
-	if (m_Position.x + m_Velocity.x + m_Size.x < 0.0f)
+	if (m_Position.x + m_Velocity.x + m_Size.x < 0)
 	{
 		m_Position.x = (float)window->getSize().x;
 	}
@@ -66,7 +66,7 @@ void Boid::OutsideBorder(const sf::Window* window)
 	{
 		m_Position.x = -m_Size.x;
 	}
-	else if (m_Position.y + m_Velocity.y + m_Size.y < 0.0f)
+	else if (m_Position.y + m_Velocity.y + m_Size.y < 0)
 	{
 		m_Position.y = (float)window->getSize().y;
 	}

@@ -9,7 +9,7 @@
 #include "Boid.h"
 #include "Quadtree.h"
 
-#define BOID_COUNT 3000
+#define BOID_COUNT 4000
 
 #define BOID_CHUNK BOID_COUNT / 4
 
@@ -17,45 +17,35 @@
 
 int Update(sf::Window* window, std::vector<Boid>* boids, sf::Vector2f* mousePos, int* force, int index)
 {
-	Quad* quadtree = new Quad(sf::Vector2i(0, 0), sf::Vector2i(window->getSize().x, window->getSize().y), 4);
-	for (int i = 0; i < BOID_COUNT; i++)
-	{
-		quadtree->Insert((*boids)[i]);
-	}
-
 	sf::Clock clock;
 
+	Quad* quadtree = new Quad(sf::Vector2i(0, 0), sf::Vector2i(window->getSize().x, window->getSize().y), 16);
+
 	float deltaTime = (1.0f / 60.0f);
-	float accumulator = 0.0f;
 
 	while (window->isOpen())
 	{
-		float newTime = clock.restart().asSeconds();
-		accumulator += newTime;
+		quadtree->~Quad();
+		quadtree = new Quad(sf::Vector2i(0, 0), sf::Vector2i(window->getSize().x, window->getSize().y), 16);
 
-		while (accumulator >= deltaTime)
+		for (int i = 0; i < BOID_COUNT; ++i)
 		{
-			quadtree->~Quad();
-			quadtree = new Quad(sf::Vector2i(0, 0), sf::Vector2i(window->getSize().x, window->getSize().y), 4);
-			for (int i = 0; i < BOID_COUNT; i++)
-			{
-				quadtree->Insert((*boids)[i]);
-			}
-
-			for (int i = (index * BOID_CHUNK); i < ((index + 1) * BOID_CHUNK); i++)
-			{
-				const sf::Vector2f boidOri = (*boids)[i].GetOrigin();
-				const float boidMinDistance = (*boids)[i].GetMinDistance();
-
-				const std::vector<Boid> nearBoids = quadtree->Query(
-					sf::Vector2i((int)(boidOri.x - boidMinDistance), (int)(boidOri.y - boidMinDistance)), 
-					sf::Vector2i((int)(boidOri.x + boidMinDistance), (int)(boidOri.y + boidMinDistance)));
-
-				(*boids)[i].Update(window, deltaTime, nearBoids);
-			}
-
-			accumulator -= deltaTime;
+			quadtree->Insert((*boids)[i]);
 		}
+
+		for (int i = (index * BOID_CHUNK); i < ((index + 1) * BOID_CHUNK); ++i)
+		{
+			const sf::Vector2f boidOri = (*boids)[i].GetOrigin();
+			const float boidMinDistance = (*boids)[i].GetMinDistance();
+
+			const std::vector<Boid> nearBoids = quadtree->Query(
+				sf::Vector2i((int)(boidOri.x - boidMinDistance), (int)(boidOri.y - boidMinDistance)), 
+				sf::Vector2i((int)(boidOri.x + boidMinDistance), (int)(boidOri.y + boidMinDistance)));
+
+			(*boids)[i].Update(window, deltaTime, nearBoids);
+		}
+
+		deltaTime = clock.restart().asSeconds();
 	}
 
 	return 0;
@@ -87,16 +77,13 @@ int main()
 
 	for (int i = 0; i < BOID_COUNT; i++)
 	{
-		sf::Vector2f size = sf::Vector2f(4.0f, 2.0f);
+		sf::Vector2f size = sf::Vector2f(6.0f, 3.0f);
 		sf::Vector2f pos = sf::Vector2f(
 			(float)(rand() % window.getSize().x), 
 			(float)(rand() % window.getSize().y));
 		sf::Vector3f color = sf::Vector3f(1.0f, 0.0f, 0.0f);
-		float maxSpeed = 5.0f;
-		float maxForce = 0.2f;
-		float minDistance = 50.0f;
 
-		boids->push_back(Boid(pos, size, color, maxSpeed, maxForce, minDistance));
+		boids->push_back(Boid(pos, size, color, 4.0f, 0.3f, 30.0f));
 	}
 
 	sf::Thread thread00(std::bind(&Update, &window, boids, &mousePos, &force, 0));
@@ -188,7 +175,7 @@ int main()
 		}
 
 		int v = 0;
-		for (int i = 0; i < boids->size(); i++)
+		for (int i = 0; i < boids->size(); ++i)
 		{
 			const sf::Vector2f boidPos = (*boids)[i].GetPosition();
 			const sf::Vector2f boidSiz = (*boids)[i].GetSize();
