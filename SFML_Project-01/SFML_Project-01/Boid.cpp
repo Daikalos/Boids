@@ -49,9 +49,9 @@ void Boid::Flock(const std::vector<Boid>& boids)
 	sf::Vector2f ali = Align(boids);
 	sf::Vector2f coh = Cohesion(boids);
 
-	sep *= 1.5f;
-	ali *= 1.1f;
-	coh *= 1.7f;
+	sep *= 1.3f;
+	ali *= 1.4f;
+	coh *= 1.5f;
 
 	ApplyForce(sep + ali + coh);
 }

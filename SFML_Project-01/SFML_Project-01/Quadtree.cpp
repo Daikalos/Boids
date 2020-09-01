@@ -17,11 +17,6 @@ Quad::~Quad()
 		Clear();
 }
 
-void Quad::Update()
-{
-	
-}
-
 std::vector<Boid> Quad::Query(sf::Vector2i topLeft, sf::Vector2i botRight) const
 {
 	std::vector<Boid> foundBoids;
@@ -107,7 +102,7 @@ bool Quad::Intersects(sf::Vector2i topLeft, sf::Vector2i botRight) const
 	return
 		!(botRight.x <= m_TopLeft.x ||
 		  topLeft.x >= m_BotRight.x ||
-		  topLeft.y >= m_BotRight.y||
+		  topLeft.y >= m_BotRight.y ||
 		  botRight.y <= m_TopLeft.y);
 }
 

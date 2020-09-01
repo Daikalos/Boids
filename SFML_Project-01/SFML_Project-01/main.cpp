@@ -10,18 +10,17 @@
 #include "Quadtree.h"
 
 #define BOID_COUNT 4000
-
 #define BOID_CHUNK BOID_COUNT / 4
 
 #define VERTEX_COUNT BOID_COUNT * 3
 
-int Update(sf::Window* window, std::vector<Boid>* boids, sf::Vector2f* mousePos, int* force, int index)
+int Update(sf::Window* window, std::vector<Boid>* boids, int index)
 {
 	sf::Clock clock;
 
 	Quad* quadtree = new Quad(sf::Vector2i(0, 0), sf::Vector2i(window->getSize().x, window->getSize().y), 16);
 
-	float deltaTime = (1.0f / 60.0f);
+	float deltaTime = FLT_EPSILON;
 
 	while (window->isOpen())
 	{
@@ -62,15 +61,12 @@ int main()
 	sf::Vector2f mousePos;
 	sf::Vector2i mouseOldPos;
 
-	int force = 0;
-
 	bool moveCamera = false;
 	float cameraPositionX = 0.0f;
 	float cameraPositionY = 0.0f;
 	float cameraScale = 1.0f;
 
 	std::vector<Boid>* boids = new std::vector<Boid>();
-	Quad* quadtree = new Quad(sf::Vector2i(0, 0), sf::Vector2i(window.getSize().x, window.getSize().y), 4);
 
 	Vertex* vertices = new Vertex[VERTEX_COUNT];
 	Color* colors = new Color[VERTEX_COUNT];
@@ -86,10 +82,10 @@ int main()
 		boids->push_back(Boid(pos, size, color, 4.0f, 0.3f, 30.0f));
 	}
 
-	sf::Thread thread00(std::bind(&Update, &window, boids, &mousePos, &force, 0));
-	sf::Thread thread01(std::bind(&Update, &window, boids, &mousePos, &force, 1));
-	sf::Thread thread02(std::bind(&Update, &window, boids, &mousePos, &force, 2));
-	sf::Thread thread03(std::bind(&Update, &window, boids, &mousePos, &force, 3));
+	sf::Thread thread00(std::bind(&Update, &window, boids, 0));
+	sf::Thread thread01(std::bind(&Update, &window, boids, 1));
+	sf::Thread thread02(std::bind(&Update, &window, boids, 2));
+	sf::Thread thread03(std::bind(&Update, &window, boids, 3));
 
 	thread00.launch();
 	thread01.launch();
@@ -136,23 +132,11 @@ int main()
 						moveCamera = true;
 						mouseOldPos = mouse.getPosition(window);
 					}
-					if (event.mouseButton.button == sf::Mouse::Left)
-					{
-						force = 1;
-					}
-					if (event.mouseButton.button == sf::Mouse::Right)
-					{
-						force = -1;
-					}
 					break;
 				case sf::Event::MouseButtonReleased:
 					if (event.mouseButton.button == sf::Mouse::Middle)
 					{
 						moveCamera = false;
-					}
-					if (event.mouseButton.button == sf::Mouse::Left || event.mouseButton.button == sf::Mouse::Right)
-					{
-						force = 0;
 					}
 					break;
 				case sf::Event::MouseMoved:

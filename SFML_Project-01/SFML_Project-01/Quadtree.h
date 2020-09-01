@@ -9,8 +9,6 @@ public:
 	Quad(sf::Vector2i topLeft, sf::Vector2i botRight, int capacity);
 	~Quad();
 
-	void Update();
-
 	std::vector<Boid> Query(sf::Vector2i topLeft, sf::Vector2i botRight) const;
 	bool Insert(const Boid& boid);
 
