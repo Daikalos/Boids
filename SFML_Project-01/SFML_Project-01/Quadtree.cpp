@@ -88,7 +88,7 @@ void Quad::Clear()
 	delete m_SouthEast;
 }
 
-bool Quad::Contains(sf::Vector2f point) const
+bool Quad::Contains(sf::Vector2<double> point) const
 {
 	return 
 		point.x >= m_TopLeft.x && 

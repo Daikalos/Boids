@@ -13,7 +13,7 @@ public:
 	bool Insert(const Boid& boid);
 
 private:
-	bool Contains(sf::Vector2f point) const;
+	bool Contains(sf::Vector2<double> point) const;
 	bool Intersects(sf::Vector2i topLeft, sf::Vector2i botRight) const;
 
 	void Subdivide();

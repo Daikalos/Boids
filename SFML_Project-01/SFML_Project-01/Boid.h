@@ -10,12 +10,12 @@
 
 struct Vertex
 {
-	GLfloat x, y;
+	GLdouble x, y;
 };
 
 struct Color
 {
-	GLfloat r, g, b;
+	GLdouble r, g, b;
 };
 
 class Boid
@@ -23,56 +23,56 @@ class Boid
 public:
 	Boid();
 
-	Boid(sf::Vector2f pos, sf::Vector2f size, sf::Vector3f color, float maxSpeed, float maxForce, float minDistance);
+	Boid(sf::Vector2<double> pos, sf::Vector2<double> size, sf::Vector3<double> color, double maxSpeed, double maxForce, double minDistance);
 	~Boid();
 
-	void Update(const sf::Window* window, const float& deltaTime, const std::vector<Boid>& boids);
+	void Update(const sf::Window* window, const double& deltaTime, const std::vector<Boid>& boids);
 
-	inline float GetRotation() const { return m_Rotation; }
+	inline double GetRotation() const { return m_Rotation; }
 
-	inline sf::Vector2f GetSize() const { return m_Size; }
+	inline sf::Vector2<double> GetSize() const { return m_Size; }
 
-	inline sf::Vector2f GetPosition() const { return m_Position; }
-	inline sf::Vector2f GetVelocity() const { return m_Velocity; }
-	inline sf::Vector2f GetAcceleration() const { return m_Acceleration; }
+	inline sf::Vector2<double> GetPosition() const { return m_Position; }
+	inline sf::Vector2<double> GetVelocity() const { return m_Velocity; }
+	inline sf::Vector2<double> GetAcceleration() const { return m_Acceleration; }
 
-	inline sf::Vector2f GetOrigin() const 
+	inline sf::Vector2<double> GetOrigin() const 
 	{ 
-		return sf::Vector2f(
+		return sf::Vector2<double>(
 			m_Position.x + (m_Size.x / 2), 
 			m_Position.y + (m_Size.y / 2)); 
 	}
 
 	inline sf::Vector3f GetColor() const { return m_Color; }
 
-	inline float GetMinDistance() const { return m_MinDistance; }
+	inline double GetMinDistance() const { return m_MinDistance; }
 
 private:
 	void Flock(const std::vector<Boid>& boids);
 
-	void OutsideBorder(const sf::Window* window);
+	void OutsideBorder(const sf::Window* window, const sf::Vector2<double>& nextPos);
 
-	sf::Vector2f Seperate(const std::vector<Boid>& boids);
-	sf::Vector2f Align(const std::vector<Boid>& boids);
-	sf::Vector2f Cohesion(const std::vector<Boid>& boids);
+	sf::Vector2<double> Seperate(const std::vector<Boid>& boids);
+	sf::Vector2<double> Align(const std::vector<Boid>& boids);
+	sf::Vector2<double> Cohesion(const std::vector<Boid>& boids);
 
-	inline void ApplyForce(const sf::Vector2f& force)
+	inline void ApplyForce(const sf::Vector2<double>& force)
 	{
 		m_Acceleration += force;
 	}
 
 private:
-	sf::Vector2f m_Position;
-	sf::Vector2f m_Velocity;
-	sf::Vector2f m_Acceleration;
+	sf::Vector2<double> m_Position;
+	sf::Vector2<double> m_Velocity;
+	sf::Vector2<double> m_Acceleration;
 
-	sf::Vector2f m_Size;
+	sf::Vector2<double> m_Size;
 
 	sf::Vector3f m_Color;
 
-	float m_Rotation;
-	float m_MaxSpeed;
-	float m_MaxForce;
-	float m_MinDistance;
+	double m_Rotation;
+	double m_MaxSpeed;
+	double m_MaxForce;
+	double m_MinDistance;
 };
 
