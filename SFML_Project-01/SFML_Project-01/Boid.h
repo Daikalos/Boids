@@ -8,65 +8,56 @@
 
 #include "Utility.h"
 
-struct Vertex
-{
-	GLdouble x, y;
-};
-
-struct Color
-{
-	GLdouble r, g, b;
-};
+using vec2d = sf::Vector2<double>;
 
 class Boid
 {
 public:
 	Boid();
 
-	Boid(sf::Vector2<double> pos, sf::Vector2<double> size, sf::Vector3<double> color, double maxSpeed, double maxForce, double minDistance);
+	Boid(vec2d pos, vec2d size, sf::Vector3<double> color, double maxSpeed, double maxForce, double minDistance);
 	~Boid();
 
 	void Update(const sf::Window* window, const double& deltaTime, const std::vector<Boid>& boids);
 
-	inline double GetRotation() const { return m_Rotation; }
+	inline vec2d GetPosition() const { return m_Position; }
+	inline vec2d GetSize() const { return m_Size; }
 
-	inline sf::Vector2<double> GetSize() const { return m_Size; }
-
-	inline sf::Vector2<double> GetPosition() const { return m_Position; }
-	inline sf::Vector2<double> GetVelocity() const { return m_Velocity; }
-	inline sf::Vector2<double> GetAcceleration() const { return m_Acceleration; }
-
-	inline sf::Vector2<double> GetOrigin() const 
-	{ 
-		return sf::Vector2<double>(
-			m_Position.x + (m_Size.x / 2), 
-			m_Position.y + (m_Size.y / 2)); 
+	inline vec2d GetOrigin() const
+	{
+		return vec2d(
+			m_Position.x + (m_Size.x / 2),
+			m_Position.y + (m_Size.y / 2));
 	}
 
-	inline sf::Vector3f GetColor() const { return m_Color; }
+	inline vec2d GetVelocity() const { return m_Velocity; }
+	inline vec2d GetAcceleration() const { return m_Acceleration; }
 
+	inline double GetRotation() const { return m_Rotation; }
 	inline double GetMinDistance() const { return m_MinDistance; }
+
+	inline sf::Vector3f GetColor() const { return m_Color; }
 
 private:
 	void Flock(const std::vector<Boid>& boids);
 
-	void OutsideBorder(const sf::Window* window, const sf::Vector2<double>& nextPos);
+	void OutsideBorder(const sf::Window* window, const vec2d& nextPos);
 
-	sf::Vector2<double> Seperate(const std::vector<Boid>& boids);
-	sf::Vector2<double> Align(const std::vector<Boid>& boids);
-	sf::Vector2<double> Cohesion(const std::vector<Boid>& boids);
+	vec2d Seperate(const std::vector<Boid>& boids);
+	vec2d Align(const std::vector<Boid>& boids);
+	vec2d Cohesion(const std::vector<Boid>& boids);
 
-	inline void ApplyForce(const sf::Vector2<double>& force)
+	inline void ApplyForce(const vec2d& force)
 	{
 		m_Acceleration += force;
 	}
 
 private:
-	sf::Vector2<double> m_Position;
-	sf::Vector2<double> m_Velocity;
-	sf::Vector2<double> m_Acceleration;
+	vec2d m_Position;
+	vec2d m_Velocity;
+	vec2d m_Acceleration;
 
-	sf::Vector2<double> m_Size;
+	vec2d m_Size;
 
 	sf::Vector3f m_Color;
 

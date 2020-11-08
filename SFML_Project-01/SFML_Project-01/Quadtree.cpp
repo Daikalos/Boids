@@ -1,6 +1,6 @@
 #include "Quadtree.h"
 
-Quad::Quad(sf::Vector2i topLeft, sf::Vector2i botRight, int capacity) :
+Quad::Quad(const sf::Vector2i& topLeft, const sf::Vector2i& botRight, int capacity) :
 	m_TopLeft(topLeft), m_BotRight(botRight), m_Capacity(capacity)
 {
 	m_NorthWest = nullptr;
@@ -17,7 +17,7 @@ Quad::~Quad()
 		Clear();
 }
 
-std::vector<Boid> Quad::Query(sf::Vector2i topLeft, sf::Vector2i botRight) const
+std::vector<Boid> Quad::Query(const sf::Vector2i& topLeft, const sf::Vector2i& botRight) const
 {
 	std::vector<Boid> foundBoids;
 
@@ -88,7 +88,7 @@ void Quad::Clear()
 	delete m_SouthEast;
 }
 
-bool Quad::Contains(sf::Vector2<double> point) const
+bool Quad::Contains(const sf::Vector2<double>& point) const
 {
 	return 
 		point.x >= m_TopLeft.x && 
@@ -97,7 +97,7 @@ bool Quad::Contains(sf::Vector2<double> point) const
 		point.y <= m_BotRight.y;
 }
 
-bool Quad::Intersects(sf::Vector2i topLeft, sf::Vector2i botRight) const
+bool Quad::Intersects(const sf::Vector2i& topLeft, const sf::Vector2i& botRight) const
 {
 	return
 		!(botRight.x <= m_TopLeft.x ||
@@ -108,12 +108,12 @@ bool Quad::Intersects(sf::Vector2i topLeft, sf::Vector2i botRight) const
 
 void Quad::Subdivide()
 {
-	int x0 = m_TopLeft.x;
-	int y0 = m_TopLeft.y;
-	int x1 = m_BotRight.x;
-	int y1 = m_BotRight.y;
-	int width = (m_TopLeft.x + m_BotRight.x) / 2;
-	int height = (m_TopLeft.y + m_BotRight.y) / 2;
+	const int x0 = m_TopLeft.x;
+	const int y0 = m_TopLeft.y;
+	const int x1 = m_BotRight.x;
+	const int y1 = m_BotRight.y;
+	const int width = (m_TopLeft.x + m_BotRight.x) / 2;
+	const int height = (m_TopLeft.y + m_BotRight.y) / 2;
 
 	sf::Vector2i nwTopLeft = sf::Vector2i(x0, y0);
 	sf::Vector2i nwBotRight = sf::Vector2i(width, height);

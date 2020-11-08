@@ -9,16 +9,26 @@
 #include "Boid.h"
 #include "Quadtree.h"
 
-#define BOID_COUNT 4000
-#define BOID_CHUNK BOID_COUNT / 4
+const size_t BOID_COUNT = 4000;
 
-#define VERTEX_COUNT BOID_COUNT * 3
+const size_t BOID_CHUNK = BOID_COUNT / 6;
+const size_t VERTEX_COUNT = BOID_COUNT * 3;
 
-int Update(sf::Window* window, std::vector<Boid>* boids, int index)
+struct Vertex
+{
+	GLdouble x, y;
+};
+
+struct Color
+{
+	GLdouble r, g, b;
+};
+
+int Update(sf::Window* window, std::vector<Boid>* boids, size_t index)
 {
 	sf::Clock clock;
 
-	Quad quadtree(sf::Vector2i(0, 0), sf::Vector2i(window->getSize().x, window->getSize().y), 16);
+	Quad* quadtree = nullptr;
 
 	double deltaTime = FLT_EPSILON;
 
@@ -26,24 +36,26 @@ int Update(sf::Window* window, std::vector<Boid>* boids, int index)
 	{
 		deltaTime = clock.restart().asSeconds();
 
-		quadtree.~Quad();
-		quadtree = Quad(sf::Vector2i(0, 0), sf::Vector2i(window->getSize().x, window->getSize().y), 16);
+		delete quadtree;
+		quadtree = new Quad(sf::Vector2i(0, 0), sf::Vector2i(window->getSize().x, window->getSize().y), 16);
 
-		for (int i = 0; i < BOID_COUNT; ++i)
+		for (long long i = 0; i < BOID_COUNT; ++i)
 		{
-			quadtree.Insert((*boids)[i]);
+			(*quadtree).Insert((*boids)[i]);
 		}
 
-		for (int i = (index * BOID_CHUNK); i < ((index + 1) * BOID_CHUNK); ++i)
+		for (size_t i = (index * BOID_CHUNK); i < ((index + 1) * BOID_CHUNK); ++i)
 		{
-			const sf::Vector2<double> boidOri = (*boids)[i].GetOrigin();
-			const double boidMinDistance = (*boids)[i].GetMinDistance();
+			Boid& boid = (*boids)[i];
 
-			const std::vector<Boid> nearBoids = quadtree.Query(
+			const sf::Vector2<double> boidOri = boid.GetOrigin();
+			const double boidMinDistance = boid.GetMinDistance();
+
+			const std::vector<Boid> nearBoids = (*quadtree).Query(
 				sf::Vector2i((int)(boidOri.x - boidMinDistance), (int)(boidOri.y - boidMinDistance)), 
 				sf::Vector2i((int)(boidOri.x + boidMinDistance), (int)(boidOri.y + boidMinDistance)));
 
-			(*boids)[i].Update(window, deltaTime, nearBoids);
+			boid.Update(window, deltaTime, nearBoids);
 		}
 	}
 
@@ -54,8 +66,11 @@ int main()
 {
 	sf::Window window(sf::VideoMode(1600, 900), "Boids");
 
-	window.setFramerateLimit(60);
+	window.setFramerateLimit(144);
 	window.setActive(true);
+
+	sf::Clock clock;
+	float deltaTime = FLT_EPSILON;
 
 	sf::Mouse mouse;
 	sf::Vector2<double> mousePos;
@@ -79,18 +94,22 @@ int main()
 		sf::Vector2<double> size = sf::Vector2<double>(6.0, 3.0);
 		sf::Vector3<double> color = sf::Vector3<double>(1.0, 0.0, 0.0);
 
-		boids->push_back(Boid(pos, size, color, 200.0, 0.3, 30.0));
+		boids->push_back(Boid(pos, size, color, 200.0, 0.09, 30.0));
 	}
 
 	sf::Thread thread00(std::bind(&Update, &window, boids, 0));
 	sf::Thread thread01(std::bind(&Update, &window, boids, 1));
 	sf::Thread thread02(std::bind(&Update, &window, boids, 2));
 	sf::Thread thread03(std::bind(&Update, &window, boids, 3));
+	sf::Thread thread04(std::bind(&Update, &window, boids, 4));
+	sf::Thread thread05(std::bind(&Update, &window, boids, 5));
 
 	thread00.launch();
 	thread01.launch();
 	thread02.launch();
 	thread03.launch();
+	thread04.launch();
+	thread05.launch();
 
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -102,6 +121,7 @@ int main()
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
 
+	float k = 0;
 	while (window.isOpen())
 	{
 		sf::Event event;

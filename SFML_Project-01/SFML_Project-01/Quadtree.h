@@ -6,15 +6,15 @@
 class Quad
 {
 public:
-	Quad(sf::Vector2i topLeft, sf::Vector2i botRight, int capacity);
+	Quad(const sf::Vector2i& topLeft, const sf::Vector2i& botRight, int capacity);
 	~Quad();
 
-	std::vector<Boid> Query(sf::Vector2i topLeft, sf::Vector2i botRight) const;
+	std::vector<Boid> Query(const sf::Vector2i& topLeft, const sf::Vector2i& botRight) const;
 	bool Insert(const Boid& boid);
 
 private:
-	bool Contains(sf::Vector2<double> point) const;
-	bool Intersects(sf::Vector2i topLeft, sf::Vector2i botRight) const;
+	bool Contains(const sf::Vector2<double>& point) const;
+	bool Intersects(const sf::Vector2i& topLeft, const sf::Vector2i& botRight) const;
 
 	void Subdivide();
 
