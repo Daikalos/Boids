@@ -24,7 +24,7 @@ struct Color
 	GLdouble r, g, b;
 };
 
-int Update(sf::Window* window, std::vector<Boid>* boids, size_t index)
+int Update(sf::Window* window, Boid* boids, size_t index)
 {
 	sf::Clock clock;
 
@@ -41,12 +41,12 @@ int Update(sf::Window* window, std::vector<Boid>* boids, size_t index)
 
 		for (long long i = 0; i < BOID_COUNT; ++i)
 		{
-			(*quadtree).Insert((*boids)[i]);
+			(*quadtree).Insert(boids[i]);
 		}
 
 		for (size_t i = (index * BOID_CHUNK); i < ((index + 1) * BOID_CHUNK); ++i)
 		{
-			Boid& boid = (*boids)[i];
+			Boid& boid = boids[i];
 
 			const sf::Vector2<double> boidOri = boid.GetOrigin();
 			const double boidMinDistance = boid.GetMinDistance();
@@ -81,8 +81,7 @@ int main()
 	double cameraPositionY = 0.0f;
 	double cameraScale = 1.0f;
 
-	std::vector<Boid>* boids = new std::vector<Boid>();
-
+	Boid* boids = new Boid[BOID_COUNT];
 	Vertex* vertices = new Vertex[VERTEX_COUNT];
 	Color* colors = new Color[VERTEX_COUNT];
 
@@ -94,7 +93,7 @@ int main()
 		sf::Vector2<double> size = sf::Vector2<double>(6.0, 3.0);
 		sf::Vector3<double> color = sf::Vector3<double>(1.0, 0.0, 0.0);
 
-		boids->push_back(Boid(pos, size, color, 200.0, 0.09, 30.0));
+		boids[i] = Boid(pos, size, color, 200.0, 0.09, 30.0);
 	}
 
 	sf::Thread thread00(std::bind(&Update, &window, boids, 0));
@@ -179,13 +178,15 @@ int main()
 		}
 
 		int v = 0;
-		for (int i = 0; i < boids->size(); ++i)
+		for (int i = 0; i < BOID_COUNT; ++i)
 		{
-			const sf::Vector2<double> boidPos = (*boids)[i].GetPosition();
-			const sf::Vector2<double> boidSiz = (*boids)[i].GetSize();
-			const sf::Vector2<double> boidOri = (*boids)[i].GetOrigin();
-			const sf::Vector3f boidCol = (*boids)[i].GetColor();
-			const double boidRot = (*boids)[i].GetRotation();
+			const Boid boid = boids[i];
+
+			const sf::Vector2<double> boidPos = boid.GetPosition();
+			const sf::Vector2<double> boidSiz = boid.GetSize();
+			const sf::Vector2<double> boidOri = boid.GetOrigin();
+			const sf::Vector3f boidCol = boid.GetColor();
+			const double boidRot = boid.GetRotation();
 
 			sf::Vector2<double> pos0 = RotatePoint(sf::Vector2<double>(
 				boidPos.x, 

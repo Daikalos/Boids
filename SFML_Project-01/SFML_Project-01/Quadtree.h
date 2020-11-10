@@ -6,10 +6,15 @@
 class Quad
 {
 public:
+	Quad() = delete;
+	Quad(const Quad& rhs) = delete;
+	Quad& operator=(const Quad& rhs) = delete;
+
 	Quad(const sf::Vector2i& topLeft, const sf::Vector2i& botRight, int capacity);
 	~Quad();
 
 	std::vector<Boid> Query(const sf::Vector2i& topLeft, const sf::Vector2i& botRight) const;
+	
 	bool Insert(const Boid& boid);
 
 private:
@@ -21,8 +26,8 @@ private:
 	void Clear();
 
 private:
-	sf::Vector2i m_TopLeft;
-	sf::Vector2i m_BotRight;
+	const sf::Vector2i m_TopLeft;
+	const sf::Vector2i m_BotRight;
 
 	Quad* m_NorthWest;
 	Quad* m_NorthEast;
@@ -32,6 +37,6 @@ private:
 	std::vector<const Boid*> m_Boids;
 
 	int m_Capacity;
-	bool m_Divided = false;
+	bool m_Divided;
 };
 
