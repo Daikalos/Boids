@@ -13,8 +13,10 @@ Quad::Quad(const sf::Vector2i& topLeft, const sf::Vector2i& botRight, int capaci
 
 Quad::~Quad()
 {
-	if (m_Divided)
-		Clear();
+	delete m_NorthWest;
+	delete m_NorthEast;
+	delete m_SouthWest;
+	delete m_SouthEast;
 }
 
 std::vector<Boid> Quad::Query(const sf::Vector2i& topLeft, const sf::Vector2i& botRight) const
@@ -78,14 +80,6 @@ bool Quad::Insert(const Boid& boid)
 			return true;
 	}
 	return false;
-}
-
-void Quad::Clear()
-{
-	delete m_NorthWest;
-	delete m_NorthEast;
-	delete m_SouthWest;
-	delete m_SouthEast;
 }
 
 bool Quad::Contains(const sf::Vector2<double>& point) const

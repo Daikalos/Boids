@@ -57,26 +57,6 @@ void Boid::Flock(const std::vector<Boid>& boids)
 	ApplyForce(sep + ali + coh);
 }
 
-void Boid::OutsideBorder(const sf::Window* window, const vec2d& nextPos)
-{
-	if (m_Position.x + nextPos.x + m_Size.x < 0)
-	{
-		m_Position.x = (double)window->getSize().x;
-	}
-	else if (m_Position.x + nextPos.x - m_Size.x > window->getSize().x)
-	{
-		m_Position.x = -m_Size.x;
-	}
-	else if (m_Position.y + nextPos.y + m_Size.y < 0)
-	{
-		m_Position.y = (double)window->getSize().y;
-	}
-	else if (m_Position.y + nextPos.y - m_Size.y > window->getSize().y)
-	{
-		m_Position.y = -m_Size.y;
-	}
-}
-
 vec2d Boid::Seperate(const std::vector<Boid>& boids)
 {
 	vec2d sep = vec2d(0, 0);
@@ -170,4 +150,24 @@ vec2d Boid::Cohesion(const std::vector<Boid>& boids)
 	steer = Limit(steer, m_MaxForce);
 
 	return steer;
+}
+
+void Boid::OutsideBorder(const sf::Window* window, const vec2d& nextPos)
+{
+	if (m_Position.x + nextPos.x + m_Size.x < 0)
+	{
+		m_Position.x = (double)window->getSize().x;
+	}
+	else if (m_Position.x + nextPos.x - m_Size.x > window->getSize().x)
+	{
+		m_Position.x = -m_Size.x;
+	}
+	else if (m_Position.y + nextPos.y + m_Size.y < 0)
+	{
+		m_Position.y = (double)window->getSize().y;
+	}
+	else if (m_Position.y + nextPos.y - m_Size.y > window->getSize().y)
+	{
+		m_Position.y = -m_Size.y;
+	}
 }

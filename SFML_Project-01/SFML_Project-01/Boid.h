@@ -20,6 +20,21 @@ public:
 
 	void Update(const sf::Window* window, const double& deltaTime, const std::vector<Boid>& boids);
 
+private:
+	void Flock(const std::vector<Boid>& boids);
+
+	vec2d Seperate(const std::vector<Boid>& boids);
+	vec2d Align(const std::vector<Boid>& boids);
+	vec2d Cohesion(const std::vector<Boid>& boids);
+
+	void OutsideBorder(const sf::Window* window, const vec2d& nextPos);
+
+	inline void ApplyForce(const vec2d& force)
+	{
+		m_Acceleration += force;
+	}
+
+public:
 	inline vec2d GetPosition() const { return m_Position; }
 	inline vec2d GetSize() const { return m_Size; }
 
@@ -37,20 +52,6 @@ public:
 	inline double GetMinDistance() const { return m_MinDistance; }
 
 	inline sf::Vector3f GetColor() const { return m_Color; }
-
-private:
-	void Flock(const std::vector<Boid>& boids);
-
-	void OutsideBorder(const sf::Window* window, const vec2d& nextPos);
-
-	vec2d Seperate(const std::vector<Boid>& boids);
-	vec2d Align(const std::vector<Boid>& boids);
-	vec2d Cohesion(const std::vector<Boid>& boids);
-
-	inline void ApplyForce(const vec2d& force)
-	{
-		m_Acceleration += force;
-	}
 
 private:
 	vec2d m_Position;

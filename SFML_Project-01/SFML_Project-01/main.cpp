@@ -8,10 +8,13 @@
 
 #include "Boid.h"
 #include "Quadtree.h"
+#include "Camera.h"
 
-const size_t BOID_COUNT = 4000;
+const size_t THREAD_COUNT = 6;
 
-const size_t BOID_CHUNK = BOID_COUNT / 6;
+const size_t BOID_COUNT = 3900;
+
+const size_t BOID_CHUNK = BOID_COUNT / THREAD_COUNT;
 const size_t VERTEX_COUNT = BOID_COUNT * 3;
 
 struct Vertex
@@ -72,14 +75,7 @@ int main()
 	sf::Clock clock;
 	float deltaTime = FLT_EPSILON;
 
-	sf::Mouse mouse;
-	sf::Vector2<double> mousePos;
-	sf::Vector2i mouseOldPos;
-
-	bool moveCamera = false;
-	double cameraPositionX = 0.0f;
-	double cameraPositionY = 0.0f;
-	double cameraScale = 1.0f;
+	Camera camera(window);
 
 	Boid* boids = new Boid[BOID_COUNT];
 	Vertex* vertices = new Vertex[VERTEX_COUNT];
@@ -96,19 +92,17 @@ int main()
 		boids[i] = Boid(pos, size, color, 200.0, 0.09, 30.0);
 	}
 
-	sf::Thread thread00(std::bind(&Update, &window, boids, 0));
-	sf::Thread thread01(std::bind(&Update, &window, boids, 1));
-	sf::Thread thread02(std::bind(&Update, &window, boids, 2));
-	sf::Thread thread03(std::bind(&Update, &window, boids, 3));
-	sf::Thread thread04(std::bind(&Update, &window, boids, 4));
-	sf::Thread thread05(std::bind(&Update, &window, boids, 5));
+	std::vector<sf::Thread*> threads;
+	for (size_t i = 0; i < THREAD_COUNT; ++i)
+	{
+		threads.push_back(new sf::Thread(std::bind(&Update, &window, boids, i)));
+	}
 
-	thread00.launch();
-	thread01.launch();
-	thread02.launch();
-	thread03.launch();
-	thread04.launch();
-	thread05.launch();
+	std::for_each(threads.begin(), threads.end(),
+	[](sf::Thread* thread)
+	{
+		(*thread).launch();
+	});
 
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -120,12 +114,13 @@ int main()
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
 
-	float k = 0;
 	while (window.isOpen())
 	{
 		sf::Event event;
 		while (window.pollEvent(event))
 		{
+			camera.Update(event);
+
 			switch (event.type)
 			{
 				case sf::Event::Closed:
@@ -133,46 +128,6 @@ int main()
 					break;
 				case sf::Event::Resized:
 					glViewport(0, 0, event.size.width, event.size.height);
-					break;
-				case sf::Event::KeyPressed:
-					if (event.key.code == sf::Keyboard::Space)
-					{
-						cameraPositionX = 0.0f;
-						cameraPositionY = 0.0f;
-						cameraScale = 1.0f;
-					}
-					break;
-				case sf::Event::MouseWheelScrolled:
-					cameraScale *= (event.mouseWheelScroll.delta == 1) ? 1.15f : 0.85f;
-					break;
-				case sf::Event::MouseButtonPressed:
-					if (event.mouseButton.button == sf::Mouse::Middle)
-					{
-						moveCamera = true;
-						mouseOldPos = mouse.getPosition(window);
-					}
-					break;
-				case sf::Event::MouseButtonReleased:
-					if (event.mouseButton.button == sf::Mouse::Middle)
-					{
-						moveCamera = false;
-					}
-					break;
-				case sf::Event::MouseMoved:
-					mousePos = sf::Vector2<double>(
-						(double)mouse.getPosition(window).x - cameraPositionX, 
-						(double)mouse.getPosition(window).y - cameraPositionY) / cameraScale;
-
-					if (moveCamera)
-					{
-						const sf::Vector2i mouseNewPos = mouse.getPosition(window);
-						const sf::Vector2i deltaPos = mouseNewPos - mouseOldPos;
-
-						cameraPositionX += deltaPos.x;
-						cameraPositionY += deltaPos.y;
-
-						mouseOldPos = mouseNewPos;
-					}
 					break;
 			}
 		}
@@ -229,8 +184,8 @@ int main()
 
 		glPushMatrix();
 
-		glTranslated(cameraPositionX, cameraPositionY, 0);
-		glScaled(cameraScale, cameraScale, 1.0f);
+		glTranslated(camera.Position().x, camera.Position().y, 0);
+		glScaled(camera.Scale(), camera.Scale(), 1.0f);
 
 		glDrawArrays(GL_TRIANGLES, 0, VERTEX_COUNT);
 

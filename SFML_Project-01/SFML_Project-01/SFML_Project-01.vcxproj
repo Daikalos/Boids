@@ -171,12 +171,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Boid.cpp" />
     <ClCompile Include="Quadtree.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Boid.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="Quadtree.h" />
     <ClInclude Include="Utility.h" />
   </ItemGroup>
