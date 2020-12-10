@@ -67,6 +67,8 @@ int Update(sf::Window* window, Boid* boids, size_t index)
 
 int main()
 {
+	srand((unsigned int)time(0));
+
 	sf::Window window(sf::VideoMode(1600, 900), "Boids");
 
 	window.setFramerateLimit(144);
@@ -89,7 +91,7 @@ int main()
 		sf::Vector2<double> size = sf::Vector2<double>(6.0, 3.0);
 		sf::Vector3<double> color = sf::Vector3<double>(1.0, 0.0, 0.0);
 
-		boids[i] = Boid(pos, size, color, 200.0, 0.09, 30.0);
+		boids[i] = Boid(pos, size, color, 150.0, 1.5, 30.0, 260.0);
 	}
 
 	std::vector<sf::Thread*> threads;
@@ -101,7 +103,7 @@ int main()
 	std::for_each(threads.begin(), threads.end(),
 	[](sf::Thread* thread)
 	{
-		(*thread).launch();
+		thread->launch();
 	});
 
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -143,13 +145,13 @@ int main()
 			const sf::Vector3f boidCol = boid.GetColor();
 			const double boidRot = boid.GetRotation();
 
-			sf::Vector2<double> pos0 = RotatePoint(sf::Vector2<double>(
+			sf::Vector2<double> pos0 = Vector2::RotatePoint(sf::Vector2<double>(
 				boidPos.x, 
 				boidPos.y + (boidSiz.y / 2)), boidOri, boidRot);
-			sf::Vector2<double> pos1 = RotatePoint(sf::Vector2<double>(
+			sf::Vector2<double> pos1 = Vector2::RotatePoint(sf::Vector2<double>(
 				boidPos.x + boidSiz.x,
 				boidPos.y), boidOri, boidRot);
-			sf::Vector2<double> pos2 = RotatePoint(sf::Vector2<double>(
+			sf::Vector2<double> pos2 = Vector2::RotatePoint(sf::Vector2<double>(
 				boidPos.x + boidSiz.x,
 				boidPos.y + boidSiz.y), boidOri, boidRot);
 

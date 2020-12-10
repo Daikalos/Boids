@@ -6,7 +6,8 @@
 #include <gl/GLU.h>
 #include <iostream>
 
-#include "Utility.h"
+#include "Utilities.h"
+#include "Vector2.h"
 
 using vec2d = sf::Vector2<double>;
 
@@ -14,24 +15,24 @@ class Boid
 {
 public:
 	Boid();
-
-	Boid(vec2d pos, vec2d size, sf::Vector3<double> color, double maxSpeed, double maxForce, double minDistance);
-	~Boid();
+	Boid(vec2d pos, vec2d size, sf::Vector3<double> color, double maxSpeed, double maxSteer, double minDistance, double viewAngle);
 
 	void Update(const sf::Window* window, const double& deltaTime, const std::vector<Boid>& boids);
 
 private:
+	std::vector<Boid> VisibleBoids(const std::vector<Boid>& boids);
+
 	void Flock(const std::vector<Boid>& boids);
 
 	vec2d Seperate(const std::vector<Boid>& boids);
 	vec2d Align(const std::vector<Boid>& boids);
 	vec2d Cohesion(const std::vector<Boid>& boids);
 
-	void OutsideBorder(const sf::Window* window, const vec2d& nextPos);
+	void OutsideBorder(const sf::Window* window);
 
 	inline void ApplyForce(const vec2d& force)
 	{
-		m_Acceleration += force;
+		m_Velocity += force;
 	}
 
 public:
@@ -46,7 +47,6 @@ public:
 	}
 
 	inline vec2d GetVelocity() const { return m_Velocity; }
-	inline vec2d GetAcceleration() const { return m_Acceleration; }
 
 	inline double GetRotation() const { return m_Rotation; }
 	inline double GetMinDistance() const { return m_MinDistance; }
@@ -56,15 +56,15 @@ public:
 private:
 	vec2d m_Position;
 	vec2d m_Velocity;
-	vec2d m_Acceleration;
 
 	vec2d m_Size;
 
 	sf::Vector3f m_Color;
 
-	double m_Rotation;
-	double m_MaxSpeed;
-	double m_MaxForce;
-	double m_MinDistance;
+	double m_Rotation;	  // Current rotation
+	double m_MaxSpeed;	  // Maximum speed
+	double m_MaxSteer;	  // Maximum steering force towards target
+	double m_MinDistance; // Only interact with boids within this distance
+	double m_ViewAngle;	  // Only interact with boids within this angle
 };
 

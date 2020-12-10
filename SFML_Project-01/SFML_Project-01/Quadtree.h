@@ -6,10 +6,6 @@
 class Quad
 {
 public:
-	Quad() = delete;
-	Quad(const Quad& rhs) = delete;
-	Quad& operator=(const Quad& rhs) = delete;
-
 	Quad(const sf::Vector2i& topLeft, const sf::Vector2i& botRight, int capacity);
 	~Quad();
 
@@ -22,8 +18,6 @@ private:
 	bool Intersects(const sf::Vector2i& topLeft, const sf::Vector2i& botRight) const;
 
 	void Subdivide();
-
-	void Clear();
 
 private:
 	const sf::Vector2i m_TopLeft;
@@ -38,5 +32,10 @@ private:
 
 	int m_Capacity;
 	bool m_Divided;
+
+private:
+	Quad() = delete;
+	Quad(const Quad& rhs) = delete;
+	Quad& operator=(const Quad& rhs) = delete;
 };
 
