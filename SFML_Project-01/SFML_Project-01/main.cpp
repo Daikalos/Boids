@@ -12,7 +12,7 @@
 
 const size_t THREAD_COUNT = 6;
 
-const size_t BOID_COUNT = 3900;
+const size_t BOID_COUNT = 4800;
 
 const size_t BOID_CHUNK = BOID_COUNT / THREAD_COUNT;
 const size_t VERTEX_COUNT = BOID_COUNT * 3;
@@ -43,20 +43,18 @@ int Update(sf::Window* window, Boid* boids, size_t index)
 		quadtree = new Quad(sf::Vector2i(0, 0), sf::Vector2i(window->getSize().x, window->getSize().y), 16);
 
 		for (long long i = 0; i < BOID_COUNT; ++i)
-		{
-			(*quadtree).Insert(boids[i]);
-		}
+			quadtree->Insert(boids[i]);
 
 		for (size_t i = (index * BOID_CHUNK); i < ((index + 1) * BOID_CHUNK); ++i)
 		{
 			Boid& boid = boids[i];
 
-			const sf::Vector2<double> boidOri = boid.GetOrigin();
-			const double boidMinDistance = boid.GetMinDistance();
+			const sf::Vector2<double> ori = boid.GetOrigin();
+			const double minDistance = boid.GetMinDistance();
 
-			const std::vector<Boid> nearBoids = (*quadtree).Query(
-				sf::Vector2i((int)(boidOri.x - boidMinDistance), (int)(boidOri.y - boidMinDistance)), 
-				sf::Vector2i((int)(boidOri.x + boidMinDistance), (int)(boidOri.y + boidMinDistance)));
+			const std::vector<Boid> nearBoids = quadtree->Query(
+				sf::Vector2i((int)(ori.x - minDistance), (int)(ori.y - minDistance)),
+				sf::Vector2i((int)(ori.x + minDistance), (int)(ori.y + minDistance)));
 
 			boid.Update(window, deltaTime, nearBoids);
 		}
@@ -67,6 +65,9 @@ int Update(sf::Window* window, Boid* boids, size_t index)
 
 int main()
 {
+	if (std::fmod(BOID_COUNT, THREAD_COUNT) != 0)
+		return -1;
+
 	srand((unsigned int)time(0));
 
 	sf::Window window(sf::VideoMode(1600, 900), "Boids");
@@ -83,7 +84,7 @@ int main()
 	Vertex* vertices = new Vertex[VERTEX_COUNT];
 	Color* colors = new Color[VERTEX_COUNT];
 
-	for (int i = 0; i < BOID_COUNT; i++)
+	for (int i = 0; i < BOID_COUNT; ++i)
 	{
 		sf::Vector2<double> pos = sf::Vector2<double>(
 			(double)(rand() % window.getSize().x),
@@ -91,14 +92,13 @@ int main()
 		sf::Vector2<double> size = sf::Vector2<double>(6.0, 3.0);
 		sf::Vector3<double> color = sf::Vector3<double>(1.0, 0.0, 0.0);
 
-		boids[i] = Boid(pos, size, color, 150.0, 1.5, 30.0, 260.0);
+		boids[i] = Boid(pos, size, color, 150.0, 1.5, 35.0, 260.0);
 	}
 
 	std::vector<sf::Thread*> threads;
+
 	for (size_t i = 0; i < THREAD_COUNT; ++i)
-	{
 		threads.push_back(new sf::Thread(std::bind(&Update, &window, boids, i)));
-	}
 
 	std::for_each(threads.begin(), threads.end(),
 	[](sf::Thread* thread)
@@ -139,21 +139,21 @@ int main()
 		{
 			const Boid boid = boids[i];
 
-			const sf::Vector2<double> boidPos = boid.GetPosition();
-			const sf::Vector2<double> boidSiz = boid.GetSize();
-			const sf::Vector2<double> boidOri = boid.GetOrigin();
-			const sf::Vector3f boidCol = boid.GetColor();
-			const double boidRot = boid.GetRotation();
+			const sf::Vector2<double> pos = boid.GetPosition();
+			const sf::Vector2<double> size = boid.GetSize();
+			const sf::Vector2<double> ori = boid.GetOrigin();
+			const sf::Vector3f col = boid.GetColor();
+			const double rot = boid.GetRotation();
 
 			sf::Vector2<double> pos0 = Vector2::RotatePoint(sf::Vector2<double>(
-				boidPos.x, 
-				boidPos.y + (boidSiz.y / 2)), boidOri, boidRot);
+				pos.x,
+				pos.y + (size.y / 2)), ori, rot);
 			sf::Vector2<double> pos1 = Vector2::RotatePoint(sf::Vector2<double>(
-				boidPos.x + boidSiz.x,
-				boidPos.y), boidOri, boidRot);
+				pos.x + size.x,
+				pos.y), ori, rot);
 			sf::Vector2<double> pos2 = Vector2::RotatePoint(sf::Vector2<double>(
-				boidPos.x + boidSiz.x,
-				boidPos.y + boidSiz.y), boidOri, boidRot);
+				pos.x + size.x,
+				pos.y + size.y), ori, rot);
 
 			vertices[v	  ].x = pos0.x;
 			vertices[v	  ].y = pos0.y;
@@ -162,9 +162,9 @@ int main()
 			vertices[v + 2].x = pos2.x;
 			vertices[v + 2].y = pos2.y;
 
-			double col0 = 0.5f + ((boidOri.x) / window.getSize().x);
-			double col1 = (boidOri.x * boidOri.y) / ((long long)window.getSize().x * (long long)window.getSize().y);
-			double col2 = 0.5f + ((boidOri.y) / window.getSize().y);
+			double col0 = 0.5f + ((ori.x) / window.getSize().x);
+			double col1 = (ori.x * ori.y) / ((long long)window.getSize().x * (long long)window.getSize().y);
+			double col2 = 0.5f + ((ori.y) / window.getSize().y);
 
 			colors[v    ].r	= col0;
 			colors[v    ].g	= col1;

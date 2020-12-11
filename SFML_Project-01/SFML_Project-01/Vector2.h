@@ -79,7 +79,8 @@ static sf::Vector2<double> operator /=(sf::Vector2<double>& lhs, const sf::Vecto
 	return lhs;
 }
 
-static sf::Vector2<double> operator /=(sf::Vector2<double>& lhs, const double& rhs)
+template <typename T>
+static sf::Vector2<double> operator /=(sf::Vector2<double>& lhs, const T& rhs)
 {
 	lhs.x /= rhs;
 	lhs.y /= rhs;

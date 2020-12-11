@@ -2,36 +2,36 @@
 
 Boid::Boid()
 {
-	m_Size = vec2d(10.0f, 5.0f);
+	position = vec2d(0, 0);
+	velocity = vec2d(fRand(-5.0, 5.0), fRand(-5.0, 5.0));
 
-	m_Position = vec2d(0, 0);
-	m_Velocity = vec2d(fRand(-5.0, 5.0), fRand(-5.0, 5.0));
+	size = vec2d(10.0f, 5.0f);
 
-	m_Rotation = 0.0;
-	m_MaxSpeed = 5.0;
-	m_MaxSteer = 0.09;
-	m_MinDistance = 50.0;
-	m_ViewAngle = 300.0;
+	rotation = 0.0;
+	maxSpeed = 150.0;
+	maxSteer = 1.5;
+	minDistance = 35.0;
+	viewAngle = 260.0;
 }
 
 Boid::Boid(vec2d pos, vec2d size, sf::Vector3<double> color, double maxSpeed, double maxSteer, double minDistance, double viewAngle) :
-	m_Position(pos), m_Size(size), m_Color(color), m_MaxSpeed(maxSpeed), m_MaxSteer(maxSteer), m_MinDistance(minDistance), m_ViewAngle(viewAngle)
+	position(pos), size(size), color(color), maxSpeed(maxSpeed), maxSteer(maxSteer), minDistance(minDistance), viewAngle(viewAngle)
 {
-	m_Rotation = 0.0;
-
-	m_Velocity = vec2d(
+	velocity = vec2d(
 		fRand(-maxSpeed, maxSpeed), 
 		fRand(-maxSpeed, maxSpeed));
+
+	rotation = 0.0;
 }
 
 void Boid::Update(const sf::Window* window, const double& deltaTime, const std::vector<Boid>& boids)
 {
 	Flock(boids);
 
-	m_Velocity = Vector2::Limit(m_Velocity, m_MaxSpeed);
-	m_Position += m_Velocity * deltaTime;
+	velocity = Vector2::Limit(velocity, maxSpeed);
+	position += velocity * deltaTime;
 
-	m_Rotation = Vector2::Angle(m_Velocity) + ToRadians(180.0);
+	rotation = Vector2::Angle(velocity) + ToRadians(180.0);
 
 	OutsideBorder(window);
 }
@@ -45,13 +45,13 @@ std::vector<Boid> Boid::VisibleBoids(const std::vector<Boid>& boids)
 		if (&b == this)
 			continue;
 
-		double distance = Vector2::Distance(b.GetPosition(), m_Position);
-		if (distance > 0 && distance < m_MinDistance)
+		double distance = Vector2::Distance(b.GetPosition(), position);
+		if (distance > 0 && distance < minDistance)
 		{
-			vec2d dir = Vector2::Direction(m_Position, b.GetPosition());
-			double angle = Vector2::Angle(m_Velocity, dir);
+			vec2d dir = Vector2::Direction(position, b.GetPosition());
+			double angle = Vector2::Angle(velocity, dir);
 
-			if (ToDegrees(angle) < (m_ViewAngle / 2))
+			if (ToDegrees(angle) < (viewAngle / 2))
 			{
 				visBoids.push_back(b);
 			}
@@ -79,25 +79,25 @@ void Boid::Flock(const std::vector<Boid>& boids)
 vec2d Boid::Seperate(const std::vector<Boid>& boids)
 {
 	vec2d sep = vec2d(0, 0);
-	int neighbourCount = boids.size();
+	size_t neighbourCount = boids.size();
 
 	if (neighbourCount == 0)
 		return sep;
 
 	for (const Boid& b : boids)
 	{
-		double distance = Vector2::Distance(b.GetPosition(), m_Position);
-		if (distance < (m_MinDistance / 2))
+		double distance = Vector2::Distance(b.GetPosition(), position);
+		if (distance < (minDistance / 2))
 		{
-			sep += (m_Position - b.GetPosition()) / pow(distance, 2);
+			sep += (position - b.GetPosition()) / pow(distance, 2);
 		}
 	}
 
 	sep /= neighbourCount;
-	sep = Vector2::Normalize(sep, m_MaxSpeed);
+	sep = Vector2::Normalize(sep, maxSpeed);
 
-	vec2d steer = sep - m_Velocity;
-	steer = Vector2::Limit(steer, m_MaxSteer);
+	vec2d steer = sep - velocity;
+	steer = Vector2::Limit(steer, maxSteer);
 
 	return steer;
 }
@@ -105,7 +105,7 @@ vec2d Boid::Seperate(const std::vector<Boid>& boids)
 vec2d Boid::Align(const std::vector<Boid>& boids)
 {
 	vec2d ali = vec2d(0, 0);
-	int neighbourCount = boids.size();
+	size_t neighbourCount = boids.size();
 
 	if (neighbourCount == 0)
 		return ali;
@@ -114,10 +114,10 @@ vec2d Boid::Align(const std::vector<Boid>& boids)
 		ali += b.GetVelocity();
 
 	ali /= neighbourCount;
-	ali = Vector2::Normalize(ali, m_MaxSpeed);
+	ali = Vector2::Normalize(ali, maxSpeed);
 
-	vec2d steer = ali - m_Velocity;
-	steer = Vector2::Limit(steer, m_MaxSteer);
+	vec2d steer = ali - velocity;
+	steer = Vector2::Limit(steer, maxSteer);
 
 	return steer;
 }
@@ -125,7 +125,7 @@ vec2d Boid::Align(const std::vector<Boid>& boids)
 vec2d Boid::Cohesion(const std::vector<Boid>& boids)
 {
 	vec2d coh = vec2d(0, 0);
-	int neighbourCount = boids.size();
+	size_t neighbourCount = boids.size();
 
 	if (neighbourCount == 0)
 		return coh;
@@ -135,31 +135,31 @@ vec2d Boid::Cohesion(const std::vector<Boid>& boids)
 
 	coh /= neighbourCount;
 
-	vec2d desired = coh - m_Position;
-	desired = Vector2::Normalize(desired, m_MaxSpeed);
+	vec2d desired = coh - position;
+	desired = Vector2::Normalize(desired, maxSpeed);
 
-	vec2d steer = desired - m_Velocity;
-	steer = Vector2::Limit(steer, m_MaxSteer);
+	vec2d steer = desired - velocity;
+	steer = Vector2::Limit(steer, maxSteer);
 
 	return steer;
 }
 
 void Boid::OutsideBorder(const sf::Window* window)
 {
-	if (m_Position.x + m_Size.x < 0)
+	if (position.x + size.x < 0)
 	{
-		m_Position.x = (double)window->getSize().x;
+		position.x = (double)window->getSize().x;
 	}
-	else if (m_Position.x - m_Size.x > window->getSize().x)
+	else if (position.x - size.x > window->getSize().x)
 	{
-		m_Position.x = -m_Size.x;
+		position.x = -size.x;
 	}
-	else if (m_Position.y + m_Size.y < 0)
+	else if (position.y + size.y < 0)
 	{
-		m_Position.y = (double)window->getSize().y;
+		position.y = (double)window->getSize().y;
 	}
-	else if (m_Position.y - m_Size.y > window->getSize().y)
+	else if (position.y - size.y > window->getSize().y)
 	{
-		m_Position.y = -m_Size.y;
+		position.y = -size.y;
 	}
 }

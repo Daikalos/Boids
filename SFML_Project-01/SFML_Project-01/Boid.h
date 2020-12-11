@@ -32,39 +32,39 @@ private:
 
 	inline void ApplyForce(const vec2d& force)
 	{
-		m_Velocity += force;
+		velocity += force;
 	}
 
 public:
-	inline vec2d GetPosition() const { return m_Position; }
-	inline vec2d GetSize() const { return m_Size; }
+	inline vec2d GetPosition() const { return position; }
+	inline vec2d GetSize() const { return size; }
 
 	inline vec2d GetOrigin() const
 	{
 		return vec2d(
-			m_Position.x + (m_Size.x / 2),
-			m_Position.y + (m_Size.y / 2));
+			position.x + (size.x / 2),
+			position.y + (size.y / 2));
 	}
 
-	inline vec2d GetVelocity() const { return m_Velocity; }
+	inline vec2d GetVelocity() const { return velocity; }
 
-	inline double GetRotation() const { return m_Rotation; }
-	inline double GetMinDistance() const { return m_MinDistance; }
+	inline double GetRotation() const { return rotation; }
+	inline double GetMinDistance() const { return minDistance; }
 
-	inline sf::Vector3f GetColor() const { return m_Color; }
+	inline sf::Vector3f GetColor() const { return color; }
 
 private:
-	vec2d m_Position;
-	vec2d m_Velocity;
+	vec2d position;
+	vec2d velocity;
 
-	vec2d m_Size;
+	vec2d size;
 
-	sf::Vector3f m_Color;
+	sf::Vector3f color;
 
-	double m_Rotation;	  // Current rotation
-	double m_MaxSpeed;	  // Maximum speed
-	double m_MaxSteer;	  // Maximum steering force towards target
-	double m_MinDistance; // Only interact with boids within this distance
-	double m_ViewAngle;	  // Only interact with boids within this angle
+	double rotation;	  // Current rotation
+	double maxSpeed;	  // Maximum speed
+	double maxSteer;	  // Maximum steering force towards target
+	double minDistance; // Only interact with boids within this distance
+	double viewAngle;	  // Only interact with boids within this angle
 };
 
