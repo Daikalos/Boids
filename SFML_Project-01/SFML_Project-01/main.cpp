@@ -27,7 +27,7 @@ struct Color
 	GLdouble r, g, b;
 };
 
-int Update(sf::Window* window, Boid* boids, size_t index)
+int update(sf::Window* window, Boid* boids, size_t index)
 {
 	sf::Clock clock;
 
@@ -43,20 +43,20 @@ int Update(sf::Window* window, Boid* boids, size_t index)
 		quadtree = new Quad(sf::Vector2i(0, 0), sf::Vector2i(window->getSize().x, window->getSize().y), 16);
 
 		for (long long i = 0; i < BOID_COUNT; ++i)
-			quadtree->Insert(boids[i]);
+			quadtree->insert(boids[i]);
 
 		for (size_t i = (index * BOID_CHUNK); i < ((index + 1) * BOID_CHUNK); ++i)
 		{
 			Boid& boid = boids[i];
 
-			const sf::Vector2<double> ori = boid.GetOrigin();
-			const double minDistance = boid.GetMinDistance();
+			const sf::Vector2<double> ori = boid.getOrigin();
+			const double minDistance = boid.getMinDistance();
 
-			const std::vector<Boid> nearBoids = quadtree->Query(
+			const std::vector<Boid> nearBoids = quadtree->query(
 				sf::Vector2i((int)(ori.x - minDistance), (int)(ori.y - minDistance)),
 				sf::Vector2i((int)(ori.x + minDistance), (int)(ori.y + minDistance)));
 
-			boid.Update(window, deltaTime, nearBoids);
+			boid.update(window, deltaTime, nearBoids);
 		}
 	}
 
@@ -98,7 +98,7 @@ int main()
 	std::vector<sf::Thread*> threads;
 
 	for (size_t i = 0; i < THREAD_COUNT; ++i)
-		threads.push_back(new sf::Thread(std::bind(&Update, &window, boids, i)));
+		threads.push_back(new sf::Thread(std::bind(&update, &window, boids, i)));
 
 	std::for_each(threads.begin(), threads.end(),
 	[](sf::Thread* thread)
@@ -139,19 +139,19 @@ int main()
 		{
 			const Boid boid = boids[i];
 
-			const sf::Vector2<double> pos = boid.GetPosition();
-			const sf::Vector2<double> size = boid.GetSize();
-			const sf::Vector2<double> ori = boid.GetOrigin();
-			const sf::Vector3f col = boid.GetColor();
-			const double rot = boid.GetRotation();
+			const sf::Vector2<double> pos = boid.getPosition();
+			const sf::Vector2<double> size = boid.getSize();
+			const sf::Vector2<double> ori = boid.getOrigin();
+			const sf::Vector3f col = boid.getColor();
+			const double rot = boid.getRotation();
 
-			sf::Vector2<double> pos0 = Vector2::RotatePoint(sf::Vector2<double>(
+			sf::Vector2<double> pos0 = Vector2::rotate_point(sf::Vector2<double>(
 				pos.x,
 				pos.y + (size.y / 2)), ori, rot);
-			sf::Vector2<double> pos1 = Vector2::RotatePoint(sf::Vector2<double>(
+			sf::Vector2<double> pos1 = Vector2::rotate_point(sf::Vector2<double>(
 				pos.x + size.x,
 				pos.y), ori, rot);
-			sf::Vector2<double> pos2 = Vector2::RotatePoint(sf::Vector2<double>(
+			sf::Vector2<double> pos2 = Vector2::rotate_point(sf::Vector2<double>(
 				pos.x + size.x,
 				pos.y + size.y), ori, rot);
 

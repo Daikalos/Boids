@@ -17,41 +17,41 @@ public:
 	Boid();
 	Boid(vec2d pos, vec2d size, sf::Vector3<double> color, double maxSpeed, double maxSteer, double minDistance, double viewAngle);
 
-	void Update(const sf::Window* window, const double& deltaTime, const std::vector<Boid>& boids);
+	void update(const sf::Window* window, const double& deltaTime, const std::vector<Boid>& boids);
 
 private:
-	std::vector<Boid> VisibleBoids(const std::vector<Boid>& boids);
+	std::vector<Boid> visible_boids(const std::vector<Boid>& boids);
 
-	void Flock(const std::vector<Boid>& boids);
+	void flock(const std::vector<Boid>& boids);
 
-	vec2d Seperate(const std::vector<Boid>& boids);
-	vec2d Align(const std::vector<Boid>& boids);
-	vec2d Cohesion(const std::vector<Boid>& boids);
+	vec2d seperate(const std::vector<Boid>& boids);
+	vec2d align(const std::vector<Boid>& boids);
+	vec2d cohesion(const std::vector<Boid>& boids);
 
-	void OutsideBorder(const sf::Window* window);
+	void outside_border(const sf::Window* window);
 
-	inline void ApplyForce(const vec2d& force)
+	inline void apply_force(const vec2d& force)
 	{
 		velocity += force;
 	}
 
 public:
-	inline vec2d GetPosition() const { return position; }
-	inline vec2d GetSize() const { return size; }
+	inline vec2d getPosition() const { return position; }
+	inline vec2d getSize() const { return size; }
 
-	inline vec2d GetOrigin() const
+	inline vec2d getOrigin() const
 	{
 		return vec2d(
 			position.x + (size.x / 2),
 			position.y + (size.y / 2));
 	}
 
-	inline vec2d GetVelocity() const { return velocity; }
+	inline vec2d getVelocity() const { return velocity; }
 
-	inline double GetRotation() const { return rotation; }
-	inline double GetMinDistance() const { return minDistance; }
+	inline double getRotation() const { return rotation; }
+	inline double getMinDistance() const { return minDistance; }
 
-	inline sf::Vector3f GetColor() const { return color; }
+	inline sf::Vector3f getColor() const { return color; }
 
 private:
 	vec2d position;

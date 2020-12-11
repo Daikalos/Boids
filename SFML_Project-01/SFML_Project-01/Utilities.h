@@ -5,17 +5,17 @@
 #include <math.h>
 #include <SFML/Graphics.hpp>
 
-static inline double ToRadians(double degrees)
+static inline double to_radians(double degrees)
 {
 	return degrees * ((double)M_PI / 180.0f);
 }
 
-static inline double ToDegrees(double radians)
+static inline double to_degrees(double radians)
 {
 	return radians * (180.0f / (double)M_PI);
 }
 
-static inline double Clamp(double val, const double min, const double max)
+static inline double clamp(double val, const double min, const double max)
 {
 	val = (val < min) ? min : val;
 	val = (val > max) ? max : val;

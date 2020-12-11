@@ -1,46 +1,46 @@
 #include "Quadtree.h"
 
-Quad::Quad(const sf::Vector2i& topLeft, const sf::Vector2i& botRight, int capacity) :
-	m_TopLeft(topLeft), m_BotRight(botRight), m_Capacity(capacity)
+Quad::Quad(const sf::Vector2i& t_left, const sf::Vector2i& b_right, int capacity) :
+	top_left(t_left), bot_right(b_right), capacity(capacity)
 {
-	m_NorthWest = nullptr;
-	m_NorthEast = nullptr;
-	m_SouthWest = nullptr;
-	m_SouthEast = nullptr;
+	northWest = nullptr;
+	northEast = nullptr;
+	southWest = nullptr;
+	southEast = nullptr;
 
-	m_Divided = false;
+	divided = false;
 }
 
 Quad::~Quad()
 {
-	delete m_NorthWest;
-	delete m_NorthEast;
-	delete m_SouthWest;
-	delete m_SouthEast;
+	delete northWest;
+	delete northEast;
+	delete southWest;
+	delete southEast;
 }
 
-std::vector<Boid> Quad::Query(const sf::Vector2i& topLeft, const sf::Vector2i& botRight) const
+std::vector<Boid> Quad::query(const sf::Vector2i& t_left, const sf::Vector2i& b_right) const
 {
 	std::vector<Boid> foundBoids;
 
-	if (!Intersects(topLeft, botRight))
+	if (!intersects(t_left, b_right))
 		return foundBoids;
 
-	for (const Boid* b : m_Boids)
+	for (const Boid* b : boids)
 	{
-		if (Contains(b->GetPosition()))
+		if (contains(b->getPosition()))
 		{
 			foundBoids.push_back(*b);
 		}
 	}
 
-	if (!m_Divided)
+	if (!divided)
 		return foundBoids;
 
-	std::vector<Boid> nwQuery = m_NorthWest->Query(topLeft, botRight);
-	std::vector<Boid> neQuery = m_NorthEast->Query(topLeft, botRight);
-	std::vector<Boid> swQuery = m_SouthWest->Query(topLeft, botRight);
-	std::vector<Boid> seQuery = m_SouthEast->Query(topLeft, botRight);
+	std::vector<Boid> nwQuery = northWest->query(t_left, b_right);
+	std::vector<Boid> neQuery = northEast->query(t_left, b_right);
+	std::vector<Boid> swQuery = southWest->query(t_left, b_right);
+	std::vector<Boid> seQuery = southEast->query(t_left, b_right);
 
 	foundBoids.insert(foundBoids.end(), nwQuery.begin(), nwQuery.end());
 	foundBoids.insert(foundBoids.end(), neQuery.begin(), neQuery.end());
@@ -50,80 +50,80 @@ std::vector<Boid> Quad::Query(const sf::Vector2i& topLeft, const sf::Vector2i& b
 	return foundBoids;
 }
 
-bool Quad::Insert(const Boid& boid)
+bool Quad::insert(const Boid& boid)
 {
 	if (&boid == NULL)
 		return false;
 
-	if (!Contains(boid.GetPosition()))
+	if (!contains(boid.getPosition()))
 		return false;
 
-	if (m_Boids.size() < m_Capacity)
+	if (boids.size() < capacity)
 	{
-		m_Boids.push_back(&boid);
+		boids.push_back(&boid);
 		return true;
 	}
 	else
 	{
-		if (!m_Divided)
+		if (!divided)
 		{
-			Subdivide();
+			subdivide();
 		}
 
-		if (m_NorthWest->Insert(boid))
+		if (northWest->insert(boid))
 			return true;
-		else if (m_NorthEast->Insert(boid))
+		else if (northEast->insert(boid))
 			return true;
-		else if (m_SouthWest->Insert(boid))
+		else if (southWest->insert(boid))
 			return true;
-		else if (m_SouthEast->Insert(boid))
+		else if (southEast->insert(boid))
 			return true;
 	}
 	return false;
 }
 
-bool Quad::Contains(const sf::Vector2<double>& point) const
+bool Quad::contains(const sf::Vector2<double>& point) const
 {
 	return 
-		point.x >= m_TopLeft.x && 
-		point.y >= m_TopLeft.y && 
-		point.x <= m_BotRight.x && 
-		point.y <= m_BotRight.y;
+		point.x >= top_left.x &&
+		point.y >= top_left.y &&
+		point.x <= bot_right.x && 
+		point.y <= bot_right.y;
 }
 
-bool Quad::Intersects(const sf::Vector2i& topLeft, const sf::Vector2i& botRight) const
+bool Quad::intersects(const sf::Vector2i& t_left, const sf::Vector2i& b_right) const
 {
 	return
-		!(botRight.x <= m_TopLeft.x ||
-		  topLeft.x >= m_BotRight.x ||
-		  topLeft.y >= m_BotRight.y ||
-		  botRight.y <= m_TopLeft.y);
+		!(b_right.x <= top_left.x ||
+		  t_left.x >= bot_right.x ||
+		  t_left.y >= bot_right.y ||
+		  b_right.y <= top_left.y);
 }
 
-void Quad::Subdivide()
+void Quad::subdivide()
 {
-	const int x0 = m_TopLeft.x;
-	const int y0 = m_TopLeft.y;
-	const int x1 = m_BotRight.x;
-	const int y1 = m_BotRight.y;
-	const int width = (m_TopLeft.x + m_BotRight.x) / 2;
-	const int height = (m_TopLeft.y + m_BotRight.y) / 2;
+	const int x0 = top_left.x;
+	const int y0 = top_left.y;
+	const int x1 = bot_right.x;
+	const int y1 = bot_right.y;
+	const int width = (top_left.x + bot_right.x) / 2;
+	const int height = (top_left.y + bot_right.y) / 2;
 
 	sf::Vector2i nwTopLeft = sf::Vector2i(x0, y0);
 	sf::Vector2i nwBotRight = sf::Vector2i(width, height);
-	m_NorthWest = new Quad(nwTopLeft, nwBotRight, m_Capacity);
+	northWest = new Quad(nwTopLeft, nwBotRight, capacity);
 
 	sf::Vector2i neTopLeft = sf::Vector2i(width, y0);
 	sf::Vector2i neBotRight = sf::Vector2i(x1, height);
-	m_NorthEast = new Quad(neTopLeft, neBotRight, m_Capacity);
+	northEast = new Quad(neTopLeft, neBotRight, capacity);
 
 	sf::Vector2i swTopLeft = sf::Vector2i(x0, height);
 	sf::Vector2i swBotRight = sf::Vector2i(width, y1);
-	m_SouthWest = new Quad(swTopLeft, swBotRight, m_Capacity);
+	southWest = new Quad(swTopLeft, swBotRight, capacity);
 
 	sf::Vector2i seTopLeft = sf::Vector2i(width, height);
 	sf::Vector2i seBotRight = sf::Vector2i(x1, y1);
-	m_SouthEast = new Quad(seTopLeft, seBotRight, m_Capacity);
+	southEast = new Quad(seTopLeft, seBotRight, capacity);
 
-	m_Divided = true;
+	divided = true;
 }

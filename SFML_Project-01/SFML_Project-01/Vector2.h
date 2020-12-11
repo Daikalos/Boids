@@ -10,52 +10,52 @@
 struct Vector2
 {
 public:
-	static inline double Length(const sf::Vector2<double>& vector)
+	static inline double length(const sf::Vector2<double>& vector)
 	{
 		return std::sqrt(vector.x * vector.x + vector.y * vector.y);
 	}
-	static inline double Angle(const sf::Vector2<double>& vector)
+	static inline double angle(const sf::Vector2<double>& vector)
 	{
 		return atan2(vector.y, vector.x);
 	}
-	static inline double Angle(const sf::Vector2<double> lhs, const sf::Vector2<double> rhs)
+	static inline double angle(const sf::Vector2<double> lhs, const sf::Vector2<double> rhs)
 	{
-		return acos(Dot(lhs, rhs) / (Length(lhs) * Length(rhs)));
+		return acos(dot(lhs, rhs) / (length(lhs) * length(rhs)));
 	}
-	static inline double Dot(const sf::Vector2<double> lhs, const sf::Vector2<double> rhs)
+	static inline double dot(const sf::Vector2<double> lhs, const sf::Vector2<double> rhs)
 	{
 		return lhs.x * rhs.x + lhs.y * rhs.y;
 	}
-	static inline double Distance(const sf::Vector2<double>& fromVector, const sf::Vector2<double>& toVector)
+	static inline double distance(const sf::Vector2<double>& fromVector, const sf::Vector2<double>& toVector)
 	{
-		return Length(Direction(fromVector, toVector));
+		return length(direction(fromVector, toVector));
 	}
 
-	static inline sf::Vector2<double> Normalize(sf::Vector2<double> vector, double radius = 1.0)
+	static inline sf::Vector2<double> normalize(sf::Vector2<double> vector, double radius = 1.0)
 	{
-		if (Length(vector) == 0)
+		double len = length(vector);
+
+		if (len == 0)
 			return vector;
 
-		double length = Length(vector);
-
-		vector.x *= (radius / length);
-		vector.y *= (radius / length);
+		vector.x *= (radius / len);
+		vector.y *= (radius / len);
 
 		return vector;
 	}
-	static inline sf::Vector2<double> Limit(const sf::Vector2<double>& vector, double maxLength)
+	static inline sf::Vector2<double> limit(const sf::Vector2<double>& vector, double maxLength)
 	{
-		if (Length(vector) > maxLength)
+		if (length(vector) > maxLength)
 		{
-			return Normalize(vector, maxLength);
+			return normalize(vector, maxLength);
 		}
 		return vector;
 	}
-	static inline sf::Vector2<double> Direction(const sf::Vector2<double>& from, const sf::Vector2<double>& to)
+	static inline sf::Vector2<double> direction(const sf::Vector2<double>& from, const sf::Vector2<double>& to)
 	{
 		return sf::Vector2<double>(from.x - to.x, from.y - to.y);
 	}
-	static inline sf::Vector2<double> RotatePoint(const sf::Vector2<double>& point, const sf::Vector2<double>& center, double angle)
+	static inline sf::Vector2<double> rotate_point(const sf::Vector2<double>& point, const sf::Vector2<double>& center, double angle)
 	{
 		sf::Vector2<double> newPoint = sf::Vector2<double>();
 

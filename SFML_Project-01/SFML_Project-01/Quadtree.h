@@ -6,32 +6,32 @@
 class Quad
 {
 public:
-	Quad(const sf::Vector2i& topLeft, const sf::Vector2i& botRight, int capacity);
+	Quad(const sf::Vector2i& t_left, const sf::Vector2i& b_right, int capacity);
 	~Quad();
 
-	std::vector<Boid> Query(const sf::Vector2i& topLeft, const sf::Vector2i& botRight) const;
+	std::vector<Boid> query(const sf::Vector2i& t_left, const sf::Vector2i& b_right) const;
 	
-	bool Insert(const Boid& boid);
+	bool insert(const Boid& boid);
 
 private:
-	bool Contains(const sf::Vector2<double>& point) const;
-	bool Intersects(const sf::Vector2i& topLeft, const sf::Vector2i& botRight) const;
+	bool contains(const sf::Vector2<double>& point) const;
+	bool intersects(const sf::Vector2i& t_left, const sf::Vector2i& b_right) const;
 
-	void Subdivide();
+	void subdivide();
 
 private:
-	const sf::Vector2i m_TopLeft;
-	const sf::Vector2i m_BotRight;
+	const sf::Vector2i top_left;
+	const sf::Vector2i bot_right;
 
-	Quad* m_NorthWest;
-	Quad* m_NorthEast;
-	Quad* m_SouthWest;
-	Quad* m_SouthEast;
+	Quad* northWest;
+	Quad* northEast;
+	Quad* southWest;
+	Quad* southEast;
 
-	std::vector<const Boid*> m_Boids;
+	std::vector<const Boid*> boids;
 
-	int m_Capacity;
-	bool m_Divided;
+	int capacity;
+	bool divided;
 
 private:
 	Quad() = delete;
