@@ -28,7 +28,7 @@ std::vector<Boid> Quad::query(const sf::Vector2i& t_left, const sf::Vector2i& b_
 
 	for (const Boid* b : boids)
 	{
-		if (contains(b->getPosition()))
+		if (contains(b->get_position()))
 		{
 			foundBoids.push_back(*b);
 		}
@@ -55,7 +55,7 @@ bool Quad::insert(const Boid& boid)
 	if (&boid == NULL)
 		return false;
 
-	if (!contains(boid.getPosition()))
+	if (!contains(boid.get_position()))
 		return false;
 
 	if (boids.size() < capacity)

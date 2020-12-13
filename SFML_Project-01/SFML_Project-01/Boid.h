@@ -10,12 +10,13 @@
 #include "Vector2.h"
 
 using vec2d = sf::Vector2<double>;
+using vec3d = sf::Vector3<double>;
 
 class Boid
 {
 public:
 	Boid();
-	Boid(vec2d pos, vec2d size, sf::Vector3<double> color, double maxSpeed, double maxSteer, double minDistance, double viewAngle);
+	Boid(vec2d pos, vec2d size, double w_sep, double w_ali, double w_coh, double max_speed, double max_steer, double min_distance, double view_angle);
 
 	void update(const sf::Window* window, const double& deltaTime, const std::vector<Boid>& boids);
 
@@ -36,35 +37,38 @@ private:
 	}
 
 public:
-	inline vec2d getPosition() const { return position; }
-	inline vec2d getSize() const { return size; }
+	inline vec2d get_position() const { return position; }
+	inline vec2d get_size() const { return size; }
 
-	inline vec2d getOrigin() const
+	inline vec2d get_origin() const
 	{
 		return vec2d(
 			position.x + (size.x / 2),
 			position.y + (size.y / 2));
 	}
 
-	inline vec2d getVelocity() const { return velocity; }
+	inline vec2d get_velocity() const { return velocity; }
 
-	inline double getRotation() const { return rotation; }
-	inline double getMinDistance() const { return minDistance; }
+	inline double get_rotation() const { return rotation; }
+	inline double get_min_distance() const { return min_distance; }
 
-	inline sf::Vector3f getColor() const { return color; }
+	inline vec3d get_color() const { return color; }
 
 private:
 	vec2d position;
-	vec2d velocity;
-
+	vec2d velocity;		  // Current headed velocity
 	vec2d size;
 
-	sf::Vector3f color;
+	vec3d color;
+
+	double weight_sep;
+	double weight_ali;
+	double weight_coh;
 
 	double rotation;	  // Current rotation
-	double maxSpeed;	  // Maximum speed
-	double maxSteer;	  // Maximum steering force towards target
-	double minDistance; // Only interact with boids within this distance
-	double viewAngle;	  // Only interact with boids within this angle
+	double max_speed;	  // Maximum speed
+	double max_steer;	  // Maximum steering force towards target
+	double min_distance;   // Only interact with boids within this distance
+	double view_angle;	  // Only interact with boids within this angle
 };
 

@@ -12,7 +12,7 @@
 
 const size_t THREAD_COUNT = 6;
 
-const size_t BOID_COUNT = 4800;
+const size_t BOID_COUNT = 4200;
 
 const size_t BOID_CHUNK = BOID_COUNT / THREAD_COUNT;
 const size_t VERTEX_COUNT = BOID_COUNT * 3;
@@ -31,7 +31,7 @@ int update(sf::Window* window, Boid* boids, size_t index)
 {
 	sf::Clock clock;
 
-	Quad* quadtree = nullptr;
+	Quad* quadtree = nullptr; // To do: seperate quadtree from update into main ??? 
 
 	double deltaTime = FLT_EPSILON;
 
@@ -42,15 +42,15 @@ int update(sf::Window* window, Boid* boids, size_t index)
 		delete quadtree;
 		quadtree = new Quad(sf::Vector2i(0, 0), sf::Vector2i(window->getSize().x, window->getSize().y), 16);
 
-		for (long long i = 0; i < BOID_COUNT; ++i)
+		for (size_t i = 0; i < BOID_COUNT; ++i)
 			quadtree->insert(boids[i]);
 
 		for (size_t i = (index * BOID_CHUNK); i < ((index + 1) * BOID_CHUNK); ++i)
 		{
 			Boid& boid = boids[i];
 
-			const sf::Vector2<double> ori = boid.getOrigin();
-			const double minDistance = boid.getMinDistance();
+			const sf::Vector2<double> ori = boid.get_origin();
+			const double minDistance = boid.get_min_distance();
 
 			const std::vector<Boid> nearBoids = quadtree->query(
 				sf::Vector2i((int)(ori.x - minDistance), (int)(ori.y - minDistance)),
@@ -90,9 +90,10 @@ int main()
 			(double)(rand() % window.getSize().x),
 			(double)(rand() % window.getSize().y));
 		sf::Vector2<double> size = sf::Vector2<double>(6.0, 3.0);
-		sf::Vector3<double> color = sf::Vector3<double>(1.0, 0.0, 0.0);
 
-		boids[i] = Boid(pos, size, color, 150.0, 1.5, 35.0, 260.0);
+		boids[i] = Boid(pos, size,
+			1.450, 1.320, 1.280, 
+			250.0, 6.0, 40.0, 280.0);
 	}
 
 	std::vector<sf::Thread*> threads;
@@ -121,7 +122,7 @@ int main()
 		sf::Event event;
 		while (window.pollEvent(event))
 		{
-			camera.Update(event);
+			camera.poll_event(event);
 
 			switch (event.type)
 			{
@@ -139,11 +140,11 @@ int main()
 		{
 			const Boid boid = boids[i];
 
-			const sf::Vector2<double> pos = boid.getPosition();
-			const sf::Vector2<double> size = boid.getSize();
-			const sf::Vector2<double> ori = boid.getOrigin();
-			const sf::Vector3f col = boid.getColor();
-			const double rot = boid.getRotation();
+			const sf::Vector2<double> pos = boid.get_position();
+			const sf::Vector2<double> size = boid.get_size();
+			const sf::Vector2<double> ori = boid.get_origin();
+			const sf::Vector3<double> col = boid.get_color();
+			const double rot = boid.get_rotation();
 
 			sf::Vector2<double> pos0 = Vector2::rotate_point(sf::Vector2<double>(
 				pos.x,
@@ -178,7 +179,7 @@ int main()
 
 			v += 3;
 		}
-
+		
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		glVertexPointer(2, GL_DOUBLE, sizeof(Vertex), vertices);
@@ -186,8 +187,8 @@ int main()
 
 		glPushMatrix();
 
-		glTranslated(camera.Position().x, camera.Position().y, 0);
-		glScaled(camera.Scale(), camera.Scale(), 1.0f);
+		glTranslated(camera.get_position().x, camera.get_position().y, 0);
+		glScaled(camera.get_scale(), camera.get_scale(), 1.0f);
 
 		glDrawArrays(GL_TRIANGLES, 0, VERTEX_COUNT);
 

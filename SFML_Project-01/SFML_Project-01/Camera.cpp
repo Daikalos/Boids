@@ -1,76 +1,76 @@
 #include "Camera.h"
 
-Camera::Camera(const sf::Window& window) : m_Window(window)
+Camera::Camera(const sf::Window& window) : window(window)
 {
-	m_MoveCamera = false;
-	m_Position = sf::Vector2i(0, 0);
-	m_Scale = 1.0;
+	position = sf::Vector2i(0, 0);
+	moveCamera = false;
+	scale = 1.0;
 }
 
-void Camera::Update(const sf::Event& event)
+void Camera::poll_event(const sf::Event& event)
 {
 	switch (event.type)
 	{
 		case sf::Event::KeyPressed: 
-			KeyPressed(event);
+			key_pressed(event);
 			break;
 		case sf::Event::MouseMoved: 
-			MouseMoved(event);
+			mouse_moved(event);
 			break;
 		case sf::Event::MouseWheelScrolled: 
-			MouseWheelScrolled(event);
+			mouse_wheel_scrolled(event);
 			break;
 		case sf::Event::MouseButtonPressed: 
-			MouseButtonPressed(event);
+			mouse_button_pressed(event);
 			break;
 		case sf::Event::MouseButtonReleased: 
-			MouseButtonReleased(event);
+			mouse_button_released(event);
 			break;
 	}
 }
 
-void Camera::KeyPressed(const sf::Event& event)
+void Camera::key_pressed(const sf::Event& event)
 {
 	if (event.key.code == sf::Keyboard::Space)
 	{
-		m_Position = sf::Vector2i(0, 0);
-		m_Scale = 1.0;
+		position = sf::Vector2i(0, 0);
+		scale = 1.0;
 	}
 }
 
-void Camera::MouseMoved(const sf::Event& event)
+void Camera::mouse_moved(const sf::Event& event)
 {
-	m_MousePos = sf::Vector2i(
-		(int)((mouse.getPosition(m_Window).x - (double)m_Position.x) / m_Scale),
-		(int)((mouse.getPosition(m_Window).y - (double)m_Position.y) / m_Scale));
+	mousePos = sf::Vector2i(
+		(int)((mouse.getPosition(window).x - (double)position.x) / scale),
+		(int)((mouse.getPosition(window).y - (double)position.y) / scale));
 
-	if (m_MoveCamera)
+	if (moveCamera)
 	{
-		const sf::Vector2i mouseNewPos = mouse.getPosition(m_Window);
-		const sf::Vector2i deltaPos = mouseNewPos - m_MouseOldPos;
+		const sf::Vector2i mouseNewPos = mouse.getPosition(window);
+		const sf::Vector2i deltaPos = mouseNewPos - mouseOldPos;
 
-		m_Position.x += deltaPos.x;
-		m_Position.y += deltaPos.y;
+		position.x += deltaPos.x;
+		position.y += deltaPos.y;
 
-		m_MouseOldPos = mouseNewPos;
+		mouseOldPos = mouseNewPos;
 	}
 }
-void Camera::MouseWheelScrolled(const sf::Event& event)
+void Camera::mouse_wheel_scrolled(const sf::Event& event)
 {
-	m_Scale *= (event.mouseWheelScroll.delta == 1) ? 1.15f : 0.85f;
+	scale *= (event.mouseWheelScroll.delta == 1) ? 1.15f : 0.85f;
 }
-void Camera::MouseButtonPressed(const sf::Event& event)
+void Camera::mouse_button_pressed(const sf::Event& event)
 {
 	if (event.mouseButton.button == sf::Mouse::Middle)
 	{
-		m_MoveCamera = true;
-		m_MouseOldPos = mouse.getPosition(m_Window);
+		moveCamera = true;
+		mouseOldPos = mouse.getPosition(window);
 	}
 }
-void Camera::MouseButtonReleased(const sf::Event& event)
+void Camera::mouse_button_released(const sf::Event& event)
 {
 	if (event.mouseButton.button == sf::Mouse::Middle)
 	{
-		m_MoveCamera = false;
+		moveCamera = false;
 	}
 }

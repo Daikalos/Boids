@@ -26,9 +26,9 @@ public:
 	{
 		return lhs.x * rhs.x + lhs.y * rhs.y;
 	}
-	static inline double distance(const sf::Vector2<double>& fromVector, const sf::Vector2<double>& toVector)
+	static inline double distance(const sf::Vector2<double>& from, const sf::Vector2<double>& to)
 	{
-		return length(direction(fromVector, toVector));
+		return length(direction(from, to));
 	}
 
 	static inline sf::Vector2<double> normalize(sf::Vector2<double> vector, double radius = 1.0)
