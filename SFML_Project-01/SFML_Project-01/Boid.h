@@ -1,10 +1,6 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
-#include <SFML/OpenGL.hpp>
-#include <gl/GL.h>
-#include <gl/GLU.h>
-#include <iostream>
 
 #include "Utilities.h"
 #include "Vector2.h"

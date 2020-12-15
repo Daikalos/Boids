@@ -1,9 +1,6 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
-#include <SFML/OpenGL.hpp>
-#include <gl/GL.h>
-#include <gl/GLU.h>
 
 class Camera
 {

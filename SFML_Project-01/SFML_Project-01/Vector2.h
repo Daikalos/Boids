@@ -2,10 +2,7 @@
 
 #define _USE_MATH_DEFINES
 
-#include <math.h>
 #include <SFML/Graphics.hpp>
-
-#include "Utilities.h"
 
 struct Vector2
 {

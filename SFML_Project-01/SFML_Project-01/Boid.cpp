@@ -18,16 +18,16 @@ Boid::Boid()
 	view_angle = 260.0;
 
 	velocity = vec2d(
-		fRand(-max_speed, max_speed),
-		fRand(-max_speed, max_speed));
+		util::fRand(-max_speed, max_speed),
+		util::fRand(-max_speed, max_speed));
 }
 
 Boid::Boid(vec2d pos, vec2d size, double w_sep, double w_ali, double w_coh, double max_speed, double max_steer, double min_distance, double view_angle)
 	: position(pos), size(size), weight_sep(w_sep), weight_ali(w_ali), weight_coh(w_coh), max_speed(max_speed), max_steer(max_steer), min_distance(min_distance), view_angle(view_angle)
 {
 	velocity = vec2d(
-		fRand(-max_speed, max_speed), 
-		fRand(-max_speed, max_speed));
+		util::fRand(-max_speed, max_speed),
+		util::fRand(-max_speed, max_speed));
 	color = vec3d(0.0, 0.0, 0.0);
 
 	rotation = 0.0;
@@ -40,7 +40,7 @@ void Boid::update(const sf::Window* window, const double& deltaTime, const std::
 	velocity = Vector2::limit(velocity, max_speed);
 	position += velocity * deltaTime;
 
-	rotation = Vector2::angle(velocity) + to_radians(180.0);
+	rotation = Vector2::angle(velocity) + util::to_radians(180.0);
 
 	outside_border(window);
 }
@@ -62,7 +62,7 @@ std::vector<Boid> Boid::visible_boids(const std::vector<Boid>& boids)
 				Vector2::normalize(velocity), 
 				Vector2::normalize(dir));
 
-			if (to_degrees(angle) < (view_angle / 2))
+			if (util::to_degrees(angle) < (view_angle / 2))
 			{
 				visBoids.push_back(b);
 			}

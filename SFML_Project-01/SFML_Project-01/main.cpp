@@ -3,7 +3,6 @@
 
 #include <SFML/Graphics.hpp>
 #include <SFML/OpenGL.hpp>
-#include <gl/GL.h>
 #include <gl/GLU.h>
 
 #include "Boid.h"
@@ -12,7 +11,7 @@
 
 const size_t THREAD_COUNT = 6;
 
-const size_t BOID_COUNT = 4200;
+const size_t BOID_COUNT = 3900;
 
 const size_t BOID_CHUNK = BOID_COUNT / THREAD_COUNT;
 const size_t VERTEX_COUNT = BOID_COUNT * 3;
@@ -92,8 +91,9 @@ int main()
 		sf::Vector2<double> size = sf::Vector2<double>(6.0, 3.0);
 
 		boids[i] = Boid(pos, size,
-			1.450, 1.320, 1.280, 
-			250.0, 6.0, 40.0, 280.0);
+			1.600, 1.320, 1.280, 
+			250.0, 10.0, 
+			40.0, 280.0);
 	}
 
 	std::vector<sf::Thread*> threads;
