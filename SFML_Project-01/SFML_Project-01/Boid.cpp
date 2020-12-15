@@ -100,14 +100,15 @@ vec2d Boid::seperate(const std::vector<Boid>& boids)
 		double distance = Vector2::distance(b.get_position(), position);
 		if (distance < (min_distance / 2))
 		{
+			// Seperate more strongly the closer to the boid
 			sep += (position - b.get_position()) / pow(distance, 2);
 		}
 	}
 
-	sep /= neighbourCount;
-	sep = Vector2::normalize(sep, max_speed);
+	sep /= neighbourCount; // Average
+	sep = Vector2::normalize(sep, max_speed); // set magnitude to max_speed 
 
-	vec2d steer = sep - velocity;
+	vec2d steer = sep - velocity; // steering direction
 	steer = Vector2::limit(steer, max_steer);
 
 	return steer;
@@ -122,7 +123,7 @@ vec2d Boid::align(const std::vector<Boid>& boids)
 		return ali;
 
 	for (const Boid& b : boids)
-		ali += b.get_velocity();
+		ali += b.get_velocity(); // Align with every boids velocity
 
 	ali /= neighbourCount;
 	ali = Vector2::normalize(ali, max_speed);
@@ -142,7 +143,7 @@ vec2d Boid::cohesion(const std::vector<Boid>& boids)
 		return coh;
 
 	for (const Boid& b : boids)
-		coh += b.get_position();
+		coh += b.get_position(); // Head towards center of boids
 
 	coh /= neighbourCount;
 

@@ -16,7 +16,7 @@ public:
 
 	void update(const sf::Window* window, const double& deltaTime, const std::vector<Boid>& boids);
 
-private:
+private: // Flocking
 	std::vector<Boid> visible_boids(const std::vector<Boid>& boids);
 
 	void flock(const std::vector<Boid>& boids);
@@ -32,7 +32,7 @@ private:
 		velocity += force;
 	}
 
-public:
+public: // Properties
 	inline vec2d get_position() const { return position; }
 	inline vec2d get_size() const { return size; }
 
@@ -50,7 +50,7 @@ public:
 
 	inline vec3d get_color() const { return color; }
 
-private:
+private: // Variables
 	vec2d position;
 	vec2d velocity;		  // Current headed velocity
 	vec2d size;
