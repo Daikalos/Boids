@@ -10,6 +10,8 @@ public:
 
 	void poll_event(const sf::Event& event);
 
+	void ViewToWorld(const sf::Vector2f& position);
+
 private:
 	void key_pressed(const sf::Event& event);
 
@@ -19,8 +21,10 @@ private:
 	void mouse_button_released(const sf::Event& event);
 
 public:
-	inline double get_scale() { return scale; }
-	inline sf::Vector2i get_position() { return position; }
+	inline sf::Vector2i get_position() 
+		const { return position; }
+	inline double get_scale() 
+		const { return scale; }
 
 private:
 	const sf::Window& window;

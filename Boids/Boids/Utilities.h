@@ -6,26 +6,30 @@
 
 namespace util
 {
-	static inline double to_radians(double degrees)
+	template<typename T>
+	static inline T to_radians(T degrees)
 	{
-		return degrees * ((double)M_PI / 180.0f);
+		return (T)(degrees * ((double)M_PI / 180.0));
 	}
 
-	static inline double to_degrees(double radians)
+	template<typename T>
+	static inline T to_degrees(T radians)
 	{
-		return radians * (180.0f / (double)M_PI);
+		return (T)(radians * (180.0 / (double)M_PI));
 	}
 
-	static inline double clamp(double val, const double min, const double max)
+	template<typename T>
+	static inline T clamp(T val, const T min, const T max)
 	{
 		val = (val < min) ? min : val;
 		val = (val > max) ? max : val;
 		return val;
 	}
 
-	static inline double fRand(double fMin, double fMax)
+	template<typename T>
+	static inline T fRand(T fMin, T fMax)
 	{
-		double f = (double)rand() / RAND_MAX;
+		T f = (T)rand() / RAND_MAX;
 		return fMin + f * (fMax - fMin);
 	}
 }

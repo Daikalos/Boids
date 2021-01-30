@@ -14,7 +14,7 @@ public:
 	bool insert(const Boid& boid);
 
 private:
-	bool contains(const sf::Vector2<double>& point) const;
+	bool contains(const sf::Vector2f& point) const;
 	bool intersects(const sf::Vector2i& t_left, const sf::Vector2i& b_right) const;
 
 	void subdivide();

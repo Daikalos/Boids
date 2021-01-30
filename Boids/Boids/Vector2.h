@@ -7,30 +7,30 @@
 struct Vector2
 {
 public:
-	static inline double length(const sf::Vector2<double>& vector)
+	static inline float length(const sf::Vector2f& vector)
 	{
 		return std::sqrt(vector.x * vector.x + vector.y * vector.y);
 	}
-	static inline double angle(const sf::Vector2<double>& vector)
+	static inline float angle(const sf::Vector2f& vector)
 	{
 		return atan2(vector.y, vector.x);
 	}
-	static inline double angle(const sf::Vector2<double> lhs, const sf::Vector2<double> rhs)
+	static inline float angle(const sf::Vector2f lhs, const sf::Vector2f rhs)
 	{
 		return acos(dot(lhs, rhs) / (length(lhs) * length(rhs)));
 	}
-	static inline double dot(const sf::Vector2<double> lhs, const sf::Vector2<double> rhs)
+	static inline float dot(const sf::Vector2f lhs, const sf::Vector2f rhs)
 	{
 		return lhs.x * rhs.x + lhs.y * rhs.y;
 	}
-	static inline double distance(const sf::Vector2<double>& from, const sf::Vector2<double>& to)
+	static inline float distance(const sf::Vector2f& from, const sf::Vector2f& to)
 	{
 		return length(direction(from, to));
 	}
 
-	static inline sf::Vector2<double> normalize(sf::Vector2<double> vector, double radius = 1.0)
+	static inline sf::Vector2f normalize(sf::Vector2f vector, float radius = 1.0)
 	{
-		double len = length(vector);
+		float len = length(vector);
 
 		if (len == 0)
 			return vector;
@@ -40,7 +40,7 @@ public:
 
 		return vector;
 	}
-	static inline sf::Vector2<double> limit(const sf::Vector2<double>& vector, double maxLength)
+	static inline sf::Vector2f limit(const sf::Vector2f& vector, float maxLength)
 	{
 		if (length(vector) > maxLength)
 		{
@@ -48,16 +48,16 @@ public:
 		}
 		return vector;
 	}
-	static inline sf::Vector2<double> direction(const sf::Vector2<double>& from, const sf::Vector2<double>& to)
+	static inline sf::Vector2f direction(const sf::Vector2f& from, const sf::Vector2f& to)
 	{
-		return sf::Vector2<double>(from.x - to.x, from.y - to.y);
+		return sf::Vector2f(from.x - to.x, from.y - to.y);
 	}
-	static inline sf::Vector2<double> rotate_point(const sf::Vector2<double>& point, const sf::Vector2<double>& center, double angle)
+	static inline sf::Vector2f rotate_point(const sf::Vector2f& point, const sf::Vector2f& center, float angle)
 	{
-		sf::Vector2<double> newPoint = sf::Vector2<double>();
+		sf::Vector2f newPoint = sf::Vector2f();
 
-		double s = sin(angle);
-		double c = cos(angle);
+		float s = sin(angle);
+		float c = cos(angle);
 
 		newPoint.x = (((point.x - center.x) * c - (point.y - center.y) * s)) + center.x;
 		newPoint.y = (((point.x - center.x) * s + (point.y - center.y) * c)) + center.y;
@@ -69,7 +69,7 @@ private:
 	Vector2() = delete;
 };
 
-static sf::Vector2<double> operator /=(sf::Vector2<double>& lhs, const sf::Vector2<double>& rhs)
+static sf::Vector2f operator /=(sf::Vector2f& lhs, const sf::Vector2f& rhs)
 {
 	lhs.x /= rhs.x;
 	lhs.y /= rhs.y;
@@ -77,7 +77,7 @@ static sf::Vector2<double> operator /=(sf::Vector2<double>& lhs, const sf::Vecto
 }
 
 template <typename T>
-static sf::Vector2<double> operator /=(sf::Vector2<double>& lhs, const T& rhs)
+static sf::Vector2f operator /=(sf::Vector2f& lhs, const T& rhs)
 {
 	lhs.x /= rhs;
 	lhs.y /= rhs;

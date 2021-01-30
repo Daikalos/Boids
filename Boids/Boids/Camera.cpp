@@ -2,7 +2,9 @@
 
 Camera::Camera(const sf::Window& window) : window(window)
 {
-	position = sf::Vector2i(0, 0);
+	position = sf::Vector2i(
+		(int)window.getSize().x / -2, 
+		(int)window.getSize().y / -2);
 	moveCamera = false;
 	scale = 1.0;
 }
@@ -28,12 +30,19 @@ void Camera::poll_event(const sf::Event& event)
 			break;
 	}
 }
+void Camera::ViewToWorld(const sf::Vector2f& position)
+{
+	sf::Transform matrix = sf::Transform::Identity;
+	matrix.translate(position);
+}
 
 void Camera::key_pressed(const sf::Event& event)
 {
 	if (event.key.code == sf::Keyboard::Space)
 	{
-		position = sf::Vector2i(0, 0);
+		position = sf::Vector2i(
+			(int)window.getSize().x / -2, 
+			(int)window.getSize().y / -2);
 		scale = 1.0;
 	}
 }

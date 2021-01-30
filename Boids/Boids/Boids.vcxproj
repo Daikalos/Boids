@@ -27,6 +27,7 @@
   <ItemGroup>
     <ClInclude Include="Boid.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="Quadtree.h" />
     <ClInclude Include="Utilities.h" />
     <ClInclude Include="Vector2.h" />
   </ItemGroup>

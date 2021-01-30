@@ -82,7 +82,7 @@ bool Quad::insert(const Boid& boid)
 	return false;
 }
 
-bool Quad::contains(const sf::Vector2<double>& point) const
+bool Quad::contains(const sf::Vector2f& point) const
 {
 	return 
 		point.x >= top_left.x &&
