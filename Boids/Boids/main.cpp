@@ -189,6 +189,7 @@ int main()
 
 		glTranslated(camera.get_position().x, camera.get_position().y, 0);
 		glScaled(camera.get_scale(), camera.get_scale(), 1.0f);
+		glTranslated(window.getSize().x / 2, window.getSize().y / 2, 0);
 
 		glDrawArrays(GL_TRIANGLES, 0, VERTEX_COUNT);
 

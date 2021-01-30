@@ -64,7 +64,7 @@ private: // Variables
 	double rotation;	  // Current rotation
 	double max_speed;	  // Maximum speed
 	double max_steer;	  // Maximum steering force towards target
-	double min_distance;   // Only interact with boids within this distance
+	double min_distance;  // Only interact with boids within this distance
 	double view_angle;	  // Only interact with boids within this angle
 };
 
