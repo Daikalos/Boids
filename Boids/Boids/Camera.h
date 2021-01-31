@@ -1,6 +1,9 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include <SFML/OpenGL.hpp>
+#include <gl/GLU.h>
+#include <iostream>
 
 class Camera
 {
@@ -10,7 +13,10 @@ public:
 
 	void poll_event(const sf::Event& event);
 
-	void ViewToWorld(const sf::Vector2f& position);
+	/// <summary>
+	/// does not give accurate coordinates...
+	/// </summary>
+	sf::Vector2f view_to_world(const sf::Vector2f& position) const;
 
 private:
 	void key_pressed(const sf::Event& event);
@@ -21,22 +27,41 @@ private:
 	void mouse_button_released(const sf::Event& event);
 
 public:
-	inline sf::Vector2i get_position() 
-		const { return position; }
-	inline double get_scale() 
-		const { return scale; }
+	inline const float* world_matrix() const
+	{
+		sf::Transform world_matrix;
+		world_matrix = world_matrix
+			.translate((sf::Vector2f)window.getSize() / 2.0f)
+			.scale(scale, scale)
+			.translate(-position);
+
+		return world_matrix.getMatrix();
+	}
+	inline sf::Transform view_matrix() const
+	{
+		sf::Transform view_matrix;
+		view_matrix = view_matrix
+			.translate(position)
+			.scale(1.0f / scale, 1.0f / scale)
+			.translate((sf::Vector2f)window.getSize() / -2.0f);
+
+		return view_matrix;
+	}
+
+	inline sf::Vector2f get_position() const { return position; }
+	inline double get_scale() const { return scale; }
 
 private:
 	const sf::Window& window;
 
 	// Camera
-	sf::Vector2i position;
+	sf::Vector2f position;
 	bool moveCamera;
-	double scale;
+	float scale;
 
 	// Mouse
 	sf::Mouse mouse;
-	sf::Vector2i mousePos;
-	sf::Vector2i mouseOldPos;
+	sf::Vector2f mousePos;
+	sf::Vector2f dragPos;
 };
 

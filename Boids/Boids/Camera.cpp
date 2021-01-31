@@ -2,11 +2,9 @@
 
 Camera::Camera(const sf::Window& window) : window(window)
 {
-	position = sf::Vector2i(
-		(int)window.getSize().x / -2, 
-		(int)window.getSize().y / -2);
+	position = (sf::Vector2f)window.getSize() / 2.0f;
 	moveCamera = false;
-	scale = 1.0;
+	scale = 1.0f;
 }
 
 void Camera::poll_event(const sf::Event& event)
@@ -30,39 +28,28 @@ void Camera::poll_event(const sf::Event& event)
 			break;
 	}
 }
-void Camera::ViewToWorld(const sf::Vector2f& position)
+
+sf::Vector2f Camera::view_to_world(const sf::Vector2f& position) const
 {
-	sf::Transform matrix = sf::Transform::Identity;
-	matrix.translate(position);
+	return view_matrix() * position;
 }
 
 void Camera::key_pressed(const sf::Event& event)
 {
 	if (event.key.code == sf::Keyboard::Space)
 	{
-		position = sf::Vector2i(
-			(int)window.getSize().x / -2, 
-			(int)window.getSize().y / -2);
-		scale = 1.0;
+		position = (sf::Vector2f)window.getSize() / 2.0f;
+		scale = 1.0f;
+		moveCamera = false;
 	}
 }
 
 void Camera::mouse_moved(const sf::Event& event)
 {
-	mousePos = sf::Vector2i(
-		(int)((mouse.getPosition(window).x - (double)position.x) / scale),
-		(int)((mouse.getPosition(window).y - (double)position.y) / scale));
+	sf::Vector2f deltaDragPos = view_to_world((sf::Vector2f)mouse.getPosition());
 
 	if (moveCamera)
-	{
-		const sf::Vector2i mouseNewPos = mouse.getPosition(window);
-		const sf::Vector2i deltaPos = mouseNewPos - mouseOldPos;
-
-		position.x += deltaPos.x;
-		position.y += deltaPos.y;
-
-		mouseOldPos = mouseNewPos;
-	}
+		position += (dragPos - deltaDragPos);
 }
 void Camera::mouse_wheel_scrolled(const sf::Event& event)
 {
@@ -73,7 +60,7 @@ void Camera::mouse_button_pressed(const sf::Event& event)
 	if (event.mouseButton.button == sf::Mouse::Middle)
 	{
 		moveCamera = true;
-		mouseOldPos = mouse.getPosition(window);
+		dragPos = view_to_world((sf::Vector2f)mouse.getPosition());
 	}
 }
 void Camera::mouse_button_released(const sf::Event& event)

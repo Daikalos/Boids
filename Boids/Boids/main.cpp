@@ -187,9 +187,10 @@ int main()
 
 		glPushMatrix();
 
-		glTranslated(window.getSize().x / 2.0, window.getSize().y / 2.0, 0);
-		glScaled(camera.get_scale(), camera.get_scale(), 1.0f);
-		glTranslated(camera.get_position().x, camera.get_position().y, 0);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadMatrixf(camera.world_matrix());
+
+		//glTranslated(window.getSize().x / 2.0, window.getSize().y / 2.0, 0);
 
 		glDrawArrays(GL_TRIANGLES, 0, VERTEX_COUNT);
 
