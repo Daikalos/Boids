@@ -1,7 +1,7 @@
 #include "Quadtree.h"
 
-Quad::Quad(const sf::Vector2i& t_left, const sf::Vector2i& b_right, int capacity) :
-	top_left(t_left), bot_right(b_right), capacity(capacity)
+Quadtree::Quadtree(const rect_i& rect, int capacity) 
+	: rectangle(rect), capacity(capacity)
 {
 	northWest = nullptr;
 	northEast = nullptr;
@@ -11,7 +11,7 @@ Quad::Quad(const sf::Vector2i& t_left, const sf::Vector2i& b_right, int capacity
 	divided = false;
 }
 
-Quad::~Quad()
+Quadtree::~Quadtree()
 {
 	delete northWest;
 	delete northEast;
@@ -19,11 +19,11 @@ Quad::~Quad()
 	delete southEast;
 }
 
-std::vector<Boid> Quad::query(const sf::Vector2i& t_left, const sf::Vector2i& b_right) const
+std::vector<Boid> Quadtree::query(const rect_i& rect) const
 {
 	std::vector<Boid> foundBoids;
 
-	if (!intersects(t_left, b_right))
+	if (!intersects(rect))
 		return foundBoids;
 
 	for (const Boid* b : boids)
@@ -37,10 +37,10 @@ std::vector<Boid> Quad::query(const sf::Vector2i& t_left, const sf::Vector2i& b_
 	if (!divided)
 		return foundBoids;
 
-	std::vector<Boid> nwQuery = northWest->query(t_left, b_right);
-	std::vector<Boid> neQuery = northEast->query(t_left, b_right);
-	std::vector<Boid> swQuery = southWest->query(t_left, b_right);
-	std::vector<Boid> seQuery = southEast->query(t_left, b_right);
+	std::vector<Boid> nwQuery = northWest->query(rect);
+	std::vector<Boid> neQuery = northEast->query(rect);
+	std::vector<Boid> swQuery = southWest->query(rect);
+	std::vector<Boid> seQuery = southEast->query(rect);
 
 	foundBoids.insert(foundBoids.end(), nwQuery.begin(), nwQuery.end());
 	foundBoids.insert(foundBoids.end(), neQuery.begin(), neQuery.end());
@@ -50,7 +50,7 @@ std::vector<Boid> Quad::query(const sf::Vector2i& t_left, const sf::Vector2i& b_
 	return foundBoids;
 }
 
-bool Quad::insert(const Boid& boid)
+bool Quadtree::insert(const Boid& boid)
 {
 	if (&boid == NULL)
 		return false;
@@ -66,9 +66,7 @@ bool Quad::insert(const Boid& boid)
 	else
 	{
 		if (!divided)
-		{
 			subdivide();
-		}
 
 		if (northWest->insert(boid))
 			return true;
@@ -82,48 +80,36 @@ bool Quad::insert(const Boid& boid)
 	return false;
 }
 
-bool Quad::contains(const sf::Vector2f& point) const
+bool Quadtree::contains(const sf::Vector2f& point) const
 {
 	return 
-		point.x >= top_left.x &&
-		point.y >= top_left.y &&
-		point.x <= bot_right.x && 
-		point.y <= bot_right.y;
+		point.x >= rectangle.left &&
+		point.y >= rectangle.top &&
+		point.x <= rectangle.right &&
+		point.y <= rectangle.bot;
 }
 
-bool Quad::intersects(const sf::Vector2i& t_left, const sf::Vector2i& b_right) const
+bool Quadtree::intersects(const rect_i& rect) const
 {
 	return
-		!(b_right.x <= top_left.x ||
-		  t_left.x >= bot_right.x ||
-		  t_left.y >= bot_right.y ||
-		  b_right.y <= top_left.y);
+		!(rect.right <= rectangle.left ||
+		  rect.left >= rectangle.right ||
+		  rect.top >= rectangle.bot ||
+		  rect.bot <= rectangle.top);
 }
 
-void Quad::subdivide()
+void Quadtree::subdivide()
 {
-	const int x0 = top_left.x;
-	const int y0 = top_left.y;
-	const int x1 = bot_right.x;
-	const int y1 = bot_right.y;
-	const int width = (top_left.x + bot_right.x) / 2;
-	const int height = (top_left.y + bot_right.y) / 2;
+	const sf::Vector2i center = 
+	{ 
+		(rectangle.left + rectangle.right) / 2, 
+		(rectangle.top + rectangle.bot) / 2 
+	};
 
-	sf::Vector2i nwTopLeft = sf::Vector2i(x0, y0);
-	sf::Vector2i nwBotRight = sf::Vector2i(width, height);
-	northWest = new Quad(nwTopLeft, nwBotRight, capacity);
-
-	sf::Vector2i neTopLeft = sf::Vector2i(width, y0);
-	sf::Vector2i neBotRight = sf::Vector2i(x1, height);
-	northEast = new Quad(neTopLeft, neBotRight, capacity);
-
-	sf::Vector2i swTopLeft = sf::Vector2i(x0, height);
-	sf::Vector2i swBotRight = sf::Vector2i(width, y1);
-	southWest = new Quad(swTopLeft, swBotRight, capacity);
-
-	sf::Vector2i seTopLeft = sf::Vector2i(width, height);
-	sf::Vector2i seBotRight = sf::Vector2i(x1, y1);
-	southEast = new Quad(seTopLeft, seBotRight, capacity);
+	northWest = new Quadtree({ { rectangle.left, rectangle.top }, { center.x,        center.y      } }, capacity);
+	northEast = new Quadtree({ { center.x,       rectangle.top }, { rectangle.right, center.y      } }, capacity);
+	southWest = new Quadtree({ { rectangle.left, center.y },      { center.x,        rectangle.bot } }, capacity);
+	southEast = new Quadtree({ { center.x,       center.y },      { rectangle.right, rectangle.bot } }, capacity);
 
 	divided = true;
 }

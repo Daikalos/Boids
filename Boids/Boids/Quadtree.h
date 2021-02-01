@@ -3,30 +3,62 @@
 #include <SFML/Graphics.hpp>
 #include "Boid.h"
 
-class Quad
+#ifndef RECT_I
+#define RECT_I
+
+struct rect_i
+{
+	rect_i(sf::Vector2i top_left, sf::Vector2i bot_right)
+		: top_left(top_left), bot_right(bot_right)
+	{
+		top_right = { bot_right.x, top_left.y };
+		bot_left = { top_left.x, bot_right.y };
+	};
+
+	inline int width() const { return (right - left); }
+	inline int height() const { return (bot - top); }
+
+	union
+	{
+		sf::Vector2i top_left;
+		struct { int left, top; };
+	};
+	union
+	{
+		sf::Vector2i bot_right;
+		struct { int right, bot; };
+	};
+
+	sf::Vector2i
+		top_right,
+		bot_left;
+};
+
+#endif
+
+class Quadtree
 {
 public:
-	Quad(const sf::Vector2i& t_left, const sf::Vector2i& b_right, int capacity);
-	~Quad();
+	Quadtree(const rect_i& rect, int capacity);
+	virtual ~Quadtree();
 
-	std::vector<Boid> query(const sf::Vector2i& t_left, const sf::Vector2i& b_right) const;
+	std::vector<Boid> query(const rect_i& rect) const;
 	
 	bool insert(const Boid& boid);
 
 private:
 	bool contains(const sf::Vector2f& point) const;
-	bool intersects(const sf::Vector2i& t_left, const sf::Vector2i& b_right) const;
+	bool intersects(const rect_i& rect) const;
 
 	void subdivide();
 
 private:
-	const sf::Vector2i top_left;
-	const sf::Vector2i bot_right;
+	const rect_i rectangle;
 
-	Quad* northWest;
-	Quad* northEast;
-	Quad* southWest;
-	Quad* southEast;
+	Quadtree* northWest;
+	Quadtree* northEast;
+	Quadtree* southWest;
+	Quadtree* southEast;
 
 	std::vector<const Boid*> boids;
 
@@ -34,8 +66,7 @@ private:
 	bool divided;
 
 private:
-	Quad() = delete;
-	Quad(const Quad& rhs) = delete;
-	Quad& operator=(const Quad& rhs) = delete;
+	Quadtree() = delete;
+	Quadtree(const Quadtree& rhs) = delete;
+	Quadtree& operator=(const Quadtree& rhs) = delete;
 };
-
