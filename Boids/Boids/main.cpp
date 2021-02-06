@@ -9,9 +9,9 @@
 #include "Quadtree.h"
 #include "Camera.h"
 
-const size_t THREAD_COUNT = 6;
+const size_t THREAD_COUNT = 2;
 
-const size_t BOID_COUNT = 4200;
+const size_t BOID_COUNT = 2200;
 
 const size_t BOID_CHUNK = BOID_COUNT / THREAD_COUNT;
 const size_t VERTEX_COUNT = BOID_COUNT * 3;
