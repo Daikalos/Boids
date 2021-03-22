@@ -7,6 +7,7 @@
 
 #include "Boid.h"
 #include "Quadtree.h"
+#include "Vector2.h"
 #include "Camera.h"
 
 const size_t THREAD_COUNT = 2;
@@ -18,12 +19,12 @@ const size_t VERTEX_COUNT = BOID_COUNT * 3;
 
 struct Vertex
 {
-	GLdouble x, y;
+	GLfloat x, y;
 };
 
 struct Color
 {
-	GLdouble r, g, b;
+	GLfloat r, g, b;
 };
 
 int update(sf::Window* window, Boid* boids, size_t index)
@@ -35,8 +36,6 @@ int update(sf::Window* window, Boid* boids, size_t index)
 
 	while (window->isOpen())
 	{
-		deltaTime = clock.restart().asSeconds();
-
 		delete quadtree;
 		quadtree = new Quadtree({ { 0, 0 }, { (int)window->getSize().x, (int)window->getSize().y } }, 16);
 
@@ -56,6 +55,8 @@ int update(sf::Window* window, Boid* boids, size_t index)
 
 			boid.update(window, deltaTime, nearBoids);
 		}
+
+		deltaTime = clock.restart().asSeconds();
 	}
 
 	return 0;
@@ -72,9 +73,6 @@ int main()
 
 	window.setFramerateLimit(144);
 	window.setActive(true);
-
-	sf::Clock clock;
-	float deltaTime = FLT_EPSILON;
 
 	Camera camera(window);
 
@@ -118,13 +116,9 @@ int main()
 
 	while (window.isOpen())
 	{
-		deltaTime = clock.restart().asSeconds();
-
 		sf::Event event;
 		while (window.pollEvent(event))
 		{
-			camera.poll_event(event);
-
 			switch (event.type)
 			{
 				case sf::Event::Closed:
@@ -134,6 +128,8 @@ int main()
 					glViewport(0, 0, event.size.width, event.size.height);
 					break;
 			}
+
+			camera.poll_event(event);
 		}
 
 		int v = 0;
@@ -147,44 +143,38 @@ int main()
 			const sf::Vector3f& col = boid.get_color();
 			const float& rot = boid.get_rotation();
 
-			sf::Vector2f pos0 = Vector2::rotate_point(sf::Vector2f(
+			const sf::Vector2f pos0 = v2f::rotate_point(sf::Vector2f(
 				pos.x,
 				pos.y + (size.y / 2)), ori, rot);
-			sf::Vector2f pos1 = Vector2::rotate_point(sf::Vector2f(
+			const sf::Vector2f pos1 = v2f::rotate_point(sf::Vector2f(
 				pos.x + size.x,
 				pos.y), ori, rot);
-			sf::Vector2f pos2 = Vector2::rotate_point(sf::Vector2f(
+			const sf::Vector2f pos2 = v2f::rotate_point(sf::Vector2f(
 				pos.x + size.x,
 				pos.y + size.y), ori, rot);
 
-			vertices[v	  ].x = pos0.x;
-			vertices[v	  ].y = pos0.y;
-			vertices[v + 1].x = pos1.x;
-			vertices[v + 1].y = pos1.y;
-			vertices[v + 2].x = pos2.x;
-			vertices[v + 2].y = pos2.y;
+			vertices[v    ] = *(Vertex*)(&pos0);
+			vertices[v + 1] = *(Vertex*)(&pos1);
+			vertices[v + 2] = *(Vertex*)(&pos2);
 
-			float col0 = 0.5f + ((ori.x) / window.getSize().x);
-			float col1 = (ori.x * ori.y) / ((long long)window.getSize().x * (long long)window.getSize().y);
-			float col2 = 0.5f + ((ori.y) / window.getSize().y);
+			const sf::Vector3f color = 
+			{
+				0.5f + ((ori.x) / window.getSize().x),
+				(ori.x * ori.y) / ((long long)window.getSize().x * (long long)window.getSize().y),
+				0.5f + ((ori.y) / window.getSize().y)
+			};
 
-			colors[v    ].r	= col0;
-			colors[v    ].g	= col1;
-			colors[v    ].b	= col2;
-			colors[v + 1].r = col0;
-			colors[v + 1].g = col1;
-			colors[v + 1].b = col2;
-			colors[v + 2].r = col0;
-			colors[v + 2].g = col1;
-			colors[v + 2].b = col2;
+			colors[v	] = *(Color*)(&color);
+			colors[v + 1] = *(Color*)(&color);
+			colors[v + 2] = *(Color*)(&color);
 
 			v += 3;
 		}
 		
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		glVertexPointer(2, GL_DOUBLE, sizeof(Vertex), vertices);
-		glColorPointer(3, GL_DOUBLE, sizeof(Color), colors);
+		glVertexPointer(2, GL_FLOAT, sizeof(Vertex), vertices);
+		glColorPointer(3, GL_FLOAT, sizeof(Color), colors);
 
 		glPushMatrix();
 

@@ -42,10 +42,10 @@ void Boid::update(const sf::Window* window, const float& deltaTime, const std::v
 {
 	flock(boids);
 
-	velocity = Vector2::limit(velocity, max_speed);
+	velocity = v2f::limit(velocity, max_speed);
 	position += velocity * deltaTime;
 
-	rotation = Vector2::angle(velocity) + util::to_radians(180.0f);
+	rotation = v2f::angle(velocity) + util::to_radians(180.0f);
 
 	outside_border(window);
 }
@@ -59,13 +59,13 @@ std::vector<Boid> Boid::visible_boids(const std::vector<Boid>& boids)
 		if (&b == this)
 			continue;
 
-		double distance = Vector2::distance(b.get_position(), position);
+		double distance = v2f::distance(b.get_position(), position);
 		if (distance > 0 && distance < min_distance)
 		{
-			sf::Vector2f dir = Vector2::direction(position, b.get_position());
-			double angle = Vector2::angle(
-				Vector2::normalize(velocity), 
-				Vector2::normalize(dir));
+			sf::Vector2f dir = v2f::direction(position, b.get_position());
+			double angle = v2f::angle(
+				v2f::normalize(velocity), 
+				v2f::normalize(dir));
 
 			if (util::to_degrees(angle) < (view_angle / 2))
 			{
@@ -102,7 +102,7 @@ sf::Vector2f Boid::seperate(const std::vector<Boid>& boids)
 
 	for (const Boid& b : boids)
 	{
-		float distance = Vector2::distance(b.get_position(), position);
+		float distance = v2f::distance(b.get_position(), position);
 		if (distance < (min_distance / 2))
 		{
 			// Seperate more strongly the closer to the boid
@@ -110,11 +110,11 @@ sf::Vector2f Boid::seperate(const std::vector<Boid>& boids)
 		}
 	}
 
-	sep /= neighbourCount; // Average
-	sep = Vector2::normalize(sep, max_speed); // set magnitude to max_speed 
+	sep /= (float)neighbourCount; // Average
+	sep = v2f::normalize(sep, max_speed); // set magnitude to max_speed 
 
 	sf::Vector2f steer = sep - velocity; // steering direction
-	steer = Vector2::limit(steer, max_steer);
+	steer = v2f::limit(steer, max_steer);
 
 	return steer;
 }
@@ -130,11 +130,11 @@ sf::Vector2f Boid::align(const std::vector<Boid>& boids)
 	for (const Boid& b : boids)
 		ali += b.get_velocity(); // Align with every boids velocity
 
-	ali /= neighbourCount;
-	ali = Vector2::normalize(ali, max_speed);
+	ali /= (float)neighbourCount;
+	ali = v2f::normalize(ali, max_speed);
 
 	sf::Vector2f steer = ali - velocity;
-	steer = Vector2::limit(steer, max_steer);
+	steer = v2f::limit(steer, max_steer);
 
 	return steer;
 }
@@ -150,13 +150,13 @@ sf::Vector2f Boid::cohesion(const std::vector<Boid>& boids)
 	for (const Boid& b : boids)
 		coh += b.get_position(); // Head towards center of boids
 
-	coh /= neighbourCount;
+	coh /= (float)neighbourCount;
 
-	sf::Vector2f desired = Vector2::direction(coh, position);
-	desired = Vector2::normalize(desired, max_speed);
+	sf::Vector2f desired = v2f::direction(coh, position);
+	desired = v2f::normalize(desired, max_speed);
 
 	sf::Vector2f steer = desired - velocity;
-	steer = Vector2::limit(steer, max_steer);
+	steer = v2f::limit(steer, max_steer);
 
 	return steer;
 }
