@@ -10,9 +10,9 @@
 #include "Vector2.h"
 #include "Camera.h"
 
-const size_t THREAD_COUNT = 2;
+const size_t THREAD_COUNT = 6;
 
-const size_t BOID_COUNT = 2200;
+const size_t BOID_COUNT = 4200;
 
 const size_t BOID_CHUNK = BOID_COUNT / THREAD_COUNT;
 const size_t VERTEX_COUNT = BOID_COUNT * 3;
@@ -32,16 +32,8 @@ int update(sf::Window* window, Boid* boids, size_t index)
 	sf::Clock clock;
 	float deltaTime = FLT_EPSILON;
 
-	Quadtree* quadtree = nullptr;
-
 	while (window->isOpen())
 	{
-		delete quadtree;
-		quadtree = new Quadtree({ { 0, 0 }, { (int)window->getSize().x, (int)window->getSize().y } }, 16);
-
-		for (size_t i = 0; i < BOID_COUNT; ++i)
-			quadtree->insert(boids[i]);
-
 		for (size_t i = (index * BOID_CHUNK); i < ((index + 1) * BOID_CHUNK); ++i)
 		{
 			Boid& boid = boids[i];
@@ -49,11 +41,9 @@ int update(sf::Window* window, Boid* boids, size_t index)
 			const sf::Vector2f& ori = boid.get_origin();
 			const double& minDistance = boid.get_min_distance();
 
-			const std::vector<Boid> nearBoids = quadtree->query({
-				{ (int)(ori.x - minDistance), (int)(ori.y - minDistance) },
-				{ (int)(ori.x + minDistance), (int)(ori.y + minDistance) } });
+			// get nearest boids
 
-			boid.update(window, deltaTime, nearBoids);
+			boid.update(window, deltaTime, { });
 		}
 
 		deltaTime = clock.restart().asSeconds();
@@ -69,7 +59,7 @@ int main()
 
 	srand((unsigned int)time(0));
 
-	sf::Window window(sf::VideoMode(1600, 900), "Boids");
+	sf::Window window(sf::VideoMode(2240, 1260), "Boids");
 
 	window.setFramerateLimit(144);
 	window.setActive(true);

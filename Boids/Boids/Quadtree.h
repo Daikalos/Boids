@@ -36,15 +36,15 @@ struct rect_i
 
 #endif
 
-class Quadtree
+template<typename T> class Quadtree
 {
 public:
 	Quadtree(const rect_i& rect, int capacity);
 	virtual ~Quadtree();
 
-	std::vector<Boid> query(const rect_i& rect) const;
+	std::vector<T> query(const rect_i& rect) const;
 	
-	bool insert(const Boid& boid);
+	bool insert(const T& boid);
 
 private:
 	bool contains(const sf::Vector2f& point) const;
@@ -60,7 +60,7 @@ private:
 	Quadtree* southWest;
 	Quadtree* southEast;
 
-	std::vector<const Boid*> boids;
+	std::vector<const T*> items;
 
 	int capacity;
 	bool divided;
@@ -70,3 +70,5 @@ private:
 	Quadtree(const Quadtree& rhs) = delete;
 	Quadtree& operator=(const Quadtree& rhs) = delete;
 };
+
+typedef Quadtree<Boid> BoidTree;

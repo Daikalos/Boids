@@ -1,6 +1,7 @@
 #include "Quadtree.h"
 
-Quadtree::Quadtree(const rect_i& rect, int capacity) 
+template<typename T>
+Quadtree<T>::Quadtree(const rect_i& rect, int capacity) 
 	: rectangle(rect), capacity(capacity)
 {
 	northWest = nullptr;
@@ -11,7 +12,8 @@ Quadtree::Quadtree(const rect_i& rect, int capacity)
 	divided = false;
 }
 
-Quadtree::~Quadtree()
+template<typename T>
+Quadtree<T>::~Quadtree()
 {
 	delete northWest;
 	delete northEast;
@@ -19,48 +21,54 @@ Quadtree::~Quadtree()
 	delete southEast;
 }
 
-std::vector<Boid> Quadtree::query(const rect_i& rect) const
+template<typename T>
+std::vector<T> Quadtree<T>::query(const rect_i& rect) const
 {
-	std::vector<Boid> foundBoids;
+	std::vector<T> foundItems;
 
 	if (!intersects(rect))
-		return foundBoids;
+		return foundItems;
 
-	for (const Boid* b : boids)
+	for (const T* item : items)
 	{
-		if (contains(b->get_position()))
+		const Boid* b = nullptr;
+		if ((b = dynamic_cast<const Boid*>(item)))
 		{
-			foundBoids.push_back(*b);
+			if (contains(b->get_position()))
+			{
+				foundItems.push_back(*item);
+			}
 		}
 	}
 
 	if (!divided)
-		return foundBoids;
+		return foundItems;
 
-	std::vector<Boid> nwQuery = northWest->query(rect);
-	std::vector<Boid> neQuery = northEast->query(rect);
-	std::vector<Boid> swQuery = southWest->query(rect);
-	std::vector<Boid> seQuery = southEast->query(rect);
+	std::vector<T> nwQuery = northWest->query(rect);
+	std::vector<T> neQuery = northEast->query(rect);
+	std::vector<T> swQuery = southWest->query(rect);
+	std::vector<T> seQuery = southEast->query(rect);
 
-	foundBoids.insert(foundBoids.end(), nwQuery.begin(), nwQuery.end());
-	foundBoids.insert(foundBoids.end(), neQuery.begin(), neQuery.end());
-	foundBoids.insert(foundBoids.end(), swQuery.begin(), swQuery.end());
-	foundBoids.insert(foundBoids.end(), seQuery.begin(), seQuery.end());
+	foundItems.insert(foundItems.end(), nwQuery.begin(), nwQuery.end());
+	foundItems.insert(foundItems.end(), neQuery.begin(), neQuery.end());
+	foundItems.insert(foundItems.end(), swQuery.begin(), swQuery.end());
+	foundItems.insert(foundItems.end(), seQuery.begin(), seQuery.end());
 
-	return foundBoids;
+	return foundItems;
 }
 
-bool Quadtree::insert(const Boid& boid)
+template<typename T>
+bool Quadtree<T>::insert(const T& item)
 {
-	if (&boid == NULL)
+	if (&item == nullptr)
 		return false;
 
-	if (!contains(boid.get_position()))
+	if (!contains(item.get_position()))
 		return false;
 
-	if (boids.size() < capacity)
+	if (items.size() < capacity)
 	{
-		boids.push_back(&boid);
+		items.push_back(&item);
 		return true;
 	}
 	else
@@ -68,19 +76,20 @@ bool Quadtree::insert(const Boid& boid)
 		if (!divided)
 			subdivide();
 
-		if (northWest->insert(boid))
+		if (northWest->insert(item))
 			return true;
-		else if (northEast->insert(boid))
+		else if (northEast->insert(item))
 			return true;
-		else if (southWest->insert(boid))
+		else if (southWest->insert(item))
 			return true;
-		else if (southEast->insert(boid))
+		else if (southEast->insert(item))
 			return true;
 	}
 	return false;
 }
 
-bool Quadtree::contains(const sf::Vector2f& point) const
+template<typename T>
+bool Quadtree<T>::contains(const sf::Vector2f& point) const
 {
 	return 
 		point.x >= rectangle.left &&
@@ -89,7 +98,8 @@ bool Quadtree::contains(const sf::Vector2f& point) const
 		point.y <= rectangle.bot;
 }
 
-bool Quadtree::intersects(const rect_i& rect) const
+template<typename T>
+bool Quadtree<T>::intersects(const rect_i& rect) const
 {
 	return
 		!(rect.right <= rectangle.left ||
@@ -98,7 +108,8 @@ bool Quadtree::intersects(const rect_i& rect) const
 		  rect.bot <= rectangle.top);
 }
 
-void Quadtree::subdivide()
+template<typename T>
+void Quadtree<T>::subdivide()
 {
 	const sf::Vector2i center = 
 	{ 

@@ -21,12 +21,14 @@
   <ItemGroup>
     <ClCompile Include="Boid.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Grid.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Quadtree.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Boid.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="Grid.h" />
     <ClInclude Include="Quadtree.h" />
     <ClInclude Include="Utilities.h" />
     <ClInclude Include="Vector2.h" />
