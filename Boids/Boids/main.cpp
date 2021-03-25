@@ -6,6 +6,7 @@
 #include <gl/GLU.h>
 
 #include "Boid.h"
+#include "Grid.h"
 #include "Quadtree.h"
 #include "Vector2.h"
 #include "Camera.h"
@@ -67,6 +68,7 @@ int main()
 	Camera camera(window);
 
 	Boid* boids = new Boid[BOID_COUNT];
+	Grid* grid = new Grid(112, 140, window.getSize().x, window.getSize().y);
 	Vertex* vertices = new Vertex[VERTEX_COUNT];
 	Color* colors = new Color[VERTEX_COUNT];
 

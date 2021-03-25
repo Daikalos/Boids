@@ -119,8 +119,8 @@ void Quadtree<T>::subdivide()
 
 	northWest = new Quadtree({ { rectangle.left, rectangle.top }, { center.x,        center.y      } }, capacity);
 	northEast = new Quadtree({ { center.x,       rectangle.top }, { rectangle.right, center.y      } }, capacity);
-	southWest = new Quadtree({ { rectangle.left, center.y },      { center.x,        rectangle.bot } }, capacity);
-	southEast = new Quadtree({ { center.x,       center.y },      { rectangle.right, rectangle.bot } }, capacity);
+	southWest = new Quadtree({ { rectangle.left, center.y	   }, { center.x,        rectangle.bot } }, capacity);
+	southEast = new Quadtree({ { center.x,       center.y	   }, { rectangle.right, rectangle.bot } }, capacity);
 
 	divided = true;
 }

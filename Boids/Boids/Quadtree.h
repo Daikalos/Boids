@@ -71,4 +71,4 @@ private:
 	Quadtree& operator=(const Quadtree& rhs) = delete;
 };
 
-typedef Quadtree<Boid> BoidTree;
+typedef Quadtree<Boid> QuadTreeB;
