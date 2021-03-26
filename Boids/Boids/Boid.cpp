@@ -20,6 +20,8 @@ Boid::Boid()
 	velocity = sf::Vector2f(
 		util::fRand(-max_speed, max_speed),
 		util::fRand(-max_speed, max_speed));
+
+	container = nullptr;
 }
 
 Boid::Boid(
@@ -36,9 +38,11 @@ Boid::Boid(
 	color = sf::Vector3f(0.0f, 0.0f, 0.0f);
 
 	rotation = 0.0;
+
+	container = nullptr;
 }
 
-void Boid::update(const sf::Window* window, const float& deltaTime, const std::vector<Boid>& boids)
+void Boid::update(const sf::Window* window, float deltaTime, const std::vector<Boid>& boids)
 {
 	flock(boids);
 

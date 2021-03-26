@@ -28,7 +28,7 @@ struct Color
 	GLfloat r, g, b;
 };
 
-int update(sf::Window* window, Boid* boids, size_t index)
+int update(sf::Window* window, Boid* boids, Grid* grid, size_t index)
 {
 	sf::Clock clock;
 	float deltaTime = FLT_EPSILON;
@@ -39,12 +39,9 @@ int update(sf::Window* window, Boid* boids, size_t index)
 		{
 			Boid& boid = boids[i];
 
-			const sf::Vector2f& ori = boid.get_origin();
-			const double& minDistance = boid.get_min_distance();
+			std::vector<Boid> boids = grid->query(boid.get_origin(), boid.get_min_distance());
 
-			// get nearest boids
-
-			boid.update(window, deltaTime, { });
+			boid.update(window, deltaTime, boids);
 		}
 
 		deltaTime = clock.restart().asSeconds();
@@ -68,7 +65,7 @@ int main()
 	Camera camera(window);
 
 	Boid* boids = new Boid[BOID_COUNT];
-	Grid* grid = new Grid(112, 140, window.getSize().x, window.getSize().y);
+	Grid* grid = new Grid(56, 70, window.getSize().x, window.getSize().y);
 	Vertex* vertices = new Vertex[VERTEX_COUNT];
 	Color* colors = new Color[VERTEX_COUNT];
 
@@ -83,12 +80,19 @@ int main()
 			1.460f, 1.320f, 1.280f, 
 			250.0f, 5.0f, 
 			40.0f, 280.0f);
+
+		grid->insert(boids[i]);
+	}
+
+	for (size_t i = 0; i < BOID_COUNT; ++i)
+	{
+		Boid& boid = boids[i];
 	}
 
 	std::vector<sf::Thread*> threads;
 
 	for (size_t i = 0; i < THREAD_COUNT; ++i)
-		threads.push_back(new sf::Thread(std::bind(&update, &window, boids, i)));
+		threads.push_back(new sf::Thread(std::bind(&update, &window, boids, grid, i)));
 
 	std::for_each(threads.begin(), threads.end(),
 	[](sf::Thread* thread)

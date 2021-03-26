@@ -1,7 +1,7 @@
 #include "Quadtree.h"
 
 template<typename T>
-Quadtree<T>::Quadtree(const rect_i& rect, int capacity) 
+Quadtree<T>::Quadtree(const Rect_i& rect, int capacity) 
 	: rectangle(rect), capacity(capacity)
 {
 	northWest = nullptr;
@@ -22,7 +22,7 @@ Quadtree<T>::~Quadtree()
 }
 
 template<typename T>
-std::vector<T> Quadtree<T>::query(const rect_i& rect) const
+std::vector<T> Quadtree<T>::query(const Rect_i& rect) const
 {
 	std::vector<T> foundItems;
 
@@ -99,7 +99,7 @@ bool Quadtree<T>::contains(const sf::Vector2f& point) const
 }
 
 template<typename T>
-bool Quadtree<T>::intersects(const rect_i& rect) const
+bool Quadtree<T>::intersects(const Rect_i& rect) const
 {
 	return
 		!(rect.right <= rectangle.left ||
@@ -117,10 +117,10 @@ void Quadtree<T>::subdivide()
 		(rectangle.top + rectangle.bot) / 2 
 	};
 
-	northWest = new Quadtree({ { rectangle.left, rectangle.top }, { center.x,        center.y      } }, capacity);
-	northEast = new Quadtree({ { center.x,       rectangle.top }, { rectangle.right, center.y      } }, capacity);
-	southWest = new Quadtree({ { rectangle.left, center.y	   }, { center.x,        rectangle.bot } }, capacity);
-	southEast = new Quadtree({ { center.x,       center.y	   }, { rectangle.right, rectangle.bot } }, capacity);
+	northWest = new Quadtree(Rect_i({ rectangle.left, rectangle.top }, { center.x,        center.y      } ), capacity);
+	northEast = new Quadtree(Rect_i({ center.x,       rectangle.top }, { rectangle.right, center.y      } ), capacity);
+	southWest = new Quadtree(Rect_i({ rectangle.left, center.y	    }, { center.x,        rectangle.bot } ), capacity);
+	southEast = new Quadtree(Rect_i({ center.x,       center.y	    }, { rectangle.right, rectangle.bot } ), capacity);
 
 	divided = true;
 }

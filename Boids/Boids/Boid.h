@@ -4,7 +4,7 @@
 
 #include "Utilities.h"
 #include "Vector2.h"
-#include "Grid.h"
+#include "Container.h"
 
 class Boid
 {
@@ -15,19 +15,20 @@ public:
 		float w_sep, float w_ali, float w_coh, 
 		float max_speed, float max_steer, float min_distance, float view_angle);
 
-	void update(const sf::Window* window, const float& deltaTime, const std::vector<Boid>& boids);
+	void update(const sf::Window* window, float deltaTime, const std::vector<Boid>& boids);
 
-	void assign_container(Container& cont)
+	void assign_container(Container<Boid>* cont)
 	{
-		if (container != nullptr && container != &cont)
+		if (!cont || container == cont)
+			return;
+
+		if (container && container != cont)
 		{
 			container->erase(*this);
 		}
-		else
-		{
-			container = &cont;
-			container->insert(*this);
-		}
+
+		container = cont;
+		container->insert(*this);
 	}
 
 private: // Flocking
@@ -81,6 +82,6 @@ private: // Variables
 	float min_distance;  // Only interact with boids within this distance
 	float view_angle;	 // Only interact with boids within this angle
 
-	Container* container; // Currently assigned container...
+	Container<Boid>* container; // Currently assigned container...
 };
 
