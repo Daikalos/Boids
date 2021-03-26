@@ -28,7 +28,7 @@ public:
 		return length(direction(from, to));
 	}
 
-	static inline sf::Vector2<T> normalize(sf::Vector2<T> vector, float radius = 1.0)
+	static inline sf::Vector2<T> normalize(sf::Vector2<T> vector, float radius = 1.0f)
 	{
 		float len = length(vector);
 
@@ -79,5 +79,14 @@ static sf::Vector2<T> operator /=(sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs
 	lhs.x /= rhs.x;
 	lhs.y /= rhs.y;
 	return lhs;
+}
+
+template <typename T>
+static sf::Vector2<T> operator /(const sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs)
+{
+	sf::Vector2f result = lhs;
+	result.x /= rhs.x;
+	result.y /= rhs.y;
+	return result;
 }
 

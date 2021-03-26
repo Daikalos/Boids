@@ -1,7 +1,9 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include <unordered_set>
 #include "Boid.h"
+#include "Vector2.h"
 
 #ifndef RECT_I
 #define RECT_I
@@ -47,11 +49,21 @@ struct Container
 
 	void insert(const Boid& boid)
 	{
+		if (boids.find(&boid) != boids.end())
+			return;
 
+		boids.insert(&boid);
+	}
+	void erase(const Boid& boid)
+	{
+		if (boids.find(&boid) == boids.end())
+			return;
+
+		boids.erase(&boid);
 	}
 
 	rect_i rect;
-	std::vector<const Boid*> boids;
+	std::unordered_set<const Boid*> boids;
 };
 
 class Grid
@@ -63,6 +75,20 @@ public:
 	inline Container* at_pos(int x, int y) const
 	{
 		return &containers[x + y * contDims.x];
+	}
+	inline Container* at_pos(const sf::Vector2i& position) const
+	{
+		return &containers[position.x + position.y * contDims.x];
+	}
+	inline Container* at_pos(const sf::Vector2f& position) const
+	{
+		const sf::Vector2i& pos = (sf::Vector2i)position / contDims;
+		return &containers[pos.x + pos.y * contDims.x];
+	}
+	inline Container* at_pos(const Boid& boid) const
+	{
+		const sf::Vector2i& pos = (sf::Vector2i)boid.get_position() / contDims;
+		return &containers[pos.x + pos.y * contDims.x];
 	}
 
 	void insert(const Boid& boid);

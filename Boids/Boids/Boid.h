@@ -4,6 +4,7 @@
 
 #include "Utilities.h"
 #include "Vector2.h"
+#include "Grid.h"
 
 class Boid
 {
@@ -15,6 +16,19 @@ public:
 		float max_speed, float max_steer, float min_distance, float view_angle);
 
 	void update(const sf::Window* window, const float& deltaTime, const std::vector<Boid>& boids);
+
+	void assign_container(Container& cont)
+	{
+		if (container != nullptr && container != &cont)
+		{
+			container->erase(*this);
+		}
+		else
+		{
+			container = &cont;
+			container->insert(*this);
+		}
+	}
 
 private: // Flocking
 	std::vector<Boid> visible_boids(const std::vector<Boid>& boids);
@@ -61,10 +75,12 @@ private: // Variables
 	float weight_ali;
 	float weight_coh;
 
-	float rotation;	  // Current rotation
-	float max_speed;	  // Maximum speed
-	float max_steer;	  // Maximum steering force towards target
+	float rotation;		 // Current rotation
+	float max_speed;	 // Maximum speed
+	float max_steer;	 // Maximum steering force towards target
 	float min_distance;  // Only interact with boids within this distance
-	float view_angle;	  // Only interact with boids within this angle
+	float view_angle;	 // Only interact with boids within this angle
+
+	Container* container; // Currently assigned container...
 };
 

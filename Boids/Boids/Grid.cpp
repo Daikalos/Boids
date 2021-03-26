@@ -26,5 +26,6 @@ Grid::~Grid()
 
 void Grid::insert(const Boid& boid)
 {
-
+	Container* cont = at_pos(boid);
+	cont->insert(boid);
 }
