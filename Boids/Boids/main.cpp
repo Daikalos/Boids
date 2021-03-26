@@ -13,7 +13,7 @@
 
 const size_t THREAD_COUNT = 6;
 
-const size_t BOID_COUNT = 4200;
+const size_t BOID_COUNT = 5400;
 
 const size_t BOID_CHUNK = BOID_COUNT / THREAD_COUNT;
 const size_t VERTEX_COUNT = BOID_COUNT * 3;
@@ -28,18 +28,33 @@ struct Color
 	GLfloat r, g, b;
 };
 
-int update(sf::Window* window, Boid* boids, Grid* grid, size_t index)
+int update(sf::Window* window, Boid* boids, size_t index)
 {
 	sf::Clock clock;
 	float deltaTime = FLT_EPSILON;
 
+	QuadtreeB* quadtree = nullptr;
+
 	while (window->isOpen())
 	{
+		delete quadtree;
+		quadtree = new QuadtreeB(Rect_i(
+			sf::Vector2i(0, 0), 
+			sf::Vector2i(window->getSize().x, window->getSize().y)), 16);
+
+		for (size_t i = 0; i < BOID_COUNT; ++i)
+			quadtree->insert(boids[i]);
+
 		for (size_t i = (index * BOID_CHUNK); i < ((index + 1) * BOID_CHUNK); ++i)
 		{
 			Boid& boid = boids[i];
 
-			std::vector<Boid> boids = grid->query(boid.get_origin(), boid.get_min_distance());
+			const sf::Vector2f ori = boid.get_origin();
+			const double minDistance = boid.get_min_distance();
+
+			std::vector<Boid> boids = quadtree->query(Rect_i(
+				sf::Vector2i((int)(ori.x - minDistance), (int)(ori.y - minDistance)),
+				sf::Vector2i((int)(ori.x + minDistance), (int)(ori.y + minDistance))));
 
 			boid.update(window, deltaTime, boids);
 		}
@@ -65,7 +80,6 @@ int main()
 	Camera camera(window);
 
 	Boid* boids = new Boid[BOID_COUNT];
-	Grid* grid = new Grid(56, 70, window.getSize().x, window.getSize().y);
 	Vertex* vertices = new Vertex[VERTEX_COUNT];
 	Color* colors = new Color[VERTEX_COUNT];
 
@@ -80,19 +94,12 @@ int main()
 			1.460f, 1.320f, 1.280f, 
 			250.0f, 5.0f, 
 			40.0f, 280.0f);
-
-		grid->insert(boids[i]);
-	}
-
-	for (size_t i = 0; i < BOID_COUNT; ++i)
-	{
-		Boid& boid = boids[i];
 	}
 
 	std::vector<sf::Thread*> threads;
 
 	for (size_t i = 0; i < THREAD_COUNT; ++i)
-		threads.push_back(new sf::Thread(std::bind(&update, &window, boids, grid, i)));
+		threads.push_back(new sf::Thread(std::bind(&update, &window, boids, i)));
 
 	std::for_each(threads.begin(), threads.end(),
 	[](sf::Thread* thread)

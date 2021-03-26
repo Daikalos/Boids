@@ -31,26 +31,25 @@ void Grid::insert(Boid& boid)
 
 std::vector<Boid> Grid::query(sf::Vector2f pos, float radius)
 {
-	std::unordered_set<const Boid*> foundBoids;
+	std::vector<Boid> foundBoids;
+	std::unordered_set<Container<Boid>*> cntns;
 
-	Container<Boid> nwCont = at_pos(sf::Vector2f(pos.x - radius, pos.y - radius));
-	Container<Boid> neCont = at_pos(sf::Vector2f(pos.x + radius, pos.y - radius));
-	Container<Boid> swCont = at_pos(sf::Vector2f(pos.x - radius, pos.y + radius));
-	Container<Boid> seCont = at_pos(sf::Vector2f(pos.x + radius, pos.y + radius));
+	cntns.insert(at_pos(sf::Vector2f(pos.x - radius, pos.y - radius)));
+	cntns.insert(at_pos(sf::Vector2f(pos.x + radius, pos.y - radius)));
+	cntns.insert(at_pos(sf::Vector2f(pos.x - radius, pos.y + radius)));
+	cntns.insert(at_pos(sf::Vector2f(pos.x + radius, pos.y + radius)));
 
-	for (const Boid* b : nwCont.items)
-		foundBoids.insert(b);
-	for (const Boid* b : neCont.items)
-		foundBoids.insert(b);
-	for (const Boid* b : swCont.items)
-		foundBoids.insert(b);
-	for (const Boid* b : seCont.items)
-		foundBoids.insert(b);
+	for (const Container<Boid>* c : cntns)
+	{
+		if (!c) continue;
 
-	std::vector<Boid> result;
+		std::unordered_set<const Boid*> boids((*c).items);
 
-	for (const Boid* b : foundBoids)
-		result.push_back(*b);
+		for (const Boid* b : boids)
+		{
+			foundBoids.push_back(*b);
+		}
+	}
 
-	return result;
+	return foundBoids;
 }

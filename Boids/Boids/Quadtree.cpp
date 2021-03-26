@@ -1,5 +1,7 @@
 #include "Quadtree.h"
 
+template class Quadtree<Boid>;
+
 template<typename T>
 Quadtree<T>::Quadtree(const Rect_i& rect, int capacity) 
 	: rectangle(rect), capacity(capacity)

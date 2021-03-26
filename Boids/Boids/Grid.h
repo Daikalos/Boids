@@ -20,14 +20,14 @@ public:
 	{
 		return &containers[position.x + position.y * width];
 	}
-	inline Container<Boid> at_pos(const sf::Vector2f& position) const
+	inline Container<Boid>* at_pos(const sf::Vector2f& position) const
 	{
 		const sf::Vector2i& pos = (sf::Vector2i)position / contDims;
 
 		if (!within_grid(pos))
-			return Container<Boid>();
+			return nullptr;
 
-		return containers[pos.x + pos.y * width];
+		return &containers[pos.x + pos.y * width];
 	}
 	inline Container<Boid>* at_pos(const Boid& boid) const
 	{
