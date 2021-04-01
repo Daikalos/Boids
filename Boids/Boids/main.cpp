@@ -1,4 +1,5 @@
 #include <iostream>
+#include <execution>
 #include <functional>
 
 #include <SFML/Graphics.hpp>
@@ -14,8 +15,6 @@
 const size_t THREAD_COUNT = 6;
 
 const size_t BOID_COUNT = 5400;
-
-const size_t BOID_CHUNK = BOID_COUNT / THREAD_COUNT;
 const size_t VERTEX_COUNT = BOID_COUNT * 3;
 
 struct Vertex
@@ -27,43 +26,6 @@ struct Color
 {
 	GLfloat r, g, b;
 };
-
-int update(sf::Window* window, Boid* boids, size_t index)
-{
-	sf::Clock clock;
-	float deltaTime = FLT_EPSILON;
-
-	QuadtreeB* quadtree = nullptr;
-
-	while (window->isOpen())
-	{
-		delete quadtree;
-		quadtree = new QuadtreeB(Rect_i(
-			sf::Vector2i(0, 0), 
-			sf::Vector2i(window->getSize().x, window->getSize().y)), 16);
-
-		for (size_t i = 0; i < BOID_COUNT; ++i)
-			quadtree->insert(boids[i]);
-
-		for (size_t i = (index * BOID_CHUNK); i < ((index + 1) * BOID_CHUNK); ++i)
-		{
-			Boid& boid = boids[i];
-
-			const sf::Vector2f ori = boid.get_origin();
-			const double minDistance = boid.get_min_distance();
-
-			std::vector<Boid> boids = quadtree->query(Rect_i(
-				sf::Vector2i((int)(ori.x - minDistance), (int)(ori.y - minDistance)),
-				sf::Vector2i((int)(ori.x + minDistance), (int)(ori.y + minDistance))));
-
-			boid.update(window, deltaTime, boids);
-		}
-
-		deltaTime = clock.restart().asSeconds();
-	}
-
-	return 0;
-}
 
 int main()
 {
@@ -79,9 +41,14 @@ int main()
 
 	Camera camera(window);
 
+	sf::Clock clock;
+	float deltaTime = FLT_EPSILON;
+
 	Boid* boids = new Boid[BOID_COUNT];
 	Vertex* vertices = new Vertex[VERTEX_COUNT];
 	Color* colors = new Color[VERTEX_COUNT];
+
+	QuadtreeB* quadtree = nullptr;
 
 	for (int i = 0; i < BOID_COUNT; ++i)
 	{
@@ -96,17 +63,6 @@ int main()
 			40.0f, 280.0f);
 	}
 
-	std::vector<sf::Thread*> threads;
-
-	for (size_t i = 0; i < THREAD_COUNT; ++i)
-		threads.push_back(new sf::Thread(std::bind(&update, &window, boids, i)));
-
-	std::for_each(threads.begin(), threads.end(),
-	[](sf::Thread* thread)
-	{
-		thread->launch();
-	});
-
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
 	glMatrixMode(GL_PROJECTION);
@@ -119,6 +75,8 @@ int main()
 
 	while (window.isOpen())
 	{
+		deltaTime = clock.restart().asSeconds();
+
 		sf::Event event;
 		while (window.pollEvent(event))
 		{
@@ -135,16 +93,40 @@ int main()
 			camera.poll_event(event);
 		}
 
+		delete quadtree;
+		quadtree = new QuadtreeB(Rect_i(
+			sf::Vector2i(0, 0),
+			sf::Vector2i(window.getSize().x, window.getSize().y)), 16);
+
+		for (size_t i = 0; i < BOID_COUNT; ++i)
+			quadtree->insert(boids[i]);
+
+		std::for_each(
+			std::execution::par_unseq,
+			boids,
+			boids + BOID_COUNT,
+			[&](Boid& boid)
+			{
+				const sf::Vector2f ori = boid.get_origin();
+				const double minDistance = boid.get_min_distance();
+
+				std::vector<Boid> boids = quadtree->query(Rect_i(
+					sf::Vector2i((int)(ori.x - minDistance), (int)(ori.y - minDistance)),
+					sf::Vector2i((int)(ori.x + minDistance), (int)(ori.y + minDistance))));
+
+				boid.update(&window, deltaTime, boids);
+			});
+
 		int v = 0;
 		for (size_t i = 0; i < BOID_COUNT; ++i)
 		{
 			const Boid& boid = boids[i];
 
-			const sf::Vector2f& pos = boid.get_position();
-			const sf::Vector2f& size = boid.get_size();
-			const sf::Vector2f& ori = boid.get_origin();
-			const sf::Vector3f& col = boid.get_color();
-			const float& rot = boid.get_rotation();
+			const sf::Vector2f pos = boid.get_position();
+			const sf::Vector2f size = boid.get_size();
+			const sf::Vector2f ori = boid.get_origin();
+			const sf::Vector3f col = boid.get_color();
+			const float rot = boid.get_rotation();
 
 			const sf::Vector2f pos0 = v2f::rotate_point(sf::Vector2f(
 				pos.x,
