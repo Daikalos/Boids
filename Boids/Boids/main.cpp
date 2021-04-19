@@ -12,8 +12,6 @@
 #include "Vector2.h"
 #include "Camera.h"
 
-const size_t THREAD_COUNT = 6;
-
 const size_t BOID_COUNT = 5400;
 const size_t VERTEX_COUNT = BOID_COUNT * 3;
 
@@ -29,9 +27,6 @@ struct Color
 
 int main()
 {
-	if (std::fmod(BOID_COUNT, THREAD_COUNT) != 0)
-		return -1;
-
 	srand((unsigned int)time(0));
 
 	sf::Window window(sf::VideoMode(2240, 1260), "Boids");
@@ -49,6 +44,7 @@ int main()
 	Color* colors = new Color[VERTEX_COUNT];
 
 	QuadtreeB* quadtree = nullptr;
+	Grid* grid = new Grid(40, 40, window.getSize().x, window.getSize().y);
 
 	for (int i = 0; i < BOID_COUNT; ++i)
 	{
@@ -58,9 +54,11 @@ int main()
 		sf::Vector2f size = sf::Vector2f(6.0, 3.0);
 
 		boids[i] = Boid(pos, size,
-			1.460f, 1.320f, 1.280f, 
-			250.0f, 5.0f, 
-			40.0f, 280.0f);
+			1.400f, 1.310f, 1.320f, 
+			280.0f, 2.0f, 
+			40.0f, 270.0f);
+
+		grid->insert(boids[i]);
 	}
 
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -72,6 +70,9 @@ int main()
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	while (window.isOpen())
 	{
@@ -93,13 +94,8 @@ int main()
 			camera.poll_event(event);
 		}
 
-		delete quadtree;
-		quadtree = new QuadtreeB(Rect_i(
-			sf::Vector2i(0, 0),
-			sf::Vector2i(window.getSize().x, window.getSize().y)), 16);
-
 		for (size_t i = 0; i < BOID_COUNT; ++i)
-			quadtree->insert(boids[i]);
+			grid->insert(boids[i]);
 
 		std::for_each(
 			std::execution::par_unseq,
@@ -110,9 +106,7 @@ int main()
 				const sf::Vector2f ori = boid.get_origin();
 				const double minDistance = boid.get_min_distance();
 
-				std::vector<Boid> boids = quadtree->query(Rect_i(
-					sf::Vector2i((int)(ori.x - minDistance), (int)(ori.y - minDistance)),
-					sf::Vector2i((int)(ori.x + minDistance), (int)(ori.y + minDistance))));
+				std::vector<Boid> boids = grid->query(ori, minDistance);
 
 				boid.update(&window, deltaTime, boids);
 			});

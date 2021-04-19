@@ -27,7 +27,7 @@ public:
 		if (!within_grid(pos))
 			return nullptr;
 
-		return &containers[pos.x + pos.y * width];
+		return at_pos(pos);
 	}
 	inline Container<Boid>* at_pos(const Boid& boid) const
 	{
@@ -36,7 +36,7 @@ public:
 		if (!within_grid(pos))
 			return nullptr;
 
-		return &containers[pos.x + pos.y * width];
+		return at_pos(pos);
 	}
 
 	inline bool within_grid(const sf::Vector2i& pos) const

@@ -34,18 +34,18 @@ std::vector<Boid> Grid::query(sf::Vector2f pos, float radius)
 	std::vector<Boid> foundBoids;
 	std::unordered_set<Container<Boid>*> cntns;
 
-	cntns.insert(at_pos(sf::Vector2f(pos.x - radius, pos.y - radius)));
-	cntns.insert(at_pos(sf::Vector2f(pos.x + radius, pos.y - radius)));
-	cntns.insert(at_pos(sf::Vector2f(pos.x - radius, pos.y + radius)));
-	cntns.insert(at_pos(sf::Vector2f(pos.x + radius, pos.y + radius)));
+	for (float x = -radius; x <= radius; x += radius)
+		for (float y = -radius; y <= radius; y += radius)
+		{
+			cntns.insert(at_pos(sf::Vector2f(pos.x + x, pos.y + y)));
+		}
 
 	for (const Container<Boid>* c : cntns)
 	{
-		if (!c) continue;
+		if (c == nullptr) 
+			continue;
 
-		std::unordered_set<const Boid*> boids((*c).items);
-
-		for (const Boid* b : boids)
+		for (const Boid* b : c->items)
 		{
 			foundBoids.push_back(*b);
 		}
