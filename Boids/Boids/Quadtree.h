@@ -12,7 +12,7 @@ public:
 
 	std::vector<T> query(const Rect_i& rect) const;
 	
-	bool insert(const T& boid);
+	bool insert(const T& item);
 
 private:
 	bool contains(const sf::Vector2f& point) const;
@@ -23,10 +23,10 @@ private:
 private:
 	const Rect_i rectangle;
 
-	Quadtree* northWest;
-	Quadtree* northEast;
-	Quadtree* southWest;
-	Quadtree* southEast;
+	Quadtree<T>* northWest;
+	Quadtree<T>* northEast;
+	Quadtree<T>* southWest;
+	Quadtree<T>* southEast;
 
 	std::vector<const T*> items;
 

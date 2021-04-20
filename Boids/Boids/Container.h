@@ -1,7 +1,6 @@
 #pragma once
 
 #include <unordered_set>
-#include <mutex>
 #include "Rectangle.h"
 
 template<typename T> struct Container

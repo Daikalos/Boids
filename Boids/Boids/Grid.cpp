@@ -1,55 +1,78 @@
 #include "Grid.h"
 
-Grid::Grid(int cont_width, int cont_height, int grid_width, int grid_height)
+template class Grid<Boid>;
+
+template<typename T>
+Grid<T>::Grid(int cont_width, int cont_height, int grid_width, int grid_height)
 	: contDims({ cont_width, cont_height })
 {
     height = grid_height / cont_height;
 	width = grid_width / cont_width;
 
-	containers = new Container<Boid>[width * height];
+	containers = new Container<T>[width * height];
 
 	for (int y = 0; y < height; ++y)
 	{
 		for (int x = 0; x < width; ++x)
 		{
-			containers[x + y * width] = Container<Boid>(Rect_i(
+			containers[x + y * width] = Container<T>(Rect_i(
 				{ x * cont_width, y * cont_height },
 				{ x * cont_width + cont_width, y * cont_height + cont_height }));
 		}
 	}
 }
 
-Grid::~Grid()
+template<typename T>
+Grid<T>::~Grid()
 {
 	delete[] containers;
 }
 
-void Grid::insert(Boid& boid)
+template<typename T>
+void Grid<T>::insert(const T& item)
 {
-	boid.assign_container(at_pos(boid));
+	Container<T>* newCntn = at_pos(item);
+	Container<T>* curCntn = items[&item];
+
+	if (newCntn == nullptr || curCntn == newCntn)
+		return;
+
+	if (curCntn != nullptr && curCntn != newCntn)
+	{
+		curCntn->erase(item);
+	}
+
+	items[&item] = newCntn;
+	newCntn->insert(item);
 }
 
-std::vector<Boid> Grid::query(sf::Vector2f pos, float radius)
+template<typename T>
+std::vector<T> Grid<T>::query(sf::Vector2f pos, float radius)
 {
-	std::vector<Boid> foundBoids;
-	std::unordered_set<Container<Boid>*> cntns;
+	std::vector<T> foundItems;
+	std::vector<Container<T>*> cntns;
 
 	for (float x = -radius; x <= radius; x += radius)
 		for (float y = -radius; y <= radius; y += radius)
 		{
-			cntns.insert(at_pos(sf::Vector2f(pos.x + x, pos.y + y)));
+			Container<T>* cntn = at_pos(sf::Vector2f(pos.x + x, pos.y + y));
+
+			if (std::find(cntns.begin(), cntns.end(), cntn) == cntns.end())
+			{
+				cntns.push_back(cntn);
+			}
 		}
 
-	for (const Container<Boid>* c : cntns)
+	for (const Container<T>* c : cntns)
 	{
 		if (c == nullptr) 
 			continue;
 
-		for (const Boid* b : c->items)
+		for (const T* b : c->items)
 		{
-			foundBoids.push_back(*b);
+			foundItems.push_back(*b);
 		}
 	}
 
-	return foundBoids;
+	return foundItems;
 }

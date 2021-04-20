@@ -12,7 +12,7 @@
 #include "Vector2.h"
 #include "Camera.h"
 
-const size_t BOID_COUNT = 5400;
+const size_t BOID_COUNT = 10000;
 const size_t VERTEX_COUNT = BOID_COUNT * 3;
 
 struct Vertex
@@ -44,7 +44,7 @@ int main()
 	Color* colors = new Color[VERTEX_COUNT];
 
 	QuadtreeB* quadtree = nullptr;
-	Grid* grid = new Grid(40, 40, window.getSize().x, window.getSize().y);
+	GridB* grid = new GridB(40, 40, window.getSize().x, window.getSize().y);
 
 	for (int i = 0; i < BOID_COUNT; ++i)
 	{
@@ -77,6 +77,8 @@ int main()
 	while (window.isOpen())
 	{
 		deltaTime = clock.restart().asSeconds();
+
+		window.setTitle(std::to_string(1.0f / deltaTime));
 
 		sf::Event event;
 		while (window.pollEvent(event))

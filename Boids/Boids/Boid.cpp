@@ -20,8 +20,6 @@ Boid::Boid()
 	velocity = sf::Vector2f(
 		util::fRand(-max_speed, max_speed),
 		util::fRand(-max_speed, max_speed));
-
-	container = nullptr;
 }
 
 Boid::Boid(
@@ -38,8 +36,6 @@ Boid::Boid(
 	color = sf::Vector3f(0.0f, 0.0f, 0.0f);
 
 	rotation = 0.0;
-
-	container = nullptr;
 }
 
 void Boid::update(const sf::Window* window, float deltaTime, const std::vector<Boid>& boids)
@@ -171,15 +167,15 @@ void Boid::outside_border(const sf::Window* window)
 	{
 		position.x = (float)window->getSize().x;
 	}
-	else if (position.x - size.x > window->getSize().x)
+	if (position.x - size.x > window->getSize().x)
 	{
 		position.x = -size.x;
 	}
-	else if (position.y + size.y < 0)
+	if (position.y + size.y < 0)
 	{
 		position.y = (float)window->getSize().y;
 	}
-	else if (position.y - size.y > window->getSize().y)
+	if (position.y - size.y > window->getSize().y)
 	{
 		position.y = -size.y;
 	}

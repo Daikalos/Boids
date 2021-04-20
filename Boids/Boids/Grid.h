@@ -1,26 +1,18 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
-#include <unordered_set>
+#include <unordered_map>
 #include "Container.h"
 #include "Boid.h"
 #include "Vector2.h"
 
-class Grid
+template<typename T> class Grid
 {
 public:
 	Grid(int cont_width, int cont_height, int grid_width, int grid_height);
 	~Grid();
 
-	inline Container<Boid>* at_pos(int x, int y) const
-	{
-		return &containers[x + y * width];
-	}
-	inline Container<Boid>* at_pos(const sf::Vector2i& position) const
-	{
-		return &containers[position.x + position.y * width];
-	}
-	inline Container<Boid>* at_pos(const sf::Vector2f& position) const
+	inline Container<T>* at_pos(const sf::Vector2f& position) const
 	{
 		const sf::Vector2i& pos = (sf::Vector2i)position / contDims;
 
@@ -29,9 +21,14 @@ public:
 
 		return at_pos(pos);
 	}
-	inline Container<Boid>* at_pos(const Boid& boid) const
+	inline Container<T>* at_pos(const T& item) const
 	{
-		const sf::Vector2i& pos = (sf::Vector2i)boid.get_position() / contDims;
+		const Boid* boid = dynamic_cast<const Boid*>(&item);
+
+		if (boid == nullptr)
+			return nullptr;
+
+		const sf::Vector2i& pos = (sf::Vector2i)boid->get_position() / contDims;
 
 		if (!within_grid(pos))
 			return nullptr;
@@ -39,17 +36,29 @@ public:
 		return at_pos(pos);
 	}
 
+	void insert(const T& item);
+	std::vector<T> query(sf::Vector2f pos, float radius);
+
+private:
+	inline Container<T>* at_pos(int x, int y) const
+	{
+		return &containers[x + y * width];
+	}
+	inline Container<T>* at_pos(const sf::Vector2i& position) const
+	{
+		return &containers[position.x + position.y * width];
+	}
+
 	inline bool within_grid(const sf::Vector2i& pos) const
 	{
 		return !(pos.x < 0 || pos.y < 0 || pos.x >= width || pos.y >= height);
 	}
 
-	void insert(Boid& boid);
-	std::vector<Boid> query(sf::Vector2f pos, float radius);
-
 private:
-	Container<Boid>* containers;
+	Container<T>* containers;
 	sf::Vector2i contDims;
+
+	std::unordered_map<const T*, Container<T>*> items;
 
 	int width, height;
 
@@ -58,4 +67,6 @@ private:
 	Grid(const Grid& rhs) = delete;
 	Grid& operator=(const Grid& rhs) = delete;
 };
+
+typedef Grid<Boid> GridB;
 

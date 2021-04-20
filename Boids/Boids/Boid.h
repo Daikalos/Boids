@@ -4,7 +4,6 @@
 
 #include "Utilities.h"
 #include "Vector2.h"
-#include "Container.h"
 
 class Boid
 {
@@ -16,20 +15,6 @@ public:
 		float max_speed, float max_steer, float min_distance, float view_angle);
 
 	void update(const sf::Window* window, float deltaTime, const std::vector<Boid>& boids);
-
-	void assign_container(Container<Boid>* cont)
-	{
-		if (!cont || container == cont)
-			return;
-
-		if (container && container != cont)
-		{
-			container->erase(*this);
-		}
-
-		container = cont;
-		container->insert(*this);
-	}
 
 private: // Flocking
 	std::vector<Boid> visible_boids(const std::vector<Boid>& boids);
@@ -81,7 +66,5 @@ private: // Variables
 	float max_steer;	 // Maximum steering force towards target
 	float min_distance;  // Only interact with boids within this distance
 	float view_angle;	 // Only interact with boids within this angle
-
-	Container<Boid>* container; // Currently assigned container...
 };
 

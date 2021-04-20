@@ -33,10 +33,10 @@ std::vector<T> Quadtree<T>::query(const Rect_i& rect) const
 
 	for (const T* item : items)
 	{
-		const Boid* b = nullptr;
-		if ((b = dynamic_cast<const Boid*>(item)))
+		const Boid* boid = dynamic_cast<const Boid*>(item);
+		if (boid != nullptr)
 		{
-			if (contains(b->get_position()))
+			if (contains(boid->get_position()))
 			{
 				foundItems.push_back(*item);
 			}
@@ -119,10 +119,10 @@ void Quadtree<T>::subdivide()
 		(rectangle.top + rectangle.bot) / 2 
 	};
 
-	northWest = new Quadtree(Rect_i({ rectangle.left, rectangle.top }, { center.x,        center.y      } ), capacity);
-	northEast = new Quadtree(Rect_i({ center.x,       rectangle.top }, { rectangle.right, center.y      } ), capacity);
-	southWest = new Quadtree(Rect_i({ rectangle.left, center.y	    }, { center.x,        rectangle.bot } ), capacity);
-	southEast = new Quadtree(Rect_i({ center.x,       center.y	    }, { rectangle.right, rectangle.bot } ), capacity);
+	northWest = new Quadtree<T>(Rect_i({ rectangle.left, rectangle.top }, { center.x,        center.y      } ), capacity);
+	northEast = new Quadtree<T>(Rect_i({ center.x,       rectangle.top }, { rectangle.right, center.y      } ), capacity);
+	southWest = new Quadtree<T>(Rect_i({ rectangle.left, center.y	    }, { center.x,        rectangle.bot } ), capacity);
+	southEast = new Quadtree<T>(Rect_i({ center.x,       center.y	    }, { rectangle.right, rectangle.bot } ), capacity);
 
 	divided = true;
 }
