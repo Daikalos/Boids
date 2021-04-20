@@ -45,7 +45,7 @@ int main()
 	Color* colors = new Color[VERTEX_COUNT];
 
 	QuadtreeB* quadtree = nullptr;
-	GridB* grid = new GridB(20, 20, window.getSize().x, window.getSize().y);
+	GridB* grid = new GridB(30, 30, window.getSize().x, window.getSize().y);
 
 	for (int i = 0; i < BOID_COUNT; ++i)
 	{
@@ -57,7 +57,7 @@ int main()
 		boids[i] = Boid(pos, size,
 			1.700f, 1.310f, 1.250f, 
 			280.0f, 2.0f, 
-			20.0f, 270.0f);
+			30.0f, 270.0f);
 
 		grid->insert(boids[i]);
 	}
@@ -87,7 +87,12 @@ int main()
 					window.close();
 					break;
 				case sf::Event::Resized:
-					glViewport(0, 0, event.size.width, event.size.height);
+					glViewport(0, 0, window.getSize().x, window.getSize().y);
+					glMatrixMode(GL_PROJECTION);
+					glLoadIdentity();
+					glScalef(1.0f, -1.0f, 1.0f);
+					gluOrtho2D(0, window.getSize().x, 0, window.getSize().y);
+					glMatrixMode(GL_MODELVIEW);
 					break;
 			}
 
@@ -113,13 +118,9 @@ int main()
 				boid.update(&window, deltaTime, boids);
 
 				if (camera.get_left_hold())
-				{
 					boid.steer_towards(mousePos, 1.50f);
-				}
 				if (camera.get_right_hold())
-				{
 					boid.steer_away(mousePos, 1.50f);
-				}
 			});
 
 		int v = 0;
