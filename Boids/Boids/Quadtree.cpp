@@ -65,7 +65,7 @@ bool Quadtree<T>::insert(const T& item)
 	if (&item == nullptr)
 		return false;
 
-	if (!contains(item.get_position()))
+	if (!contains(item.get_origin()))
 		return false;
 
 	if (items.size() < capacity)

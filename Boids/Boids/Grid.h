@@ -28,7 +28,7 @@ public:
 		if (boid == nullptr)
 			return nullptr;
 
-		const sf::Vector2i& pos = (sf::Vector2i)boid->get_position() / contDims;
+		const sf::Vector2i& pos = (sf::Vector2i)boid->get_origin() / contDims;
 
 		if (!within_grid(pos))
 			return nullptr;

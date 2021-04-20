@@ -72,9 +72,6 @@ int main()
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
 
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 	while (window.isOpen())
 	{
 		deltaTime = clock.restart().asSeconds();
@@ -100,6 +97,8 @@ int main()
 		for (size_t i = 0; i < BOID_COUNT; ++i)
 			grid->insert(boids[i]);
 
+		sf::Vector2f mousePos = (sf::Vector2f)camera.get_mouse_world_position();
+
 		std::for_each(
 			std::execution::par_unseq,
 			boids,
@@ -112,6 +111,11 @@ int main()
 				std::vector<const Boid*> boids = grid->query(ori, minDistance);
 
 				boid.update(&window, deltaTime, boids);
+
+				if (camera.get_left_hold())
+				{
+					boid.steer_towards(mousePos);
+				}
 			});
 
 		int v = 0;

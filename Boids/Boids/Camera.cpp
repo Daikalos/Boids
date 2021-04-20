@@ -49,10 +49,8 @@ void Camera::key_pressed(const sf::Event& event)
 
 void Camera::mouse_moved(const sf::Event& event)
 {
-	sf::Vector2i deltaDragPos = get_mouse_world_position();
-
 	if (moveCamera)
-		position += (sf::Vector2f)(dragPos - deltaDragPos);
+		position += (sf::Vector2f)(dragPos - get_mouse_world_position());
 }
 void Camera::mouse_wheel_scrolled(const sf::Event& event)
 {
@@ -71,7 +69,7 @@ void Camera::mouse_button_pressed(const sf::Event& event)
 	if (event.mouseButton.button == sf::Mouse::Middle)
 	{
 		moveCamera = true;
-		dragPos = view_to_world(mouse.getPosition(window));
+		dragPos = get_mouse_world_position();
 	}
 }
 void Camera::mouse_button_released(const sf::Event& event)

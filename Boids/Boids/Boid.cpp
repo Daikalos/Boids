@@ -45,7 +45,7 @@ void Boid::update(const sf::Window* window, float deltaTime, const std::vector<c
 	velocity = v2f::limit(velocity, max_speed);
 	position += velocity * deltaTime;
 
-	rotation = v2f::angle(velocity) + util::to_radians(180.0f);
+	rotation = v2f::angle(-velocity);
 
 	outside_border(window);
 }
@@ -59,10 +59,10 @@ std::vector<const Boid*> Boid::visible_boids(const std::vector<const Boid*>& boi
 		if (b == this)
 			continue;
 
-		double distance = v2f::distance(b->get_position(), position);
-		if (distance > 0 && distance < min_distance)
+		double distance = v2f::distance(b->get_origin(), get_origin());
+		if (distance > FLT_EPSILON && distance < min_distance)
 		{
-			sf::Vector2f dir = v2f::direction(position, b->get_position());
+			sf::Vector2f dir = v2f::direction(get_origin(), b->get_origin());
 			double angle = v2f::angle(
 				v2f::normalize(velocity), 
 				v2f::normalize(dir));
@@ -102,11 +102,11 @@ sf::Vector2f Boid::seperate(const std::vector<const Boid*>& boids)
 
 	for (const Boid* b : boids)
 	{
-		float distance = v2f::distance(b->get_position(), position);
+		float distance = v2f::distance(b->get_origin(), get_origin());
 		if (distance < (min_distance / 2))
 		{
 			// Seperate more strongly the closer to the boid
-			sep += (position - b->get_position()) / (float)pow(distance, 2);
+			sep += (get_origin() - b->get_origin()) / (float)pow(distance, 2);
 		}
 	}
 
@@ -148,17 +148,25 @@ sf::Vector2f Boid::cohesion(const std::vector<const Boid*>& boids)
 		return coh;
 
 	for (const Boid* b : boids)
-		coh += b->get_position(); // Head towards center of boids
+		coh += b->get_origin(); // Head towards center of boids
 
 	coh /= (float)neighbourCount;
 
-	sf::Vector2f desired = v2f::direction(coh, position);
+	sf::Vector2f desired = v2f::direction(coh, get_origin());
 	desired = v2f::normalize(desired, max_speed);
 
 	sf::Vector2f steer = desired - velocity;
 	steer = v2f::limit(steer, max_steer);
 
 	return steer;
+}
+
+void Boid::steer_towards(sf::Vector2f point)
+{
+	sf::Vector2f steer = v2f::direction(point, get_origin()) - velocity;
+	steer = v2f::limit(steer, max_steer * 1.50f);
+
+	apply_force(steer);
 }
 
 void Boid::outside_border(const sf::Window* window)

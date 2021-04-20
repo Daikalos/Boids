@@ -16,6 +16,8 @@ public:
 
 	void update(const sf::Window* window, float deltaTime, const std::vector<const Boid*>& boids);
 
+	void steer_towards(sf::Vector2f point);
+
 private: // Flocking
 	std::vector<const Boid*> visible_boids(const std::vector<const Boid*>& boids);
 

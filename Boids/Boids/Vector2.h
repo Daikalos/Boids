@@ -32,7 +32,7 @@ public:
 	{
 		float len = length(vector);
 
-		if (len == 0)
+		if (len < FLT_EPSILON)
 			return vector;
 
 		vector.x *= (radius / len);
