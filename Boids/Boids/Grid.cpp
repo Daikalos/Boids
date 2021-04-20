@@ -57,7 +57,7 @@ std::vector<T> Grid<T>::query(sf::Vector2f pos, float radius)
 		{
 			Container<T>* cntn = at_pos(sf::Vector2f(pos.x + x, pos.y + y));
 
-			if (std::find(cntns.begin(), cntns.end(), cntn) == cntns.end())
+			if (cntn != nullptr && std::find(cntns.begin(), cntns.end(), cntn) == cntns.end())
 			{
 				cntns.push_back(cntn);
 			}
@@ -65,9 +65,6 @@ std::vector<T> Grid<T>::query(sf::Vector2f pos, float radius)
 
 	for (const Container<T>* c : cntns)
 	{
-		if (c == nullptr) 
-			continue;
-
 		for (const T* b : c->items)
 		{
 			foundItems.push_back(*b);

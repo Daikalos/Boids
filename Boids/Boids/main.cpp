@@ -12,7 +12,7 @@
 #include "Vector2.h"
 #include "Camera.h"
 
-const size_t BOID_COUNT = 10000;
+const size_t BOID_COUNT = 12500;
 const size_t VERTEX_COUNT = BOID_COUNT * 3;
 
 struct Vertex
@@ -44,7 +44,7 @@ int main()
 	Color* colors = new Color[VERTEX_COUNT];
 
 	QuadtreeB* quadtree = nullptr;
-	GridB* grid = new GridB(40, 40, window.getSize().x, window.getSize().y);
+	GridB* grid = new GridB(20, 20, window.getSize().x, window.getSize().y);
 
 	for (int i = 0; i < BOID_COUNT; ++i)
 	{
@@ -54,9 +54,9 @@ int main()
 		sf::Vector2f size = sf::Vector2f(6.0, 3.0);
 
 		boids[i] = Boid(pos, size,
-			1.400f, 1.310f, 1.320f, 
+			1.420f, 1.310f, 1.250f, 
 			280.0f, 2.0f, 
-			40.0f, 270.0f);
+			20.0f, 270.0f);
 
 		grid->insert(boids[i]);
 	}
