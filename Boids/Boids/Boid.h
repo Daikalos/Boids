@@ -14,16 +14,16 @@ public:
 		float w_sep, float w_ali, float w_coh, 
 		float max_speed, float max_steer, float min_distance, float view_angle);
 
-	void update(const sf::Window* window, float deltaTime, const std::vector<Boid>& boids);
+	void update(const sf::Window* window, float deltaTime, const std::vector<const Boid*>& boids);
 
 private: // Flocking
-	std::vector<Boid> visible_boids(const std::vector<Boid>& boids);
+	std::vector<const Boid*> visible_boids(const std::vector<const Boid*>& boids);
 
-	void flock(const std::vector<Boid>& boids);
+	void flock(const std::vector<const Boid*>& boids);
 
-	sf::Vector2f seperate(const std::vector<Boid>& boids);
-	sf::Vector2f align(const std::vector<Boid>& boids);
-	sf::Vector2f cohesion(const std::vector<Boid>& boids);
+	sf::Vector2f seperate(const std::vector<const Boid*>& boids);
+	sf::Vector2f align(const std::vector<const Boid*>& boids);
+	sf::Vector2f cohesion(const std::vector<const Boid*>& boids);
 
 	void outside_border(const sf::Window* window);
 

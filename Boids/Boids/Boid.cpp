@@ -38,7 +38,7 @@ Boid::Boid(
 	rotation = 0.0;
 }
 
-void Boid::update(const sf::Window* window, float deltaTime, const std::vector<Boid>& boids)
+void Boid::update(const sf::Window* window, float deltaTime, const std::vector<const Boid*>& boids)
 {
 	flock(boids);
 
@@ -50,19 +50,19 @@ void Boid::update(const sf::Window* window, float deltaTime, const std::vector<B
 	outside_border(window);
 }
 
-std::vector<Boid> Boid::visible_boids(const std::vector<Boid>& boids)
+std::vector<const Boid*> Boid::visible_boids(const std::vector<const Boid*>& boids)
 {
-	std::vector<Boid> visBoids; // Filter all near boids based on min distance and view angle
+	std::vector<const Boid*> visBoids; // Filter all near boids based on min distance and view angle
 
-	for (const Boid& b : boids)
+	for (const Boid* b : boids)
 	{
-		if (&b == this)
+		if (b == this)
 			continue;
 
-		double distance = v2f::distance(b.get_position(), position);
+		double distance = v2f::distance(b->get_position(), position);
 		if (distance > 0 && distance < min_distance)
 		{
-			sf::Vector2f dir = v2f::direction(position, b.get_position());
+			sf::Vector2f dir = v2f::direction(position, b->get_position());
 			double angle = v2f::angle(
 				v2f::normalize(velocity), 
 				v2f::normalize(dir));
@@ -77,9 +77,9 @@ std::vector<Boid> Boid::visible_boids(const std::vector<Boid>& boids)
 	return visBoids;
 }
 
-void Boid::flock(const std::vector<Boid>& boids)
+void Boid::flock(const std::vector<const Boid*>& boids)
 {
-	std::vector<Boid> visBoids = visible_boids(boids);
+	std::vector<const Boid*> visBoids = visible_boids(boids);
 
 	sf::Vector2f sep = seperate(visBoids);
 	sf::Vector2f ali = align(visBoids);
@@ -92,7 +92,7 @@ void Boid::flock(const std::vector<Boid>& boids)
 	apply_force(sep + ali + coh);
 }
 
-sf::Vector2f Boid::seperate(const std::vector<Boid>& boids)
+sf::Vector2f Boid::seperate(const std::vector<const Boid*>& boids)
 {
 	sf::Vector2f sep = sf::Vector2f(0, 0);
 	size_t neighbourCount = boids.size();
@@ -100,13 +100,13 @@ sf::Vector2f Boid::seperate(const std::vector<Boid>& boids)
 	if (neighbourCount == 0)
 		return sep;
 
-	for (const Boid& b : boids)
+	for (const Boid* b : boids)
 	{
-		float distance = v2f::distance(b.get_position(), position);
+		float distance = v2f::distance(b->get_position(), position);
 		if (distance < (min_distance / 2))
 		{
 			// Seperate more strongly the closer to the boid
-			sep += (position - b.get_position()) / (float)pow(distance, 2);
+			sep += (position - b->get_position()) / (float)pow(distance, 2);
 		}
 	}
 
@@ -119,7 +119,7 @@ sf::Vector2f Boid::seperate(const std::vector<Boid>& boids)
 	return steer;
 }
 
-sf::Vector2f Boid::align(const std::vector<Boid>& boids)
+sf::Vector2f Boid::align(const std::vector<const Boid*>& boids)
 {
 	sf::Vector2f ali = sf::Vector2f(0, 0);
 	size_t neighbourCount = boids.size();
@@ -127,8 +127,8 @@ sf::Vector2f Boid::align(const std::vector<Boid>& boids)
 	if (neighbourCount == 0)
 		return ali;
 
-	for (const Boid& b : boids)
-		ali += b.get_velocity(); // Align with every boids velocity
+	for (const Boid* b : boids)
+		ali += b->get_velocity(); // Align with every boids velocity
 
 	ali /= (float)neighbourCount;
 	ali = v2f::normalize(ali, max_speed);
@@ -139,7 +139,7 @@ sf::Vector2f Boid::align(const std::vector<Boid>& boids)
 	return steer;
 }
 
-sf::Vector2f Boid::cohesion(const std::vector<Boid>& boids)
+sf::Vector2f Boid::cohesion(const std::vector<const Boid*>& boids)
 {
 	sf::Vector2f coh = sf::Vector2f(0, 0);
 	size_t neighbourCount = boids.size();
@@ -147,8 +147,8 @@ sf::Vector2f Boid::cohesion(const std::vector<Boid>& boids)
 	if (neighbourCount == 0)
 		return coh;
 
-	for (const Boid& b : boids)
-		coh += b.get_position(); // Head towards center of boids
+	for (const Boid* b : boids)
+		coh += b->get_position(); // Head towards center of boids
 
 	coh /= (float)neighbourCount;
 

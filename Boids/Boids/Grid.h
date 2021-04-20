@@ -37,7 +37,7 @@ public:
 	}
 
 	void insert(const T& item);
-	std::vector<T> query(sf::Vector2f pos, float radius);
+	std::vector<const T*> query(sf::Vector2f pos, float radius);
 
 private:
 	inline Container<T>* at_pos(int x, int y) const

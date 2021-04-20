@@ -47,9 +47,9 @@ void Grid<T>::insert(const T& item)
 }
 
 template<typename T>
-std::vector<T> Grid<T>::query(sf::Vector2f pos, float radius)
+std::vector<const T*> Grid<T>::query(sf::Vector2f pos, float radius)
 {
-	std::vector<T> foundItems;
+	std::vector<const T*> foundItems;
 	std::vector<Container<T>*> cntns;
 
 	for (float x = -radius; x <= radius; x += radius)
@@ -67,7 +67,7 @@ std::vector<T> Grid<T>::query(sf::Vector2f pos, float radius)
 	{
 		for (const T* b : c->items)
 		{
-			foundItems.push_back(*b);
+			foundItems.push_back(b);
 		}
 	}
 

@@ -31,6 +31,7 @@ int main()
 
 	sf::Window window(sf::VideoMode(2240, 1260), "Boids");
 
+	window.setVerticalSyncEnabled(true);
 	window.setFramerateLimit(144);
 	window.setActive(true);
 
@@ -108,7 +109,7 @@ int main()
 				const sf::Vector2f ori = boid.get_origin();
 				const double minDistance = boid.get_min_distance();
 
-				std::vector<Boid> boids = grid->query(ori, minDistance);
+				std::vector<const Boid*> boids = grid->query(ori, minDistance);
 
 				boid.update(&window, deltaTime, boids);
 			});
