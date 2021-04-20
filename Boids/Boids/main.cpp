@@ -55,7 +55,7 @@ int main()
 		sf::Vector2f size = sf::Vector2f(6.0, 3.0);
 
 		boids[i] = Boid(pos, size,
-			1.420f, 1.310f, 1.250f, 
+			1.700f, 1.310f, 1.250f, 
 			280.0f, 2.0f, 
 			20.0f, 270.0f);
 
@@ -114,7 +114,11 @@ int main()
 
 				if (camera.get_left_hold())
 				{
-					boid.steer_towards(mousePos);
+					boid.steer_towards(mousePos, 1.50f);
+				}
+				if (camera.get_right_hold())
+				{
+					boid.steer_away(mousePos, 1.50f);
 				}
 			});
 

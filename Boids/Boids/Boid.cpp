@@ -161,10 +161,18 @@ sf::Vector2f Boid::cohesion(const std::vector<const Boid*>& boids)
 	return steer;
 }
 
-void Boid::steer_towards(sf::Vector2f point)
+void Boid::steer_towards(sf::Vector2f point, float force)
 {
 	sf::Vector2f steer = v2f::direction(point, get_origin()) - velocity;
-	steer = v2f::limit(steer, max_steer * 1.50f);
+	steer = v2f::limit(steer, max_steer * force);
+
+	apply_force(steer);
+}
+
+void Boid::steer_away(sf::Vector2f point, float force)
+{
+	sf::Vector2f steer = velocity - v2f::direction(point, get_origin());
+	steer = v2f::limit(steer, max_steer * force);
 
 	apply_force(steer);
 }
