@@ -8,6 +8,12 @@ template<typename T> struct Rect
 	{
 		top_left = bot_right = top_right = bot_left = {};
 	}
+	Rect(T left, T top, T right, T bot)
+		: top_left({ left, top }), bot_right({ right, bot })
+	{
+		top_right = { bot_right.x, top_left.y };
+		bot_left = { top_left.x, bot_right.y };
+	};
 	Rect(sf::Vector2<T> top_left, sf::Vector2<T> bot_right)
 		: top_left(top_left), bot_right(bot_right)
 	{

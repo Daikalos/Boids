@@ -10,7 +10,7 @@ public:
 	Quadtree(const Rect_i& rect, int capacity);
 	virtual ~Quadtree();
 
-	std::vector<T> query(const Rect_i& rect) const;
+	std::vector<const T*> query(const Rect_i& rect) const;
 	
 	bool insert(const T& item);
 

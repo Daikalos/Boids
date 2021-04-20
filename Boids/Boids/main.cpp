@@ -52,14 +52,12 @@ int main()
 		sf::Vector2f pos = sf::Vector2f(
 			(float)(rand() % window.getSize().x),
 			(float)(rand() % window.getSize().y));
-		sf::Vector2f size = sf::Vector2f(6.0, 3.0);
+		sf::Vector2f size = sf::Vector2f(7.0, 3.5);
 
 		boids[i] = Boid(pos, size,
-			1.700f, 1.310f, 1.250f, 
+			1.500f, 1.100f, 1.350f, 
 			280.0f, 2.0f, 
 			30.0f, 270.0f);
-
-		grid->insert(boids[i]);
 	}
 
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -134,15 +132,12 @@ int main()
 			const sf::Vector3f col = boid.get_color();
 			const float rot = boid.get_rotation();
 
-			const sf::Vector2f pos0 = v2f::rotate_point(sf::Vector2f(
-				pos.x,
-				pos.y + (size.y / 2)), ori, rot);
-			const sf::Vector2f pos1 = v2f::rotate_point(sf::Vector2f(
-				pos.x + size.x,
-				pos.y), ori, rot);
-			const sf::Vector2f pos2 = v2f::rotate_point(sf::Vector2f(
-				pos.x + size.x,
-				pos.y + size.y), ori, rot);
+			const sf::Vector2f pos0 = v2f::rotate_point(
+				sf::Vector2f(pos.x, pos.y + (size.y / 2)), ori, rot);
+			const sf::Vector2f pos1 = v2f::rotate_point(
+				sf::Vector2f(pos.x + size.x, pos.y), ori, rot);
+			const sf::Vector2f pos2 = v2f::rotate_point(
+				sf::Vector2f(pos.x + size.x, pos.y + size.y), ori, rot);
 
 			vertices[v    ] = *(Vertex*)(&pos0);
 			vertices[v + 1] = *(Vertex*)(&pos1);

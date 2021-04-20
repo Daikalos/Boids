@@ -24,9 +24,9 @@ Quadtree<T>::~Quadtree()
 }
 
 template<typename T>
-std::vector<T> Quadtree<T>::query(const Rect_i& rect) const
+std::vector<const T*> Quadtree<T>::query(const Rect_i& rect) const
 {
-	std::vector<T> foundItems;
+	std::vector<const T*> foundItems;
 
 	if (!intersects(rect))
 		return foundItems;
@@ -38,7 +38,7 @@ std::vector<T> Quadtree<T>::query(const Rect_i& rect) const
 		{
 			if (contains(boid->get_position()))
 			{
-				foundItems.push_back(*item);
+				foundItems.push_back(item);
 			}
 		}
 	}
@@ -46,10 +46,10 @@ std::vector<T> Quadtree<T>::query(const Rect_i& rect) const
 	if (!divided)
 		return foundItems;
 
-	std::vector<T> nwQuery = northWest->query(rect);
-	std::vector<T> neQuery = northEast->query(rect);
-	std::vector<T> swQuery = southWest->query(rect);
-	std::vector<T> seQuery = southEast->query(rect);
+	std::vector<const T*> nwQuery = northWest->query(rect);
+	std::vector<const T*> neQuery = northEast->query(rect);
+	std::vector<const T*> swQuery = southWest->query(rect);
+	std::vector<const T*> seQuery = southEast->query(rect);
 
 	foundItems.insert(foundItems.end(), nwQuery.begin(), nwQuery.end());
 	foundItems.insert(foundItems.end(), neQuery.begin(), neQuery.end());

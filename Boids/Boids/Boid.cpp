@@ -45,7 +45,8 @@ void Boid::update(const sf::Window* window, float deltaTime, const std::vector<c
 	velocity = v2f::limit(velocity, max_speed);
 	position += velocity * deltaTime;
 
-	rotation = v2f::angle(-velocity);
+	if (v2f::length(velocity) > FLT_EPSILON)
+		rotation = v2f::angle(-velocity);
 
 	outside_border(window);
 }
