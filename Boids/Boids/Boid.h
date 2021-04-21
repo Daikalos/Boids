@@ -14,7 +14,7 @@ public:
 		float w_sep, float w_ali, float w_coh, 
 		float max_speed, float max_steer, float min_distance, float view_angle);
 
-	void update(const sf::Window* window, float deltaTime, const std::vector<const Boid*>& boids);
+	void update(const sf::Window& window, float deltaTime, const std::vector<const Boid*>& boids);
 
 	void steer_towards(sf::Vector2f point, float force);
 	void steer_away(sf::Vector2f point, float force);
@@ -28,7 +28,7 @@ private: // Flocking
 	sf::Vector2f align(const std::vector<const Boid*>& boids);
 	sf::Vector2f cohesion(const std::vector<const Boid*>& boids);
 
-	void outside_border(const sf::Window* window);
+	void outside_border(const sf::Window& window);
 
 	inline void apply_force(const sf::Vector2f& force)
 	{
@@ -36,6 +36,10 @@ private: // Flocking
 	}
 
 public: // Properties
+	inline sf::Vector2f get_pointA() const { return pointA; }
+	inline sf::Vector2f get_pointB() const { return pointB; }
+	inline sf::Vector2f get_pointC() const { return pointC; }
+
 	inline sf::Vector2f get_position() const { return position; }
 	inline sf::Vector2f get_size() const { return size; }
 
@@ -54,11 +58,12 @@ public: // Properties
 	inline sf::Vector3f get_color() const { return color; }
 
 private: // Variables
+	sf::Vector2f pointA, pointB, pointC;
+	sf::Vector3f color;
+
 	sf::Vector2f position;
 	sf::Vector2f velocity;		  // Current headed velocity
 	sf::Vector2f size;
-
-	sf::Vector3f color;
 
 	float weight_sep;
 	float weight_ali;

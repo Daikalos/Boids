@@ -38,7 +38,7 @@ Boid::Boid(
 	rotation = 0.0;
 }
 
-void Boid::update(const sf::Window* window, float deltaTime, const std::vector<const Boid*>& boids)
+void Boid::update(const sf::Window& window, float deltaTime, const std::vector<const Boid*>& boids)
 {
 	flock(boids);
 
@@ -47,6 +47,19 @@ void Boid::update(const sf::Window* window, float deltaTime, const std::vector<c
 
 	if (v2f::length(velocity) > FLT_EPSILON)
 		rotation = v2f::angle(-velocity);
+
+	sf::Vector2f origin = get_origin();
+
+	pointA = v2f::rotate_point({ position.x,		  position.y + (size.y / 2) }, origin, rotation);
+	pointB = v2f::rotate_point({ position.x + size.x, position.y				}, origin, rotation);
+	pointC = v2f::rotate_point({ position.x + size.x, position.y + size.y		}, origin, rotation);
+
+	color =
+	{
+		0.5f + ((origin.x) / window.getSize().x),
+		(origin.x * origin.y) / ((long long)window.getSize().x * (long long)window.getSize().y),
+		0.5f + ((origin.y) / window.getSize().y)
+	};
 
 	outside_border(window);
 }
@@ -177,21 +190,21 @@ void Boid::steer_away(sf::Vector2f point, float force)
 	apply_force(steer);
 }
 
-void Boid::outside_border(const sf::Window* window)
+void Boid::outside_border(const sf::Window& window)
 {
 	if (position.x + size.x < 0)
 	{
-		position.x = (float)window->getSize().x;
+		position.x = (float)window.getSize().x;
 	}
-	if (position.x - size.x > window->getSize().x)
+	if (position.x - size.x > window.getSize().x)
 	{
 		position.x = -size.x;
 	}
 	if (position.y + size.y < 0)
 	{
-		position.y = (float)window->getSize().y;
+		position.y = (float)window.getSize().y;
 	}
-	if (position.y - size.y > window->getSize().y)
+	if (position.y - size.y > window.getSize().y)
 	{
 		position.y = -size.y;
 	}

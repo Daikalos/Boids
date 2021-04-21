@@ -113,7 +113,7 @@ int main()
 
 				std::vector<const Boid*> boids = grid->query(ori, minDistance);
 
-				boid.update(&window, deltaTime, boids);
+				boid.update(window, deltaTime, boids);
 
 				if (camera.get_left_hold())
 					boid.steer_towards(mousePos, 1.50f);
@@ -126,29 +126,15 @@ int main()
 		{
 			const Boid& boid = boids[i];
 
-			const sf::Vector2f pos = boid.get_position();
-			const sf::Vector2f size = boid.get_size();
-			const sf::Vector2f ori = boid.get_origin();
-			const sf::Vector3f col = boid.get_color();
-			const float rot = boid.get_rotation();
+			sf::Vector2f p0 = boid.get_pointA();
+			sf::Vector2f p1 = boid.get_pointB();
+			sf::Vector2f p2 = boid.get_pointC();
 
-			const sf::Vector2f pos0 = v2f::rotate_point(
-				sf::Vector2f(pos.x, pos.y + (size.y / 2)), ori, rot);
-			const sf::Vector2f pos1 = v2f::rotate_point(
-				sf::Vector2f(pos.x + size.x, pos.y), ori, rot);
-			const sf::Vector2f pos2 = v2f::rotate_point(
-				sf::Vector2f(pos.x + size.x, pos.y + size.y), ori, rot);
+			vertices[v    ] = *(Vertex*)(&p0);
+			vertices[v + 1] = *(Vertex*)(&p1);
+			vertices[v + 2] = *(Vertex*)(&p2);
 
-			vertices[v    ] = *(Vertex*)(&pos0);
-			vertices[v + 1] = *(Vertex*)(&pos1);
-			vertices[v + 2] = *(Vertex*)(&pos2);
-
-			const sf::Vector3f color = 
-			{
-				0.5f + ((ori.x) / window.getSize().x),
-				(ori.x * ori.y) / ((long long)window.getSize().x * (long long)window.getSize().y),
-				0.5f + ((ori.y) / window.getSize().y)
-			};
+			sf::Vector3f color = boid.get_color();
 
 			colors[v	] = *(Color*)(&color);
 			colors[v + 1] = *(Color*)(&color);
