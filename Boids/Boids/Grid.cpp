@@ -50,17 +50,15 @@ template<typename T>
 std::vector<const T*> Grid<T>::query(sf::Vector2f pos, float radius)
 {
 	std::vector<const T*> foundItems;
-	std::vector<Container<T>*> cntns;
+	std::unordered_set<Container<T>*> cntns;
 
 	for (float x = -radius; x <= radius; x += radius)
 		for (float y = -radius; y <= radius; y += radius)
 		{
 			Container<T>* cntn = at_pos(sf::Vector2f(pos.x + x, pos.y + y));
 
-			if (cntn != nullptr && std::find(cntns.begin(), cntns.end(), cntn) == cntns.end())
-			{
-				cntns.push_back(cntn);
-			}
+			if (cntn != nullptr)
+				cntns.insert(cntn);
 		}
 
 	for (const Container<T>* c : cntns)

@@ -46,13 +46,13 @@ void Boid::update(const sf::Window& window, float deltaTime, const std::vector<c
 	position += velocity * deltaTime;
 
 	if (v2f::length(velocity) > FLT_EPSILON)
-		rotation = v2f::angle(-velocity);
+		rotation = v2f::angle(velocity);
 
 	sf::Vector2f origin = get_origin();
 
-	pointA = v2f::rotate_point({ position.x,		  position.y + (size.y / 2) }, origin, rotation);
-	pointB = v2f::rotate_point({ position.x + size.x, position.y				}, origin, rotation);
-	pointC = v2f::rotate_point({ position.x + size.x, position.y + size.y		}, origin, rotation);
+	pointA = v2f::rotate_point({ position.x + size.x, position.y + (size.y / 2) }, origin, rotation);
+	pointB = v2f::rotate_point({ position.x,		  position.y				}, origin, rotation);
+	pointC = v2f::rotate_point({ position.x,		  position.y + size.y		}, origin, rotation);
 
 	color =
 	{

@@ -12,7 +12,7 @@
 #include "Vector2.h"
 #include "Camera.h"
 
-const size_t BOID_COUNT = 10000;
+const size_t BOID_COUNT = 11000;
 const size_t VERTEX_COUNT = BOID_COUNT * 3;
 
 struct Vertex
@@ -57,7 +57,7 @@ int main()
 		boids[i] = Boid(pos, size,
 			1.600f, 1.100f, 1.350f, 
 			280.0f, 2.0f, 
-			30.0f, 270.0f);
+			30.0f, 250.0f);
 	}
 
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
