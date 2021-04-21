@@ -12,7 +12,7 @@
 #include "Vector2.h"
 #include "Camera.h"
 
-const size_t BOID_COUNT = 12500;
+const size_t BOID_COUNT = 10000;
 const size_t VERTEX_COUNT = BOID_COUNT * 3;
 
 struct Vertex
@@ -55,7 +55,7 @@ int main()
 		sf::Vector2f size = sf::Vector2f(7.0, 3.5);
 
 		boids[i] = Boid(pos, size,
-			1.500f, 1.100f, 1.350f, 
+			1.600f, 1.100f, 1.350f, 
 			280.0f, 2.0f, 
 			30.0f, 270.0f);
 	}
@@ -74,7 +74,7 @@ int main()
 	{
 		deltaTime = clock.restart().asSeconds();
 
-		window.setTitle(std::to_string(1.0f / deltaTime));
+		window.setTitle(std::to_string(std::roundf(1.0f / deltaTime)));
 
 		sf::Event event;
 		while (window.pollEvent(event))

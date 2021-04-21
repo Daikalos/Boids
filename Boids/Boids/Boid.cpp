@@ -80,7 +80,13 @@ std::vector<const Boid*> Boid::visible_boids(const std::vector<const Boid*>& boi
 
 void Boid::flock(const std::vector<const Boid*>& boids)
 {
+	if (boids.size() == 0)
+		return;
+
 	std::vector<const Boid*> visBoids = visible_boids(boids);
+
+	if (visBoids.size() == 0)
+		return;
 
 	sf::Vector2f sep = seperate(visBoids);
 	sf::Vector2f ali = align(visBoids);
@@ -96,10 +102,7 @@ void Boid::flock(const std::vector<const Boid*>& boids)
 sf::Vector2f Boid::seperate(const std::vector<const Boid*>& boids)
 {
 	sf::Vector2f sep = sf::Vector2f(0, 0);
-	size_t neighbourCount = boids.size();
-
-	if (neighbourCount == 0)
-		return sep;
+	size_t neighbourCount = 0;
 
 	for (const Boid* b : boids)
 	{
@@ -108,8 +111,12 @@ sf::Vector2f Boid::seperate(const std::vector<const Boid*>& boids)
 		{
 			// Seperate more strongly the closer to the boid
 			sep += (get_origin() - b->get_origin()) / (float)pow(distance, 2);
+			++neighbourCount;
 		}
 	}
+
+	if (neighbourCount == 0)
+		return sep;
 
 	sep /= (float)neighbourCount; // Average
 	sep = v2f::normalize(sep, max_speed); // set magnitude to max_speed 
@@ -123,15 +130,11 @@ sf::Vector2f Boid::seperate(const std::vector<const Boid*>& boids)
 sf::Vector2f Boid::align(const std::vector<const Boid*>& boids)
 {
 	sf::Vector2f ali = sf::Vector2f(0, 0);
-	size_t neighbourCount = boids.size();
-
-	if (neighbourCount == 0)
-		return ali;
 
 	for (const Boid* b : boids)
 		ali += b->get_velocity(); // Align with every boids velocity
 
-	ali /= (float)neighbourCount;
+	ali /= (float)boids.size();
 	ali = v2f::normalize(ali, max_speed);
 
 	sf::Vector2f steer = ali - velocity;
@@ -143,15 +146,11 @@ sf::Vector2f Boid::align(const std::vector<const Boid*>& boids)
 sf::Vector2f Boid::cohesion(const std::vector<const Boid*>& boids)
 {
 	sf::Vector2f coh = sf::Vector2f(0, 0);
-	size_t neighbourCount = boids.size();
-
-	if (neighbourCount == 0)
-		return coh;
 
 	for (const Boid* b : boids)
 		coh += b->get_origin(); // Head towards center of boids
 
-	coh /= (float)neighbourCount;
+	coh /= (float)boids.size();
 
 	sf::Vector2f desired = v2f::direction(coh, get_origin());
 	desired = v2f::normalize(desired, max_speed);
