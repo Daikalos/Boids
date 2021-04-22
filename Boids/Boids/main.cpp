@@ -55,9 +55,9 @@ int main()
 		sf::Vector2f size = sf::Vector2f(7.0, 3.5);
 
 		boids[i] = Boid(pos, size,
-			1.600f, 1.100f, 1.350f, 
+			1.400f, 1.200f, 1.050f, 
 			280.0f, 2.0f, 
-			30.0f, 250.0f);
+			30.0f, 350.0f);
 	}
 
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -73,8 +73,6 @@ int main()
 	while (window.isOpen())
 	{
 		deltaTime = clock.restart().asSeconds();
-
-		window.setTitle(std::to_string(std::roundf(1.0f / deltaTime)));
 
 		sf::Event event;
 		while (window.pollEvent(event))

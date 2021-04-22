@@ -3,6 +3,7 @@
 #define _USE_MATH_DEFINES
 
 #include <SFML/Graphics.hpp>
+#include "Utilities.h"
 
 template<typename T> struct v2
 {
@@ -17,7 +18,7 @@ public:
 	}
 	static inline float angle(const sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs)
 	{
-		return acos(dot(lhs, rhs) / (length(lhs) * length(rhs)));
+		return acosf(util::clamp(dot(lhs, rhs) / (length(lhs) * length(rhs)), -1.0f, 1.0f));
 	}
 	static inline float dot(const sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs)
 	{
@@ -50,7 +51,7 @@ public:
 	}
 	static inline sf::Vector2<T> direction(const sf::Vector2<T>& from, const sf::Vector2<T>& to)
 	{
-		return sf::Vector2<T>(from.x - to.x, from.y - to.y);
+		return sf::Vector2<T>(to.x - from.x, to.y - from.y);
 	}
 	static inline sf::Vector2<T> rotate_point(const sf::Vector2<T>& point, const sf::Vector2<T>& center, float angle)
 	{

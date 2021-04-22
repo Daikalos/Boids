@@ -50,9 +50,9 @@ void Boid::update(const sf::Window& window, float deltaTime, const std::vector<c
 
 	sf::Vector2f origin = get_origin();
 
-	pointA = v2f::rotate_point({ position.x + size.x, position.y + (size.y / 2) }, origin, rotation);
-	pointB = v2f::rotate_point({ position.x,		  position.y				}, origin, rotation);
-	pointC = v2f::rotate_point({ position.x,		  position.y + size.y		}, origin, rotation);
+	pointA = v2f::rotate_point({ position.x + (size.x / 2), position.y				  }, origin, rotation);
+	pointB = v2f::rotate_point({ position.x - (size.x / 2), position.y - (size.y / 2) }, origin, rotation);
+	pointC = v2f::rotate_point({ position.x - (size.x / 2), position.y + (size.y / 2) }, origin, rotation);
 
 	color =
 	{
@@ -73,7 +73,7 @@ std::vector<const Boid*> Boid::visible_boids(const std::vector<const Boid*>& boi
 		if (b == this)
 			continue;
 
-		double distance = v2f::distance(b->get_origin(), get_origin());
+		double distance = v2f::distance(get_origin(), b->get_origin());
 		if (distance > FLT_EPSILON && distance < min_distance)
 		{
 			sf::Vector2f dir = v2f::direction(get_origin(), b->get_origin());
@@ -119,7 +119,7 @@ sf::Vector2f Boid::seperate(const std::vector<const Boid*>& boids)
 
 	for (const Boid* b : boids)
 	{
-		float distance = v2f::distance(b->get_origin(), get_origin());
+		float distance = v2f::distance(get_origin(), b->get_origin());
 		if (distance < (min_distance / 2))
 		{
 			// Seperate more strongly the closer to the boid
@@ -165,7 +165,7 @@ sf::Vector2f Boid::cohesion(const std::vector<const Boid*>& boids)
 
 	coh /= (float)boids.size();
 
-	sf::Vector2f desired = v2f::direction(coh, get_origin());
+	sf::Vector2f desired = v2f::direction(get_origin(), coh);
 	desired = v2f::normalize(desired, max_speed);
 
 	sf::Vector2f steer = desired - velocity;
@@ -176,16 +176,16 @@ sf::Vector2f Boid::cohesion(const std::vector<const Boid*>& boids)
 
 void Boid::steer_towards(sf::Vector2f point, float force)
 {
-	sf::Vector2f steer = v2f::normalize(v2f::direction(point, get_origin()), v2f::length(velocity)) - velocity;
-	steer = v2f::limit(steer, max_steer * force);
+	sf::Vector2f steer = v2f::direction(velocity, v2f::normalize(v2f::direction(get_origin(), point), v2f::length(velocity)));
+	steer = v2f::normalize(steer, max_steer * force);
 
 	apply_force(steer);
 }
 
 void Boid::steer_away(sf::Vector2f point, float force)
 {
-	sf::Vector2f steer = velocity - v2f::normalize(v2f::direction(point, get_origin()), v2f::length(velocity));
-	steer = v2f::limit(steer, max_steer * force);
+	sf::Vector2f steer = v2f::direction(v2f::normalize(v2f::direction(get_origin(), point), v2f::length(velocity)), velocity);
+	steer = v2f::normalize(steer, max_steer * force);
 
 	apply_force(steer);
 }
