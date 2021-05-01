@@ -77,9 +77,7 @@ std::vector<const Boid*> Boid::visible_boids(const std::vector<const Boid*>& boi
 		if (distance > FLT_EPSILON && distance < min_distance)
 		{
 			sf::Vector2f dir = v2f::direction(get_origin(), b->get_origin());
-			double angle = v2f::angle(
-				v2f::normalize(velocity), 
-				v2f::normalize(dir));
+			double angle = v2f::angle(velocity, dir);
 
 			if (util::to_degrees(angle) < (view_angle / 2))
 			{

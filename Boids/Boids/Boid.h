@@ -3,7 +3,7 @@
 #include <SFML/Graphics.hpp>
 
 #include "Utilities.h"
-#include "Vector2.h"
+#include "VecUtil.h"
 
 class Boid
 {

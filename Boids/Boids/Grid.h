@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include "Container.h"
 #include "Boid.h"
-#include "Vector2.h"
+#include "VecUtil.h"
 
 template<typename T> class Grid
 {

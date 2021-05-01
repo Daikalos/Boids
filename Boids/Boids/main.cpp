@@ -9,10 +9,10 @@
 #include "Boid.h"
 #include "Grid.h"
 #include "Quadtree.h"
-#include "Vector2.h"
+#include "VecUtil.h"
 #include "Camera.h"
 
-const size_t BOID_COUNT = 11000;
+const size_t BOID_COUNT = 9000;
 const size_t VERTEX_COUNT = BOID_COUNT * 3;
 
 struct Vertex
@@ -52,12 +52,12 @@ int main()
 		sf::Vector2f pos = sf::Vector2f(
 			(float)(rand() % window.getSize().x),
 			(float)(rand() % window.getSize().y));
-		sf::Vector2f size = sf::Vector2f(7.0, 3.5);
+		sf::Vector2f size = sf::Vector2f(6.0, 3.0);
 
 		boids[i] = Boid(pos, size,
-			1.400f, 1.200f, 1.050f, 
-			280.0f, 2.0f, 
-			30.0f, 350.0f);
+			1.500f, 1.300f, 1.050f, 
+			250.0f, 2.0f, 
+			30.0f, 330.0f);
 	}
 
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -107,7 +107,7 @@ int main()
 			[&](Boid& boid)
 			{
 				const sf::Vector2f ori = boid.get_origin();
-				const double minDistance = boid.get_min_distance();
+				const float minDistance = boid.get_min_distance();
 
 				std::vector<const Boid*> boids = grid->query(ori, minDistance);
 

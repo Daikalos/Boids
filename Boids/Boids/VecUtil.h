@@ -14,7 +14,7 @@ public:
 	}
 	static inline float angle(const sf::Vector2<T>& vector)
 	{
-		return atan2(vector.y, vector.x);
+		return atan2f(vector.y, vector.x);
 	}
 	static inline float angle(const sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs)
 	{
@@ -57,8 +57,8 @@ public:
 	{
 		sf::Vector2<T> newPoint = sf::Vector2<T>();
 
-		float s = sin(angle);
-		float c = cos(angle);
+		float s = sinf(angle);
+		float c = cosf(angle);
 
 		newPoint.x = (((point.x - center.x) * c - (point.y - center.y) * s)) + center.x;
 		newPoint.y = (((point.x - center.x) * s + (point.y - center.y) * c)) + center.y;
