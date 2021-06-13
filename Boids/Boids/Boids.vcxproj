@@ -22,6 +22,7 @@
     <ClCompile Include="Boid.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Grid.cpp" />
+    <ClCompile Include="InputHandler.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Quadtree.cpp" />
   </ItemGroup>
@@ -30,6 +31,7 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Container.h" />
     <ClInclude Include="Grid.h" />
+    <ClInclude Include="InputHandler.h" />
     <ClInclude Include="Quadtree.h" />
     <ClInclude Include="Rectangle.h" />
     <ClInclude Include="Utilities.h" />

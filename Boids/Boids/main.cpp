@@ -11,6 +11,7 @@
 #include "Quadtree.h"
 #include "VecUtil.h"
 #include "Camera.h"
+#include "InputHandler.h"
 
 const size_t BOID_COUNT = 9000;
 const size_t VERTEX_COUNT = BOID_COUNT * 3;
@@ -36,6 +37,7 @@ int main()
 	window.setActive(true);
 
 	Camera camera(window);
+	InputHandler inputHandler;
 
 	sf::Clock clock;
 	float deltaTime = FLT_EPSILON;
@@ -74,6 +76,8 @@ int main()
 	{
 		deltaTime = clock.restart().asSeconds();
 
+		inputHandler.update();
+
 		sf::Event event;
 		while (window.pollEvent(event))
 		{
@@ -90,10 +94,13 @@ int main()
 					gluOrtho2D(0, window.getSize().x, 0, window.getSize().y);
 					glMatrixMode(GL_MODELVIEW);
 					break;
+				case sf::Event::MouseWheelScrolled:
+					inputHandler.set_scrollDelta(event.mouseWheelScroll.delta);
+					break;
 			}
-
-			camera.poll_event(event);
 		}
+
+		camera.update(inputHandler);
 
 		for (size_t i = 0; i < BOID_COUNT; ++i)
 			grid->insert(boids[i]);
@@ -113,9 +120,9 @@ int main()
 
 				boid.update(window, deltaTime, boids);
 
-				if (camera.get_left_hold())
+				if (inputHandler.get_left_held())
 					boid.steer_towards(mousePos, 1.50f);
-				if (camera.get_right_hold())
+				if (inputHandler.get_right_held())
 					boid.steer_away(mousePos, 1.50f);
 			});
 
@@ -149,7 +156,7 @@ int main()
 		glPushMatrix();
 
 		glMatrixMode(GL_MODELVIEW);
-		glLoadMatrixf(camera.world_matrix());
+		glLoadMatrixf(camera.get_world_matrix());
 
 		glDrawArrays(GL_TRIANGLES, 0, VERTEX_COUNT);
 

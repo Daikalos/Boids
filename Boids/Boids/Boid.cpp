@@ -40,10 +40,10 @@ Boid::Boid(
 
 void Boid::update(const sf::Window& window, float deltaTime, const std::vector<const Boid*>& boids)
 {
-	flock(boids);
-
-	velocity = v2f::limit(velocity, max_speed);
 	position += velocity * deltaTime;
+
+	flock(boids);
+	velocity = v2f::limit(velocity, max_speed);
 
 	if (v2f::length(velocity) > FLT_EPSILON)
 		rotation = v2f::angle(velocity);

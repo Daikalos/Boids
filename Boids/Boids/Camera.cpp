@@ -3,82 +3,24 @@
 Camera::Camera(const sf::Window& window) : window(window)
 {
 	position = (sf::Vector2f)window.getSize() / 2.0f;
-	moveCamera = false;
-	leftHold = false;
-	rightHold = false;
 	scale = 1.0f;
 }
 
-void Camera::poll_event(const sf::Event& event)
+void Camera::update(const InputHandler& inputHandler)
 {
-	switch (event.type)
-	{
-		case sf::Event::KeyPressed: 
-			key_pressed(event);
-			break;
-		case sf::Event::MouseMoved: 
-			mouse_moved(event);
-			break;
-		case sf::Event::MouseWheelScrolled: 
-			mouse_wheel_scrolled(event);
-			break;
-		case sf::Event::MouseButtonPressed: 
-			mouse_button_pressed(event);
-			break;
-		case sf::Event::MouseButtonReleased: 
-			mouse_button_released(event);
-			break;
-	}
-}
-
-template<typename T>
-sf::Vector2<T> Camera::view_to_world(const sf::Vector2<T>& position) const
-{
-	return (sf::Vector2<T>)(view_matrix() * (sf::Vector2f)position);
-}
-
-void Camera::key_pressed(const sf::Event& event)
-{
-	if (event.key.code == sf::Keyboard::Space)
+	if (inputHandler.get_key_pressed(sf::Keyboard::Key::Space))
 	{
 		position = (sf::Vector2f)window.getSize() / 2.0f;
 		scale = 1.0f;
-		moveCamera = false;
 	}
-}
 
-void Camera::mouse_moved(const sf::Event& event)
-{
-	if (moveCamera)
-		position += (sf::Vector2f)(dragPos - get_mouse_world_position());
-}
-void Camera::mouse_wheel_scrolled(const sf::Event& event)
-{
-	if (event.mouseWheelScroll.delta < 0)
-		scale *= 0.85f;
-	if (event.mouseWheelScroll.delta > 0)
-		scale *= 1.15f;
-}
-void Camera::mouse_button_pressed(const sf::Event& event)
-{
-	if (event.mouseButton.button == sf::Mouse::Left)
-		leftHold = true;
-	if (event.mouseButton.button == sf::Mouse::Right)
-		rightHold = true;
-
-	if (event.mouseButton.button == sf::Mouse::Middle)
-	{
-		moveCamera = true;
+	if (inputHandler.get_middle_pressed())
 		dragPos = get_mouse_world_position();
-	}
-}
-void Camera::mouse_button_released(const sf::Event& event)
-{
-	if (event.mouseButton.button == sf::Mouse::Left)
-		leftHold = false;
-	if (event.mouseButton.button == sf::Mouse::Right)
-		rightHold = false;
+	if (inputHandler.get_middle_held())
+		position += (sf::Vector2f)(dragPos - get_mouse_world_position());
 
-	if (event.mouseButton.button == sf::Mouse::Middle)
-		moveCamera = false;
+	if (inputHandler.get_scroll_down())
+		scale *= 0.85f;
+	if (inputHandler.get_scroll_up())
+		scale *= 1.15f;
 }
