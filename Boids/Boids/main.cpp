@@ -16,6 +16,8 @@
 const size_t BOID_COUNT = 9000;
 const size_t VERTEX_COUNT = BOID_COUNT * 3;
 
+const size_t MIN_DISTANCE = 40;
+
 struct Vertex
 {
 	GLfloat x, y;
@@ -30,7 +32,7 @@ int main()
 {
 	srand((unsigned int)time(0));
 
-	sf::Window window(sf::VideoMode(2240, 1260), "Boids");
+	sf::Window window(sf::VideoMode(2240, 1240), "Boids");
 
 	window.setVerticalSyncEnabled(true);
 	window.setFramerateLimit(144);
@@ -47,7 +49,9 @@ int main()
 	Color* colors = new Color[VERTEX_COUNT];
 
 	QuadtreeB* quadtree = nullptr;
-	GridB* grid = new GridB(30, 30, window.getSize().x, window.getSize().y);
+	GridB* grid = new GridB(MIN_DISTANCE, MIN_DISTANCE, 
+		window.getSize().x + MIN_DISTANCE, 
+		window.getSize().y + MIN_DISTANCE);
 
 	for (int i = 0; i < BOID_COUNT; ++i)
 	{
@@ -57,9 +61,9 @@ int main()
 		sf::Vector2f size = sf::Vector2f(6.0, 3.0);
 
 		boids[i] = Boid(pos, size,
-			1.500f, 1.300f, 1.050f, 
-			250.0f, 2.0f, 
-			30.0f, 330.0f);
+			2.500f, 1.800f, 1.000f, 
+			300.0f, 4.0f, 
+			MIN_DISTANCE, 180.0f);
 	}
 
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -78,6 +82,9 @@ int main()
 
 		inputHandler.update();
 
+		if (inputHandler.get_key_pressed(sf::Keyboard::Key::O))
+			window.setTitle(std::to_string(1.0f / deltaTime));
+
 		sf::Event event;
 		while (window.pollEvent(event))
 		{
@@ -87,12 +94,20 @@ int main()
 					window.close();
 					break;
 				case sf::Event::Resized:
-					glViewport(0, 0, window.getSize().x, window.getSize().y);
-					glMatrixMode(GL_PROJECTION);
-					glLoadIdentity();
-					glScalef(1.0f, -1.0f, 1.0f);
-					gluOrtho2D(0, window.getSize().x, 0, window.getSize().y);
-					glMatrixMode(GL_MODELVIEW);
+					{
+						glViewport(0, 0, window.getSize().x, window.getSize().y);
+						glMatrixMode(GL_PROJECTION);
+						glLoadIdentity();
+						glScalef(1.0f, -1.0f, 1.0f);
+						gluOrtho2D(0, window.getSize().x, 0, window.getSize().y);
+						glMatrixMode(GL_MODELVIEW);
+
+						delete grid;
+						grid = new GridB(
+							MIN_DISTANCE, MIN_DISTANCE, 
+							window.getSize().x + MIN_DISTANCE, 
+							window.getSize().y + MIN_DISTANCE);
+					}
 					break;
 				case sf::Event::MouseWheelScrolled:
 					inputHandler.set_scrollDelta(event.mouseWheelScroll.delta);

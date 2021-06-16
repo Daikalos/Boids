@@ -16,17 +16,13 @@ public:
 
 	void update(const sf::Window& window, float deltaTime, const std::vector<const Boid*>& boids);
 
-	void steer_towards(sf::Vector2f point, float force);
-	void steer_away(sf::Vector2f point, float force);
+	void steer_towards(sf::Vector2f point, float weight);
+	void steer_away(sf::Vector2f point, float weight);
 
 private: // Flocking
-	std::vector<const Boid*> visible_boids(const std::vector<const Boid*>& boids);
-
 	void flock(const std::vector<const Boid*>& boids);
 
-	sf::Vector2f seperate(const std::vector<const Boid*>& boids);
-	sf::Vector2f align(const std::vector<const Boid*>& boids);
-	sf::Vector2f cohesion(const std::vector<const Boid*>& boids);
+	sf::Vector2f steer_at(sf::Vector2f steer_direction);
 
 	void outside_border(const sf::Window& window);
 
@@ -62,7 +58,7 @@ private: // Variables
 	sf::Vector3f color;
 
 	sf::Vector2f position;
-	sf::Vector2f velocity;		  // Current headed velocity
+	sf::Vector2f velocity;	// Current headed velocity
 	sf::Vector2f size;
 
 	float weight_sep;
