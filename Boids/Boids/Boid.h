@@ -22,7 +22,7 @@ public:
 private: // Flocking
 	void flock(const std::vector<const Boid*>& boids);
 
-	sf::Vector2f steer_at(sf::Vector2f steer_direction);
+	sf::Vector2f steer_at(const sf::Vector2f& steer_direction);
 
 	void outside_border(const sf::Window& window);
 

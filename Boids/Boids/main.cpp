@@ -13,7 +13,7 @@
 #include "Camera.h"
 #include "InputHandler.h"
 
-const size_t BOID_COUNT = 9000;
+const size_t BOID_COUNT = 8000;
 const size_t VERTEX_COUNT = BOID_COUNT * 3;
 
 const size_t MIN_DISTANCE = 40;
@@ -61,9 +61,9 @@ int main()
 		sf::Vector2f size = sf::Vector2f(6.0, 3.0);
 
 		boids[i] = Boid(pos, size,
-			2.500f, 1.800f, 1.000f, 
+			2.800f, 2.200f, 1.000f, 
 			300.0f, 4.0f, 
-			MIN_DISTANCE, 180.0f);
+			MIN_DISTANCE, 220.0f);
 	}
 
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);

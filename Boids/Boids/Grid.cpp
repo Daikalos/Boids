@@ -6,8 +6,8 @@ template<typename T>
 Grid<T>::Grid(int cont_width, int cont_height, int grid_width, int grid_height)
 	: contDims({ cont_width, cont_height })
 {
-    height = grid_height / cont_height;
 	width = grid_width / cont_width;
+    height = grid_height / cont_height;
 
 	containers = new Container<T>[width * height];
 

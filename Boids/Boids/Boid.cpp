@@ -48,20 +48,23 @@ void Boid::update(const sf::Window& window, float deltaTime, const std::vector<c
 
 	rotation = v2f::angle(velocity);
 
-	sf::Vector2f origin = get_origin();
-
-	pointA = v2f::rotate_point({ position.x + size.x, position.y + (size.y / 2) }, origin, rotation); // tip right
-	pointB = v2f::rotate_point({ position.x			, position.y				}, origin, rotation); // top left
-	pointC = v2f::rotate_point({ position.x			, position.y + size.y	    }, origin, rotation); // bot left
-
-	color =
-	{
-		0.5f + ((origin.x) / window.getSize().x),
-		(origin.x * origin.y) / ((long long)window.getSize().x * (long long)window.getSize().y),
-		0.5f + ((origin.y) / window.getSize().y)
-	};
-
 	outside_border(window);
+
+	// draw-info
+	{
+		sf::Vector2f origin = get_origin();
+
+		pointA = v2f::rotate_point({ position.x + size.x, position.y + (size.y / 2) }, origin, rotation); // middle right tip
+		pointB = v2f::rotate_point({ position.x			, position.y }, origin, rotation); // top left corner
+		pointC = v2f::rotate_point({ position.x			, position.y + size.y }, origin, rotation); // bot left corner
+
+		color =
+		{
+			0.5f + ((origin.x) / window.getSize().x),
+			(origin.x * origin.y) / ((long long)window.getSize().x * (long long)window.getSize().y),
+			0.5f + ((origin.y) / window.getSize().y)
+		};
+	}
 }
 
 void Boid::flock(const std::vector<const Boid*>& boids)
@@ -73,11 +76,11 @@ void Boid::flock(const std::vector<const Boid*>& boids)
 	sf::Vector2f ali(0, 0);
 	sf::Vector2f coh(0, 0);
 
-	float sepCount = 0;
-	float aliCount = 0;
-	float cohCount = 0;
+	int sepCount = 0;
+	int aliCount = 0;
+	int cohCount = 0;
 
-	for (const Boid* b : boids)
+	for (const Boid* b : boids) // do in one loop
 	{
 		if (b == this)
 			continue;
@@ -105,25 +108,31 @@ void Boid::flock(const std::vector<const Boid*>& boids)
 		}
 	}
 
-	sep /= (sepCount == 0) ? 1 : sepCount;
-	ali /= (aliCount == 0) ? 1 : aliCount;
-	coh /= (cohCount == 0) ? 1 : cohCount;
+	if (sepCount != 0) // seperation
+	{
+		sep /= (float)sepCount;
+		sep = v2f::normalize(sep, max_speed);
 
-	if (v2f::length(coh) > FLT_EPSILON)
+		apply_force(steer_at(sep) * weight_sep);
+	}
+	if (aliCount != 0) // alignment
+	{
+		ali /= (float)aliCount;
+		ali = v2f::normalize(ali, max_speed);
+
+		apply_force(steer_at(ali) * weight_ali);
+	}
+	if (cohCount != 0) // cohesion
+	{
+		coh /= (float)cohCount;
 		coh = v2f::direction(get_origin(), coh);
+		coh = v2f::normalize(coh, max_speed);
 
-	sep = v2f::normalize(sep, max_speed);
-	ali = v2f::normalize(ali, max_speed);
-	coh = v2f::normalize(coh, max_speed);
-
-	sep = steer_at(sep) * weight_sep;
-	ali = steer_at(ali) * weight_ali;
-	coh = steer_at(coh) * weight_coh;
-
-	apply_force(sep + ali + coh);
+		apply_force(steer_at(coh) * weight_coh);
+	}
 }
 
-sf::Vector2f Boid::steer_at(sf::Vector2f steer_direction)
+sf::Vector2f Boid::steer_at(const sf::Vector2f& steer_direction)
 {
 	sf::Vector2f steer = steer_direction - velocity; // steering direction
 	steer = v2f::limit(steer, max_steer);
