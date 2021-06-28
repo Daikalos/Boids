@@ -16,7 +16,7 @@
 const size_t BOID_COUNT = 8000;
 const size_t VERTEX_COUNT = BOID_COUNT * 3;
 
-const size_t MIN_DISTANCE = 40;
+const short MIN_DISTANCE = 40;
 
 struct Vertex
 {
@@ -49,9 +49,12 @@ int main()
 	Color* colors = new Color[VERTEX_COUNT];
 
 	QuadtreeB* quadtree = nullptr;
-	GridB* grid = new GridB(MIN_DISTANCE, MIN_DISTANCE, 
-		window.getSize().x + MIN_DISTANCE, 
-		window.getSize().y + MIN_DISTANCE);
+	GridB* grid = new GridB(
+		-MIN_DISTANCE,
+		-MIN_DISTANCE, 
+		window.getSize().x + MIN_DISTANCE,
+		window.getSize().y + MIN_DISTANCE,
+		MIN_DISTANCE, MIN_DISTANCE);
 
 	for (int i = 0; i < BOID_COUNT; ++i)
 	{
@@ -104,9 +107,11 @@ int main()
 
 						delete grid;
 						grid = new GridB(
-							MIN_DISTANCE, MIN_DISTANCE, 
-							window.getSize().x + MIN_DISTANCE, 
-							window.getSize().y + MIN_DISTANCE);
+							-MIN_DISTANCE,
+							-MIN_DISTANCE,
+							window.getSize().x + MIN_DISTANCE,
+							window.getSize().y + MIN_DISTANCE,
+							MIN_DISTANCE, MIN_DISTANCE);
 					}
 					break;
 				case sf::Event::MouseWheelScrolled:

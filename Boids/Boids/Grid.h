@@ -9,7 +9,7 @@
 template<typename T> class Grid
 {
 public:
-	Grid(int cont_width, int cont_height, int grid_width, int grid_height);
+	Grid(int grid_left, int grid_top, int grid_right, int grid_bot, int cont_width, int cont_height);
 	~Grid();
 
 	inline Container<T>* at_pos(const sf::Vector2f& position) const
@@ -60,7 +60,7 @@ private:
 
 	std::unordered_map<const T*, Container<T>*> items;
 
-	int width, height;
+	unsigned short width, height;
 
 private:
 	Grid() = delete;

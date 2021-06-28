@@ -58,7 +58,7 @@ private: // Variables
 	sf::Vector3f color;
 
 	sf::Vector2f position;
-	sf::Vector2f velocity;	// Current headed velocity
+	sf::Vector2f velocity;
 	sf::Vector2f size;
 
 	float weight_sep;
