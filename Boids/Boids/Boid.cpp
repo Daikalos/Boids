@@ -38,7 +38,7 @@ Boid::Boid(
 	rotation = 0.0;
 }
 
-void Boid::update(const sf::Window& window, float deltaTime, const std::vector<const Boid*>& boids)
+void Boid::update(float deltaTime, const Rect_i& border, const std::vector<const Boid*>& boids)
 {
 	flock(boids);
 
@@ -48,7 +48,7 @@ void Boid::update(const sf::Window& window, float deltaTime, const std::vector<c
 
 	rotation = v2f::angle(velocity);
 
-	outside_border(window);
+	outside_border(border);
 
 	// draw-info
 	{
@@ -60,9 +60,9 @@ void Boid::update(const sf::Window& window, float deltaTime, const std::vector<c
 
 		color =
 		{
-			0.5f + ((origin.x) / window.getSize().x),
-			(origin.x * origin.y) / ((long long)window.getSize().x * (long long)window.getSize().y),
-			0.5f + ((origin.y) / window.getSize().y)
+			0.5f + ((origin.x) / border.width()),
+			(origin.x * origin.y) / (border.width() * border.height()),
+			0.5f + ((origin.y) / border.bot)
 		};
 	}
 }
@@ -93,17 +93,17 @@ void Boid::flock(const std::vector<const Boid*>& boids)
 
 			if (util::to_degrees(angle) <= (view_angle / 2))
 			{
-				if (distance <= (min_distance / 2.0f))
-				{
-					sep += (get_origin() - b->get_origin()) / (float)pow(distance, 2);
-					++sepCount;
-				}
-
 				ali += b->get_velocity(); // Align with every boids velocity
 				coh += b->get_origin();   // Head towards center of boids
 
 				++aliCount;
 				++cohCount;
+			}
+
+			if (distance <= (min_distance / 2.0f))
+			{
+				sep += (get_origin() - b->get_origin()) / (float)pow(distance, 2);
+				++sepCount;
 			}
 		}
 	}
@@ -156,22 +156,22 @@ void Boid::steer_away(sf::Vector2f point, float weight)
 	apply_force(steer);
 }
 
-void Boid::outside_border(const sf::Window& window)
+void Boid::outside_border(const Rect_i& border)
 {
-	if (position.x + size.x < 0)
+	if (position.x + size.x < border.left)
 	{
-		position.x = (float)window.getSize().x;
+		position.x = (float)border.right;
 	}
-	if (position.x - size.x > window.getSize().x)
+	if (position.x - size.x > border.right)
 	{
-		position.x = -size.x;
+		position.x = border.left - size.x;
 	}
-	if (position.y + size.y < 0)
+	if (position.y + size.y < border.top)
 	{
-		position.y = (float)window.getSize().y;
+		position.y = (float)border.bot;
 	}
-	if (position.y - size.y > window.getSize().y)
+	if (position.y - size.y > border.bot)
 	{
-		position.y = -size.y;
+		position.y = border.top - size.y;
 	}
 }

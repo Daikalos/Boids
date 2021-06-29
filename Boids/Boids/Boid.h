@@ -4,6 +4,7 @@
 
 #include "Utilities.h"
 #include "VecUtil.h"
+#include "Rectangle.h"
 
 class Boid
 {
@@ -14,7 +15,7 @@ public:
 		float w_sep, float w_ali, float w_coh, 
 		float max_speed, float max_steer, float min_distance, float view_angle);
 
-	void update(const sf::Window& window, float deltaTime, const std::vector<const Boid*>& boids);
+	void update(float deltaTime, const Rect_i& border, const std::vector<const Boid*>& boids);
 
 	void steer_towards(sf::Vector2f point, float weight);
 	void steer_away(sf::Vector2f point, float weight);
@@ -24,7 +25,7 @@ private: // Flocking
 
 	sf::Vector2f steer_at(const sf::Vector2f& steer_direction);
 
-	void outside_border(const sf::Window& window);
+	void outside_border(const Rect_i& border);
 
 	inline void apply_force(const sf::Vector2f& force)
 	{

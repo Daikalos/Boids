@@ -14,7 +14,7 @@ public:
 
 	inline Container<T>* at_pos(const sf::Vector2f& position) const
 	{
-		const sf::Vector2i& pos = (sf::Vector2i)position / contDims;
+		const sf::Vector2i& pos = ((sf::Vector2i)position - gridRect.top_left) / contDims;
 
 		if (!within_grid(pos))
 			return nullptr;
@@ -28,7 +28,7 @@ public:
 		if (boid == nullptr)
 			return nullptr;
 
-		const sf::Vector2i& pos = (sf::Vector2i)boid->get_origin() / contDims;
+		const sf::Vector2i& pos = ((sf::Vector2i)boid->get_origin() - gridRect.top_left) / contDims;
 
 		if (!within_grid(pos))
 			return nullptr;
@@ -61,6 +61,7 @@ private:
 	std::unordered_map<const T*, Container<T>*> items;
 
 	unsigned short width, height;
+	Rect_i gridRect;
 
 private:
 	Grid() = delete;

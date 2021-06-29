@@ -41,6 +41,12 @@ int main()
 	Camera camera(window);
 	InputHandler inputHandler;
 
+	Rect_i border(
+		0, 
+		0, 
+		window.getSize().x, 
+		window.getSize().y);
+
 	sf::Clock clock;
 	float deltaTime = FLT_EPSILON;
 
@@ -50,21 +56,21 @@ int main()
 
 	QuadtreeB* quadtree = nullptr;
 	GridB* grid = new GridB(
-		-MIN_DISTANCE,
-		-MIN_DISTANCE, 
-		window.getSize().x + MIN_DISTANCE,
-		window.getSize().y + MIN_DISTANCE,
+		border.left  - MIN_DISTANCE,
+		border.top   - MIN_DISTANCE, 
+		border.right + MIN_DISTANCE,
+		border.bot   + MIN_DISTANCE,
 		MIN_DISTANCE, MIN_DISTANCE);
 
 	for (int i = 0; i < BOID_COUNT; ++i)
 	{
 		sf::Vector2f pos = sf::Vector2f(
-			(float)(rand() % window.getSize().x),
-			(float)(rand() % window.getSize().y));
+			(float)(rand() % border.width()) - border.left,
+			(float)(rand() % border.height() - border.top));
 		sf::Vector2f size = sf::Vector2f(6.0, 3.0);
 
 		boids[i] = Boid(pos, size,
-			2.800f, 2.200f, 1.000f, 
+			2.500f, 1.300f, 1.500f, 
 			300.0f, 4.0f, 
 			MIN_DISTANCE, 220.0f);
 	}
@@ -105,12 +111,18 @@ int main()
 						gluOrtho2D(0, window.getSize().x, 0, window.getSize().y);
 						glMatrixMode(GL_MODELVIEW);
 
+						border = Rect_i(
+							0,
+							0,
+							window.getSize().x,
+							window.getSize().y);
+
 						delete grid;
 						grid = new GridB(
-							-MIN_DISTANCE,
-							-MIN_DISTANCE,
-							window.getSize().x + MIN_DISTANCE,
-							window.getSize().y + MIN_DISTANCE,
+							border.left  - MIN_DISTANCE,
+							border.top   - MIN_DISTANCE,
+							border.right + MIN_DISTANCE,
+							border.bot   + MIN_DISTANCE,
 							MIN_DISTANCE, MIN_DISTANCE);
 					}
 					break;
@@ -138,7 +150,7 @@ int main()
 
 				std::vector<const Boid*> boids = grid->query(ori, minDistance);
 
-				boid.update(window, deltaTime, boids);
+				boid.update(deltaTime, border, boids);
 
 				if (inputHandler.get_left_held())
 					boid.steer_towards(mousePos, 1.50f);
