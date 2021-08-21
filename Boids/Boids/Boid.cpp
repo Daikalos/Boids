@@ -38,17 +38,16 @@ Boid::Boid(
 	rotation = 0.0;
 }
 
-void Boid::update(float deltaTime, const Rect_i& border, const std::vector<const Boid*>& boids)
+void Boid::update(float deltaTime, const Rect_i& border, const std::vector<const Container<Boid>*>& containers)
 {
-	flock(boids);
-
+	flock(containers);
 	velocity = v2f::limit(velocity, max_speed);
 
 	position += velocity * deltaTime;
 
-	rotation = v2f::angle(velocity);
-
 	outside_border(border);
+
+	rotation = v2f::angle(velocity);
 
 	// draw-info
 	{
@@ -67,9 +66,9 @@ void Boid::update(float deltaTime, const Rect_i& border, const std::vector<const
 	}
 }
 
-void Boid::flock(const std::vector<const Boid*>& boids)
+void Boid::flock(const std::vector<const Container<Boid>*>& containers)
 {
-	if (boids.size() == 0)
+	if (containers.size() == 0)
 		return;
 
 	sf::Vector2f sep(0, 0);
@@ -80,33 +79,34 @@ void Boid::flock(const std::vector<const Boid*>& boids)
 	int aliCount = 0;
 	int cohCount = 0;
 
-	for (const Boid* b : boids) // do in one loop
-	{
-		if (b == this)
-			continue;
-
-		double distance = v2f::distance(get_origin(), b->get_origin());
-		if (distance <= min_distance)
+	for (const Container<Boid>* c : containers)
+		for (const Boid* b : c->items) // do in one loop
 		{
-			sf::Vector2f dir = v2f::direction(get_origin(), b->get_origin());
-			double angle = v2f::angle(velocity, dir);
+			if (b == this)
+				continue;
 
-			if (util::to_degrees(angle) <= (view_angle / 2))
+			double distance = v2f::distance(get_origin(), b->get_origin());
+			if (distance <= min_distance)
 			{
-				ali += b->get_velocity(); // Align with every boids velocity
-				coh += b->get_origin();   // Head towards center of boids
+				sf::Vector2f dir = v2f::direction(get_origin(), b->get_origin());
+				double angle = v2f::angle(velocity, dir);
 
-				++aliCount;
-				++cohCount;
-			}
+				if (util::to_degrees(angle) <= (view_angle / 2))
+				{
+					ali += b->get_velocity(); // Align with every boids velocity
+					coh += b->get_origin();   // Head towards center of boids
 
-			if (distance <= (min_distance / 2.0f))
-			{
-				sep += (get_origin() - b->get_origin()) / (float)pow(distance, 2);
-				++sepCount;
+					++aliCount;
+					++cohCount;
+				}
+
+				if (distance <= (min_distance / 2.0f))
+				{
+					sep += (get_origin() - b->get_origin()) / (float)pow(distance, 2);
+					++sepCount;
+				}
 			}
 		}
-	}
 
 	if (sepCount != 0) // seperation
 	{

@@ -5,6 +5,7 @@
 #include "Utilities.h"
 #include "VecUtil.h"
 #include "Rectangle.h"
+#include "Container.h"
 
 class Boid
 {
@@ -15,13 +16,13 @@ public:
 		float w_sep, float w_ali, float w_coh, 
 		float max_speed, float max_steer, float min_distance, float view_angle);
 
-	void update(float deltaTime, const Rect_i& border, const std::vector<const Boid*>& boids);
+	void update(float deltaTime, const Rect_i& border, const std::vector<const Container<Boid>*>& containers);
 
 	void steer_towards(sf::Vector2f point, float weight);
 	void steer_away(sf::Vector2f point, float weight);
 
 private: // Flocking
-	void flock(const std::vector<const Boid*>& boids);
+	void flock(const std::vector<const Container<Boid>*>& containers);
 
 	sf::Vector2f steer_at(const sf::Vector2f& steer_direction);
 

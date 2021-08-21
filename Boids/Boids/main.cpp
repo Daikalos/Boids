@@ -133,11 +133,10 @@ int main()
 		}
 
 		camera.update(inputHandler);
+		sf::Vector2f mousePos = (sf::Vector2f)camera.get_mouse_world_position();
 
 		for (size_t i = 0; i < BOID_COUNT; ++i)
 			grid->insert(boids[i]);
-
-		sf::Vector2f mousePos = (sf::Vector2f)camera.get_mouse_world_position();
 
 		std::for_each(
 			std::execution::par_unseq,
@@ -148,9 +147,9 @@ int main()
 				const sf::Vector2f ori = boid.get_origin();
 				const float minDistance = boid.get_min_distance();
 
-				std::vector<const Boid*> boids = grid->query(ori, minDistance);
+				std::vector<const Container<Boid>*> cntns = grid->query_containers(ori, minDistance);
 
-				boid.update(deltaTime, border, boids);
+				boid.update(deltaTime, border, cntns);
 
 				if (inputHandler.get_left_held())
 					boid.steer_towards(mousePos, 1.50f);

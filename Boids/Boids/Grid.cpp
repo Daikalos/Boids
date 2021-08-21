@@ -46,8 +46,7 @@ void Grid<T>::insert(const T& item)
 	newCntn->insert(item);
 }
 
-template<typename T>
-std::vector<const T*> Grid<T>::query(sf::Vector2f pos, float radius)
+template<typename T> std::vector<const T*> Grid<T>::query_items(sf::Vector2f pos, float radius)
 {
 	std::vector<const T*> foundItems;
 	std::unordered_set<const Container<T>*> cntns;
@@ -70,4 +69,21 @@ std::vector<const T*> Grid<T>::query(sf::Vector2f pos, float radius)
 	}
 
 	return foundItems;
+}
+
+template<typename T> std::vector<const Container<T>*> Grid<T>::query_containers(sf::Vector2f pos, float radius)
+{
+	std::vector<const T*> foundItems;
+	std::unordered_set<const Container<T>*> cntns;
+
+	for (float x = -radius; x <= radius; x += radius)
+		for (float y = -radius; y <= radius; y += radius)
+		{
+			const Container<T>* cntn = at_pos(sf::Vector2f(pos.x + x, pos.y + y));
+
+			if (cntn != nullptr)
+				cntns.insert(cntn);
+		}
+
+	return std::vector<const Container<T>*>(cntns.begin(), cntns.end());
 }
