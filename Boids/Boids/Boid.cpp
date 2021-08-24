@@ -108,21 +108,21 @@ void Boid::flock(const std::vector<const Container<Boid>*>& containers)
 			}
 		}
 
-	if (sepCount != 0) // seperation
+	if (sepCount > 0) // seperation
 	{
 		sep /= (float)sepCount;
 		sep = v2f::normalize(sep, max_speed);
 
 		apply_force(steer_at(sep) * weight_sep);
 	}
-	if (aliCount != 0) // alignment
+	if (aliCount > 0) // alignment
 	{
 		ali /= (float)aliCount;
 		ali = v2f::normalize(ali, max_speed);
 
 		apply_force(steer_at(ali) * weight_ali);
 	}
-	if (cohCount != 0) // cohesion
+	if (cohCount > 0) // cohesion
 	{
 		coh /= (float)cohCount;
 		coh = v2f::direction(get_origin(), coh);

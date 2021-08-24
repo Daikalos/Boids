@@ -70,8 +70,8 @@ int main()
 		sf::Vector2f size = sf::Vector2f(6.0, 3.0);
 
 		boids[i] = Boid(pos, size,
-			2.500f, 1.300f, 1.500f, 
-			300.0f, 4.0f, 
+			2.200f, 1.200f, 1.550f, 
+			400.0f, 3.0f, 
 			MIN_DISTANCE, 220.0f);
 	}
 
