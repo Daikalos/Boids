@@ -21,9 +21,12 @@ namespace util
 	template<typename T>
 	static inline T clamp(T val, const T min, const T max)
 	{
-		val = (val < min) ? min : val;
-		val = (val > max) ? max : val;
-		return val;
+		if (val < min)
+			return min;
+		else if (val > max)
+			return max;
+		else 
+			return val;
 	}
 
 	template<typename T>

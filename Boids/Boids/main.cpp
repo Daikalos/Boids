@@ -70,7 +70,7 @@ int main()
 		sf::Vector2f size = sf::Vector2f(6.0, 3.0);
 
 		boids[i] = Boid(pos, size,
-			2.200f, 1.200f, 1.550f, 
+			2.200f, 1.050f, 1.550f, 
 			400.0f, 3.0f, 
 			MIN_DISTANCE, 220.0f);
 	}
@@ -149,36 +149,30 @@ int main()
 
 				std::vector<const Container<Boid>*> cntns = grid->query_containers(ori, minDistance);
 
-				boid.update(deltaTime, border, cntns);
-
 				if (inputHandler.get_left_held())
 					boid.steer_towards(mousePos, 1.50f);
 				if (inputHandler.get_right_held())
 					boid.steer_away(mousePos, 1.50f);
+
+				boid.update(deltaTime, border, cntns);
+
+				int v = (&boid - boids) * 3;
+
+				sf::Vector2f p0 = boid.get_pointA();
+				sf::Vector2f p1 = boid.get_pointB();
+				sf::Vector2f p2 = boid.get_pointC();
+
+				vertices[v	  ] = *(Vertex*)(&p0);
+				vertices[v + 1] = *(Vertex*)(&p1);
+				vertices[v + 2] = *(Vertex*)(&p2);
+
+				sf::Vector3f color = boid.get_color();
+
+				colors[v    ] = *(Color*)(&color);
+				colors[v + 1] = *(Color*)(&color);
+				colors[v + 2] = *(Color*)(&color);
 			});
 
-		int v = 0;
-		for (size_t i = 0; i < BOID_COUNT; ++i)
-		{
-			const Boid& boid = boids[i];
-
-			sf::Vector2f p0 = boid.get_pointA();
-			sf::Vector2f p1 = boid.get_pointB();
-			sf::Vector2f p2 = boid.get_pointC();
-
-			vertices[v    ] = *(Vertex*)(&p0);
-			vertices[v + 1] = *(Vertex*)(&p1);
-			vertices[v + 2] = *(Vertex*)(&p2);
-
-			sf::Vector3f color = boid.get_color();
-
-			colors[v	] = *(Color*)(&color);
-			colors[v + 1] = *(Color*)(&color);
-			colors[v + 2] = *(Color*)(&color);
-
-			v += 3;
-		}
-		
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		glVertexPointer(2, GL_FLOAT, sizeof(Vertex), vertices);
