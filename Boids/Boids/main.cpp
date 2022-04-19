@@ -13,7 +13,7 @@
 #include "Camera.h"
 #include "InputHandler.h"
 
-const size_t BOID_COUNT = 8000;
+const size_t BOID_COUNT = 20000;
 const size_t VERTEX_COUNT = BOID_COUNT * 3;
 
 const short MIN_DISTANCE = 40;
@@ -44,8 +44,8 @@ int main()
 	Rect_i border(
 		0, 
 		0, 
-		window.getSize().x, 
-		window.getSize().y);
+		window.getSize().x + 2400, 
+		window.getSize().y + 2400);
 
 	sf::Clock clock;
 	float deltaTime = FLT_EPSILON;
