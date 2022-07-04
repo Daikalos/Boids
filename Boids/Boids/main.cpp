@@ -13,7 +13,7 @@
 #include "Camera.h"
 #include "InputHandler.h"
 
-const size_t BOID_COUNT = 20000;
+const size_t BOID_COUNT = 14000;
 const size_t VERTEX_COUNT = BOID_COUNT * 3;
 
 const short MIN_DISTANCE = 40;
