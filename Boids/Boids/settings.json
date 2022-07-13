@@ -22,7 +22,8 @@
         "turn_at_border" : false,
         "turn_margin_factor" : 0.85,
         "turn_factor" : 160.0,
-        "grid_cell_max_boids" : 8,
+        "grid_cell_max_boids" : 16,
+        "grid_extra_cells" : 24,
         "vertical_sync" : true,
         "max_framerate" : 144
     }

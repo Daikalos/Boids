@@ -64,10 +64,10 @@ int main()
 		});
 
 	Grid grid(
-		border.left - Config::boid_min_distance * Config::grid_extra_cells,
-		border.top - Config::boid_min_distance * Config::grid_extra_cells,
+		border.left  - Config::boid_min_distance * Config::grid_extra_cells,
+		border.top	 - Config::boid_min_distance * Config::grid_extra_cells,
 		border.right + Config::boid_min_distance * Config::grid_extra_cells,
-		border.bot + Config::boid_min_distance * Config::grid_extra_cells,
+		border.bot	 + Config::boid_min_distance * Config::grid_extra_cells,
 		Config::boid_min_distance, Config::boid_min_distance);
 
 	glClearColor(
