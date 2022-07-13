@@ -9,7 +9,7 @@ class Boid;
 
 struct Container
 {
-	Container() : items(std::unordered_set<const Boid*>()), neighbours(std::vector<const Container*>()) 
+	Container()
 	{
 		neighbours.reserve(8);
 	}

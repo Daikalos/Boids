@@ -9,7 +9,7 @@ Grid::Grid(int grid_left, int grid_top, int grid_right, int grid_bot, int cont_w
 	containers = new Container[width * height];
 
 	std::for_each(
-		std::execution::seq,
+		std::execution::par_unseq,
 		containers,
 		containers + width * height,
 		[&](Container& cntn)
