@@ -25,17 +25,14 @@ struct Color
 
 int main()
 {
-	srand((unsigned int)time(0));
-
-	Config cfg;
-	cfg.load();
+	Config::load();
 
 	sf::Window window(sf::VideoMode(
 		sf::VideoMode::getDesktopMode().width,
 		sf::VideoMode::getDesktopMode().height), "Boids"); //sf::Style::Fullscreen);
 
-	window.setVerticalSyncEnabled(cfg.vertical_sync);
-	window.setFramerateLimit(cfg.max_framerate);
+	window.setVerticalSyncEnabled(Config::vertical_sync);
+	window.setFramerateLimit(Config::max_framerate);
 	window.setActive(true);
 
 	Camera camera(window);
@@ -45,17 +42,16 @@ int main()
 	float deltaTime = FLT_EPSILON;;
 
 	Rect_i border(0, 0, window.getSize().x, window.getSize().y);
-	size_t vertex_count = cfg.boid_count * 3;
-	const int extra_grid_cells = 24;
+	size_t vertex_count = Config::boid_count * 3;
 
-	Boid* boids = (Boid*)malloc(cfg.boid_count * sizeof(Boid));
-	Vertex* vertices = (Vertex*)malloc(vertex_count * sizeof(Vertex));
-	Color* colors = (Color*)malloc(vertex_count * sizeof(Color));
+	Boid* boids = (Boid*)::operator new(Config::boid_count * sizeof(Boid));
+	Vertex* vertices = (Vertex*)::operator new(vertex_count * sizeof(Vertex));
+	Color* colors = (Color*)::operator new(vertex_count * sizeof(Color));
 
 	std::for_each(
 		std::execution::par_unseq,
 		boids,
-		boids + cfg.boid_count,
+		boids + Config::boid_count,
 		[&](Boid& boid)
 		{
 			int i = &boid - boids;
@@ -64,20 +60,20 @@ int main()
 				util::random(0, border.width()) - border.left,
 				util::random(0, border.height()) - border.top);
 
-			boids[i] = Boid(pos, &cfg);
+			new(boids + i) Boid(pos);
 		});
 
-	Grid* grid = new Grid(
-		border.left - cfg.boid_min_distance * extra_grid_cells,
-		border.top - cfg.boid_min_distance * extra_grid_cells,
-		border.right + cfg.boid_min_distance * extra_grid_cells,
-		border.bot + cfg.boid_min_distance * extra_grid_cells,
-		cfg.boid_min_distance, cfg.boid_min_distance);
+	Grid grid(
+		border.left - Config::boid_min_distance * Config::grid_extra_cells,
+		border.top - Config::boid_min_distance * Config::grid_extra_cells,
+		border.right + Config::boid_min_distance * Config::grid_extra_cells,
+		border.bot + Config::boid_min_distance * Config::grid_extra_cells,
+		Config::boid_min_distance, Config::boid_min_distance);
 
 	glClearColor(
-		cfg.background.x, 
-		cfg.background.y, 
-		cfg.background.z, 1.0f);
+		Config::background.x, 
+		Config::background.y, 
+		Config::background.z, 1.0f);
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -121,19 +117,18 @@ int main()
 						std::for_each(
 							std::execution::par_unseq,
 							boids,
-							boids + cfg.boid_count,
+							boids + Config::boid_count,
 							[&](Boid& boid) 
 							{
 								boid.set_container(nullptr); 
 							});
 
-						delete grid;
-						grid = new Grid(
-							border.left  - cfg.boid_min_distance * extra_grid_cells,
-							border.top   - cfg.boid_min_distance * extra_grid_cells,
-							border.right + cfg.boid_min_distance * extra_grid_cells,
-							border.bot   + cfg.boid_min_distance * extra_grid_cells,
-							cfg.boid_min_distance, cfg.boid_min_distance);
+						grid = Grid(
+							border.left  - Config::boid_min_distance * Config::grid_extra_cells,
+							border.top   - Config::boid_min_distance * Config::grid_extra_cells,
+							border.right + Config::boid_min_distance * Config::grid_extra_cells,
+							border.bot   + Config::boid_min_distance * Config::grid_extra_cells,
+							Config::boid_min_distance, Config::boid_min_distance);
 					}
 					break;
 				case sf::Event::MouseWheelScrolled:
@@ -148,24 +143,24 @@ int main()
 		std::for_each(
 			std::execution::seq,
 			boids,
-			boids + cfg.boid_count,
+			boids + Config::boid_count,
 			[&](Boid& boid)
 			{
-				grid->insert(boid);
+				grid.insert(boid);
 			});
 
 		std::for_each(
 			std::execution::par_unseq,
 			boids,
-			boids + cfg.boid_count,
+			boids + Config::boid_count,
 			[&](Boid& boid)
 			{
-				if (cfg.cursor_enabled)
+				if (Config::cursor_enabled)
 				{
 					if (inputHandler.get_left_held())
-						boid.steer_towards(mousePos, cfg.cursor_towards);
+						boid.steer_towards(mousePos, Config::cursor_towards);
 					if (inputHandler.get_right_held())
-						boid.steer_away(mousePos, cfg.cursor_away);
+						boid.steer_away(mousePos, Config::cursor_away);
 				}
 
 				boid.update(deltaTime, border);
@@ -203,11 +198,6 @@ int main()
 
 		window.display();
 	}
-
-	delete[] boids;
-	delete[] vertices;
-	delete[] colors;
-	delete grid;
 
 	return 0;
 }

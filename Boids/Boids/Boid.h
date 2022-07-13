@@ -11,7 +11,7 @@
 class Boid
 {
 public:
-	Boid(sf::Vector2f pos, Config* cfg);
+	Boid(sf::Vector2f pos);
 
 	void update(float deltaTime, const Rect_i& border);
 
@@ -44,8 +44,8 @@ public: // Properties
 	inline sf::Vector2f get_origin() const
 	{
 		return sf::Vector2f(
-			position.x + (cfg->boid_size_width / 2),
-			position.y + (cfg->boid_size_height / 2));
+			position.x + (Config::boid_size_width / 2),
+			position.y + (Config::boid_size_height / 2));
 	}
 
 	inline Container* get_container() const
@@ -72,6 +72,5 @@ private: // Variables
 	float rotation;		 // Current rotation
 
 	Container* container = nullptr;
-	Config* cfg = nullptr;
 };
 

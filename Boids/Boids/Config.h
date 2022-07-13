@@ -4,42 +4,44 @@
 #include <iostream>
 #include <fstream>
 #include "json.hpp"
-#include "Rectangle.h"
 
 struct Config
 {
-	sf::Vector3f background = sf::Vector3f(0.0f, 0.0f, 0.0f);
+	static sf::Vector3f background;
 
-	size_t boid_count = 3500;
+	static size_t boid_count;
 
-	float boid_size_width = 12.0f;
-	float boid_size_height = 6.0f;
-	float boid_max_speed = 300.0f;
-	float boid_max_steer = 3.0f;
-	float boid_view_angle = 260.0f;
-	float boid_min_distance = 40;
+	static float boid_size_width;
+	static float boid_size_height;
+	static float boid_max_speed;
+	static float boid_max_steer;
+	static float boid_view_angle;
+	static float boid_min_distance;
 
-	float weight_sep = 2.20f;
-	float weight_ali = 1.05f;
-	float weight_coh = 1.55f;
+	static sf::Vector3f boid_color_top_left;
+	static sf::Vector3f boid_color_top_right;
+	static sf::Vector3f boid_color_bot_left;
+	static sf::Vector3f boid_color_bot_right;
 
-	bool cursor_enabled = true;
-	float cursor_towards = 1.5f;
-	float cursor_away = 1.5f;
+	static float weight_sep;
+	static float weight_ali;
+	static float weight_coh;
 
-	bool turn_at_border = true;
-	float turn_margin_factor = 0.85f;
-	float turn_factor = 120.0f;
+	static bool cursor_enabled;
+	static float cursor_towards;
+	static float cursor_away;
 
-	sf::Vector3f boid_color_top_left = sf::Vector3f(0.73f, 0.33f, 0.82f);
-	sf::Vector3f boid_color_top_right = sf::Vector3f(1.0f, 0.0f, 1.0f);
-	sf::Vector3f boid_color_bot_left = sf::Vector3f(0.85f, 0.75f, 0.85f);
-	sf::Vector3f boid_color_bot_right = sf::Vector3f(0.35f, 0.0f, 0.35f);
+	static bool turn_at_border;
+	static float turn_margin_factor;
+	static float turn_factor;
 
-	bool vertical_sync = true;
-	int max_framerate = 144;
+	static int grid_cell_max_boids;
+	static int grid_extra_cells;
 
-	void load()
+	static bool vertical_sync;
+	static int max_framerate;
+
+	static void load()
 	{
 		std::ifstream project_file("settings.json", std::ifstream::binary);
 		std::stringstream buffer;
@@ -52,36 +54,47 @@ struct Config
 
 		if (!json.empty())
 		{
-			background = convert(json["settings"]["background"]);
+			try
+			{
+				background = convert(json["settings"]["background"]);
 
-			boid_count = json["settings"]["boid_count"];
-			boid_size_width = json["settings"]["boid_size_width"];
-			boid_size_height = json["settings"]["boid_size_height"];
-			boid_max_speed = json["settings"]["boid_max_speed"];
-			boid_max_steer = json["settings"]["boid_max_steer"];
-			boid_view_angle = json["settings"]["boid_view_angle"];
-			boid_min_distance = json["settings"]["boid_min_distance"];
+				boid_count = json["settings"]["boid_count"];
+				boid_size_width = json["settings"]["boid_size_width"];
+				boid_size_height = json["settings"]["boid_size_height"];
+				boid_max_speed = json["settings"]["boid_max_speed"];
+				boid_max_steer = json["settings"]["boid_max_steer"];
+				boid_view_angle = json["settings"]["boid_view_angle"];
+				boid_min_distance = json["settings"]["boid_min_distance"];
 
-			boid_color_top_left = convert(json["settings"]["boid_color_top_left"]);
-			boid_color_top_right = convert(json["settings"]["boid_color_top_right"]);
-			boid_color_bot_left = convert(json["settings"]["boid_color_bot_left"]);
-			boid_color_bot_right = convert(json["settings"]["boid_color_bot_right"]);
+				boid_color_top_left = convert(json["settings"]["boid_color_top_left"]);
+				boid_color_top_right = convert(json["settings"]["boid_color_top_right"]);
+				boid_color_bot_left = convert(json["settings"]["boid_color_bot_left"]);
+				boid_color_bot_right = convert(json["settings"]["boid_color_bot_right"]);
 
-			weight_sep = json["settings"]["separation"];
-			weight_ali = json["settings"]["alignment"];
-			weight_coh = json["settings"]["cohesion"];
+				weight_sep = json["settings"]["separation"];
+				weight_ali = json["settings"]["alignment"];
+				weight_coh = json["settings"]["cohesion"];
 
-			cursor_enabled = json["settings"]["cursor_enabled"];
-			cursor_towards = json["settings"]["cursor_towards"];
-			cursor_away = json["settings"]["cursor_away"];
+				cursor_enabled = json["settings"]["cursor_enabled"];
+				cursor_towards = json["settings"]["cursor_towards"];
+				cursor_away = json["settings"]["cursor_away"];
 
-			turn_at_border = json["settings"]["turn_at_border"];
-			turn_margin_factor = json["settings"]["turn_margin_factor"];
-			turn_factor = json["settings"]["turn_factor"];
+				turn_at_border = json["settings"]["turn_at_border"];
+				turn_margin_factor = json["settings"]["turn_margin_factor"];
+				turn_factor = json["settings"]["turn_factor"];
 
-			vertical_sync = json["settings"]["vertical_sync"];
-			max_framerate = json["settings"]["max_framerate"];
+				grid_cell_max_boids = json["settings"]["grid_cell_max_boids"];
+
+				vertical_sync = json["settings"]["vertical_sync"];
+				max_framerate = json["settings"]["max_framerate"];
+			}
+			catch (std::exception e)
+			{
+				onError();
+			}
 		}
+		else
+			onError();
 	}
 
 	static inline sf::Vector3f convert(std::string strColor)
@@ -106,5 +119,43 @@ struct Config
 		catch (std::exception e) {}
 
 		return color;
+	}
+
+private:
+	static void onError()
+	{
+		background = sf::Vector3f(0.0f, 0.0f, 0.0f);
+
+		boid_count = 2500;
+
+		boid_size_width = 20.0f;
+		boid_size_height = 10.0f;
+		boid_max_speed = 340.0f;
+		boid_max_steer = 3.0f;
+		boid_view_angle = 280.0f;
+		boid_min_distance = 52;
+
+		boid_color_top_left = sf::Vector3f(0.73f, 0.33f, 0.82f);
+		boid_color_top_right = sf::Vector3f(1.0f, 0.0f, 1.0f);
+		boid_color_bot_left = sf::Vector3f(0.85f, 0.75f, 0.85f);
+		boid_color_bot_right = sf::Vector3f(0.35f, 0.0f, 0.35f);
+
+		weight_sep = 2.25f;
+		weight_ali = 1.20f;
+		weight_coh = 1.60f;
+
+		cursor_enabled = true;
+		cursor_towards = 1.2f;
+		cursor_away = 1.2f;
+
+		turn_at_border = true;
+		turn_margin_factor = 0.85f;
+		turn_factor = 120.0f;
+
+		grid_cell_max_boids = 8;
+		grid_extra_cells = 24;
+
+		vertical_sync = true;
+		max_framerate = 144;
 	}
 };

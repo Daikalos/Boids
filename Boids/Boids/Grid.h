@@ -25,6 +25,17 @@ public:
 
 	void insert(Boid& item) const;
 
+	Grid& operator=(Grid&& rhs)
+	{
+		std::swap(containers, rhs.containers);
+		std::swap(contDims, rhs.contDims);
+		std::swap(width, rhs.width);
+		std::swap(height, rhs.height);
+		std::swap(gridRect, rhs.gridRect);
+
+		return *this;
+	}
+
 private:
 	inline Container* at_pos(int x, int y) const
 	{
@@ -59,7 +70,5 @@ private:
 
 private:
 	Grid() = delete;
-	Grid(const Grid& rhs) = delete;
-	Grid& operator=(const Grid& rhs) = delete;
 };
 

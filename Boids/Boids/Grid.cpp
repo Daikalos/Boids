@@ -49,10 +49,8 @@ void Grid::insert(Boid& item) const
 		return;
 
 	if (curCntn != nullptr && curCntn != newCntn)
-	{
 		curCntn->erase(&item);
-	}
 
-	item.set_container(newCntn);
-	newCntn->insert(&item);
+	if (newCntn->insert(&item))
+		item.set_container(newCntn);
 }

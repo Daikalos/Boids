@@ -3,7 +3,7 @@
 #include <unordered_set>
 #include <vector>
 
-#include "Rectangle.h"
+#include "Config.h"
 
 class Boid;
 
@@ -14,13 +14,19 @@ struct Container
 		neighbours.reserve(8);
 	}
 
-	void insert(const Boid* item)
+	bool insert(const Boid* item)
 	{
+		if (items.size() >= Config::grid_cell_max_boids)
+			return false;
+
 		items.insert(item);
+
+		return true;
 	}
-	void erase(const Boid* item)
+	bool erase(const Boid* item)
 	{
 		items.erase(item);
+		return true;
 	}
 
 	void add_neighbour(const Container* cntn)
