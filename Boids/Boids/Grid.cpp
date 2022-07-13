@@ -1,89 +1,66 @@
 #include "Grid.h"
 
-template class Grid<Boid>;
-
-template<typename T>
-Grid<T>::Grid(int grid_left, int grid_top, int grid_right, int grid_bot, int cont_width, int cont_height)
+Grid::Grid(int grid_left, int grid_top, int grid_right, int grid_bot, int cont_width, int cont_height)
 	: contDims({ cont_width, cont_height }), gridRect(grid_left, grid_top, grid_right, grid_bot)
 {
 	width = gridRect.width() / cont_width;
     height = gridRect.height() / cont_height;
 
-	containers = new Container<T>[(long)width * height];
+	containers = new Container<Boid>[width * height];
 
 	for (int y = 0; y < height; ++y)
 	{
 		for (int x = 0; x < width; ++x)
 		{
-			containers[x + y * (long)width] = Container<T>(Rect_i(
+			containers[x + y * (long)width] = Container<Boid>(Rect_i(
 				 x * cont_width + grid_left,			  y * cont_height + grid_top,
 				 x * cont_width + cont_width + grid_left, y * cont_height + cont_height + grid_top));
 		}
 	}
 }
 
-template<typename T>
-Grid<T>::~Grid()
+Grid::~Grid()
 {
 	delete[] containers;
 }
 
-template<typename T>
-void Grid<T>::insert(const T& item)
+void Grid::insert(Boid& item) const
 {
-	Container<T>* newCntn = at_pos(item);
-	Container<T>* curCntn = items[&item];
+	Container<Boid>* newCntn = at_pos(item);
+	Container<Boid>* curCntn = item.get_container();
 
 	if (newCntn == nullptr || curCntn == newCntn)
 		return;
 
 	if (curCntn != nullptr && curCntn != newCntn)
 	{
-		curCntn->erase(item);
+		curCntn->erase(&item);
 	}
 
-	items[&item] = newCntn;
-	newCntn->insert(item);
+	item.set_container(newCntn);
+	newCntn->insert(&item);
 }
 
-template<typename T> std::vector<const T*> Grid<T>::query_items(sf::Vector2f pos, float radius)
+std::vector<const Container<Boid>*> Grid::query_containers(sf::Vector2f pos, float radius) const
 {
-	std::vector<const T*> foundItems;
-	std::unordered_set<const Container<T>*> cntns;
+	std::vector<const Container<Boid>*> cntns;
 
-	for (float x = -radius; x <= radius; x += radius)
-		for (float y = -radius; y <= radius; y += radius)
+	const Container<Boid>* cntn = at_pos(pos);
+
+	if (cntn != nullptr && cntn->items.size() > 0)
+		cntns.push_back(at_pos(pos));
+
+	for (int x = -radius; x <= (int)radius; x += radius)
+		for (int y = -radius; y <= (int)radius; y += radius)
 		{
-			const Container<T>* cntn = at_pos(sf::Vector2f(pos.x + x, pos.y + y));
-			
-			if (cntn != nullptr)
-				cntns.insert(cntn);
+			if (x == 0 && y == 0)
+				continue;
+
+			const Container<Boid>* cntn = at_pos(sf::Vector2f(pos.x + x, pos.y + y));
+
+			if (cntn != nullptr && cntn->items.size() > 0)
+				cntns.push_back(cntn);
 		}
 
-	for (const Container<T>* c : cntns)
-	{
-		for (const T* b : c->items)
-		{
-			foundItems.push_back(b);
-		}
-	}
-
-	return foundItems;
-}
-
-template<typename T> std::vector<const Container<T>*> Grid<T>::query_containers(sf::Vector2f pos, float radius)
-{
-	std::vector<const T*> foundItems;
-	std::unordered_set<const Container<T>*> cntns;
-
-	for (float x = -radius; x <= radius; x += radius)
-		for (float y = -radius; y <= radius; y += radius)
-		{
-			const Container<T>* cntn = at_pos(sf::Vector2f(pos.x + x, pos.y + y));
-
-			if (cntn != nullptr)
-				cntns.insert(cntn);
-		}
-
-	return std::vector<const Container<T>*>(cntns.begin(), cntns.end());
+	return cntns;
 }

@@ -8,15 +8,10 @@
 
 #include "Boid.h"
 #include "Grid.h"
-#include "Quadtree.h"
 #include "VecUtil.h"
 #include "Camera.h"
 #include "InputHandler.h"
-
-const size_t BOID_COUNT = 14000;
-const size_t VERTEX_COUNT = BOID_COUNT * 3;
-
-const short MIN_DISTANCE = 40;
+#include "Config.h"
 
 struct Vertex
 {
@@ -32,50 +27,51 @@ int main()
 {
 	srand((unsigned int)time(0));
 
-	sf::Window window(sf::VideoMode(2240, 1240), "Boids");
+	Config cfg;
+	cfg.load();
 
-	window.setVerticalSyncEnabled(true);
-	window.setFramerateLimit(144);
+	sf::Window window(sf::VideoMode(
+		sf::VideoMode::getDesktopMode().width,
+		sf::VideoMode::getDesktopMode().height), "Boids"); //sf::Style::Fullscreen);
+
+	window.setVerticalSyncEnabled(cfg.vertical_sync);
+	window.setFramerateLimit(cfg.max_framerate);
 	window.setActive(true);
 
 	Camera camera(window);
 	InputHandler inputHandler;
 
-	Rect_i border(
-		0, 
-		0, 
-		window.getSize().x + 2400, 
-		window.getSize().y + 2400);
-
 	sf::Clock clock;
-	float deltaTime = FLT_EPSILON;
+	float deltaTime = FLT_EPSILON;;
 
-	Boid* boids = new Boid[BOID_COUNT];
-	Vertex* vertices = new Vertex[VERTEX_COUNT];
-	Color* colors = new Color[VERTEX_COUNT];
+	Rect_i border(0, 0, window.getSize().x, window.getSize().y);
+	size_t vertex_count = cfg.boid_count * 3;
+	const int extra_grid_cells = 24;
 
-	QuadtreeB* quadtree = nullptr;
-	GridB* grid = new GridB(
-		border.left  - MIN_DISTANCE,
-		border.top   - MIN_DISTANCE, 
-		border.right + MIN_DISTANCE,
-		border.bot   + MIN_DISTANCE,
-		MIN_DISTANCE, MIN_DISTANCE);
+	Boid* boids = (Boid*)malloc(cfg.boid_count * sizeof(Boid));
+	Vertex* vertices = (Vertex*)malloc(vertex_count * sizeof(Vertex));
+	Color* colors = (Color*)malloc(vertex_count * sizeof(Color));
 
-	for (int i = 0; i < BOID_COUNT; ++i)
+	Grid* grid = new Grid(
+		border.left  - cfg.boid_min_distance * extra_grid_cells,
+		border.top   - cfg.boid_min_distance * extra_grid_cells,
+		border.right + cfg.boid_min_distance * extra_grid_cells,
+		border.bot   + cfg.boid_min_distance * extra_grid_cells,
+		cfg.boid_min_distance, cfg.boid_min_distance);
+
+	for (int i = 0; i < cfg.boid_count; ++i)
 	{
 		sf::Vector2f pos = sf::Vector2f(
 			(float)(rand() % border.width()) - border.left,
 			(float)(rand() % border.height() - border.top));
-		sf::Vector2f size = sf::Vector2f(6.0, 3.0);
 
-		boids[i] = Boid(pos, size,
-			2.200f, 1.050f, 1.550f, 
-			400.0f, 3.0f, 
-			MIN_DISTANCE, 220.0f);
+		boids[i] = Boid(pos, &cfg);
 	}
 
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClearColor(
+		cfg.background.x, 
+		cfg.background.y, 
+		cfg.background.z, 1.0f);
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -87,12 +83,9 @@ int main()
 
 	while (window.isOpen())
 	{
-		deltaTime = clock.restart().asSeconds();
+		deltaTime = std::clamp(clock.restart().asSeconds(), 0.0f, 0.075f);
 
 		inputHandler.update();
-
-		if (inputHandler.get_key_pressed(sf::Keyboard::Key::O))
-			window.setTitle(std::to_string(1.0f / deltaTime));
 
 		sf::Event event;
 		while (window.pollEvent(event))
@@ -117,13 +110,24 @@ int main()
 							window.getSize().x,
 							window.getSize().y);
 
+						camera.set_position((sf::Vector2f)window.getSize() / 2.0f);
+
+						std::for_each(
+							std::execution::par_unseq,
+							boids,
+							boids + cfg.boid_count,
+							[&](Boid& boid)
+							{
+								boid.set_container(nullptr);
+							});
+
 						delete grid;
-						grid = new GridB(
-							border.left  - MIN_DISTANCE,
-							border.top   - MIN_DISTANCE,
-							border.right + MIN_DISTANCE,
-							border.bot   + MIN_DISTANCE,
-							MIN_DISTANCE, MIN_DISTANCE);
+						grid = new Grid(
+							border.left  - cfg.boid_min_distance * extra_grid_cells,
+							border.top   - cfg.boid_min_distance * extra_grid_cells,
+							border.right + cfg.boid_min_distance * extra_grid_cells,
+							border.bot   + cfg.boid_min_distance * extra_grid_cells,
+							cfg.boid_min_distance, cfg.boid_min_distance);
 					}
 					break;
 				case sf::Event::MouseWheelScrolled:
@@ -135,24 +139,32 @@ int main()
 		camera.update(inputHandler);
 		sf::Vector2f mousePos = (sf::Vector2f)camera.get_mouse_world_position();
 
-		for (size_t i = 0; i < BOID_COUNT; ++i)
-			grid->insert(boids[i]);
+		std::for_each(
+			std::execution::seq,
+			boids,
+			boids + cfg.boid_count,
+			[&](Boid& boid)
+			{
+				grid->insert(boid);
+			});
 
 		std::for_each(
 			std::execution::par_unseq,
 			boids,
-			boids + BOID_COUNT,
+			boids + cfg.boid_count,
 			[&](Boid& boid)
 			{
+				if (cfg.cursor_enabled)
+				{
+					if (inputHandler.get_left_held())
+						boid.steer_towards(mousePos, cfg.cursor_towards);
+					if (inputHandler.get_right_held())
+						boid.steer_away(mousePos, cfg.cursor_away);
+				}
+
 				const sf::Vector2f ori = boid.get_origin();
-				const float minDistance = boid.get_min_distance();
 
-				std::vector<const Container<Boid>*> cntns = grid->query_containers(ori, minDistance);
-
-				if (inputHandler.get_left_held())
-					boid.steer_towards(mousePos, 1.50f);
-				if (inputHandler.get_right_held())
-					boid.steer_away(mousePos, 1.50f);
+				std::vector<const Container<Boid>*> cntns = grid->query_containers(ori, cfg.boid_min_distance);
 
 				boid.update(deltaTime, border, cntns);
 
@@ -183,12 +195,17 @@ int main()
 		glMatrixMode(GL_MODELVIEW);
 		glLoadMatrixf(camera.get_world_matrix());
 
-		glDrawArrays(GL_TRIANGLES, 0, VERTEX_COUNT);
+		glDrawArrays(GL_TRIANGLES, 0, vertex_count);
 
 		glPopMatrix();
 
 		window.display();
 	}
+
+	delete grid;
+	delete[] boids;
+	delete[] vertices;
+	delete[] colors;
 
 	return 0;
 }

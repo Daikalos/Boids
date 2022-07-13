@@ -6,15 +6,12 @@
 #include "VecUtil.h"
 #include "Rectangle.h"
 #include "Container.h"
+#include "Config.h"
 
 class Boid
 {
 public:
-	Boid();
-	Boid(
-		sf::Vector2f pos, sf::Vector2f size, 
-		float w_sep, float w_ali, float w_coh, 
-		float max_speed, float max_steer, float min_distance, float view_angle);
+	Boid(sf::Vector2f pos, Config* cfg);
 
 	void update(float deltaTime, const Rect_i& border, const std::vector<const Container<Boid>*>& containers);
 
@@ -26,7 +23,7 @@ private: // Flocking
 
 	sf::Vector2f steer_at(const sf::Vector2f& steer_direction);
 
-	void outside_border(const Rect_i& border);
+	void outside_border(const Rect_i& border, float deltaTime);
 
 	inline void apply_force(const sf::Vector2f& force)
 	{
@@ -38,22 +35,33 @@ public: // Properties
 	inline sf::Vector2f get_pointB() const { return pointB; }
 	inline sf::Vector2f get_pointC() const { return pointC; }
 
+	inline sf::Vector3f get_color() const { return color; }
+
 	inline sf::Vector2f get_position() const { return position; }
-	inline sf::Vector2f get_size() const { return size; }
+	inline sf::Vector2f get_velocity() const { return velocity; }
+	inline float get_rotation() const { return rotation; }
 
 	inline sf::Vector2f get_origin() const
 	{
 		return sf::Vector2f(
-			position.x + (size.x / 2),
-			position.y + (size.y / 2));
+			position.x + (cfg->boid_size_width / 2),
+			position.y + (cfg->boid_size_height / 2));
 	}
 
-	inline sf::Vector2f get_velocity() const { return velocity; }
+	inline Container<Boid>* get_container() const
+	{
+		return container;
+	}
+	void set_container(Container<Boid>* container)
+	{
+		this->container = container;
+	}
 
-	inline float get_rotation() const { return rotation; }
-	inline float get_min_distance() const { return min_distance; }
-
-	inline sf::Vector3f get_color() const { return color; }
+private:
+	int interpolate(int a, int b, int c, int d, double t, double s) const
+	{
+		return (int)(a * (1 - t) * (1 - s) + b * t * (1 - s) + c * (1 - t) * s + d * t * s);
+	}
 
 private: // Variables
 	sf::Vector2f pointA, pointB, pointC;
@@ -61,16 +69,9 @@ private: // Variables
 
 	sf::Vector2f position;
 	sf::Vector2f velocity;
-	sf::Vector2f size;
-
-	float weight_sep;
-	float weight_ali;
-	float weight_coh;
-
 	float rotation;		 // Current rotation
-	float max_speed;	 // Maximum speed
-	float max_steer;	 // Maximum steering force towards target
-	float min_distance;  // Only interact with boids within this distance
-	float view_angle;	 // Only interact with boids within this angle
+
+	Container<Boid>* container = nullptr;
+	Config* cfg = nullptr;
 };
 

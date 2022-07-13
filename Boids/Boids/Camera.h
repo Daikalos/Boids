@@ -41,6 +41,15 @@ public:
 	inline sf::Vector2f get_position() const { return position; }
 	inline sf::Vector2i get_mouse_world_position() const { return view_to_world(sf::Mouse::getPosition(window)); }
 
+	inline void set_position(sf::Vector2f position)
+	{
+		this->position = position;
+	}
+	inline void set_scale(float scale)
+	{
+		this->scale = scale;
+	}
+
 	inline double get_scale() const { return scale; }
 
 private:

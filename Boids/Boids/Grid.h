@@ -6,13 +6,13 @@
 #include "Boid.h"
 #include "VecUtil.h"
 
-template<typename T> class Grid
+class Grid
 {
 public:
 	Grid(int grid_left, int grid_top, int grid_right, int grid_bot, int cont_width, int cont_height);
 	~Grid();
 
-	inline Container<T>* at_pos(const sf::Vector2f& position) const
+	inline Container<Boid>* at_pos(const sf::Vector2f& position) const
 	{
 		const sf::Vector2i& pos = ((sf::Vector2i)position - gridRect.top_left) / contDims;
 
@@ -21,14 +21,9 @@ public:
 
 		return at_pos(pos);
 	}
-	inline Container<T>* at_pos(const T& item) const
+	inline Container<Boid>* at_pos(const Boid& item) const
 	{
-		const Boid* boid = dynamic_cast<const Boid*>(&item);
-
-		if (boid == nullptr)
-			return nullptr;
-
-		const sf::Vector2i& pos = ((sf::Vector2i)boid->get_origin() - gridRect.top_left) / contDims;
+		const sf::Vector2i& pos = ((sf::Vector2i)item.get_origin() - gridRect.top_left) / contDims;
 
 		if (!within_grid(pos))
 			return nullptr;
@@ -36,16 +31,15 @@ public:
 		return at_pos(pos);
 	}
 
-	void insert(const T& item);
-	std::vector<const T*> query_items(sf::Vector2f pos, float radius);
-	std::vector<const Container<T>*> query_containers(sf::Vector2f pos, float radius);
+	void insert(Boid& item) const;
+	std::vector<const Container<Boid>*> query_containers(sf::Vector2f pos, float radius) const;
 
 private:
-	inline Container<T>* at_pos(int x, int y) const
+	inline Container<Boid>* at_pos(int x, int y) const
 	{
 		return &containers[x + y * width];
 	}
-	inline Container<T>* at_pos(const sf::Vector2i& position) const
+	inline Container<Boid>* at_pos(const sf::Vector2i& position) const
 	{
 		return &containers[position.x + position.y * width];
 	}
@@ -56,12 +50,10 @@ private:
 	}
 
 private:
-	Container<T>* containers;
+	Container<Boid>* containers;
 	sf::Vector2i contDims;
 
-	std::unordered_map<const T*, Container<T>*> items;
-
-	unsigned short width, height;
+	size_t width, height;
 	Rect_i gridRect;
 
 private:
@@ -69,6 +61,4 @@ private:
 	Grid(const Grid& rhs) = delete;
 	Grid& operator=(const Grid& rhs) = delete;
 };
-
-typedef Grid<Boid> GridB;
 
