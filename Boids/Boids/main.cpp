@@ -52,21 +52,27 @@ int main()
 	Vertex* vertices = (Vertex*)malloc(vertex_count * sizeof(Vertex));
 	Color* colors = (Color*)malloc(vertex_count * sizeof(Color));
 
+	std::for_each(
+		std::execution::par_unseq,
+		boids,
+		boids + cfg.boid_count,
+		[&](Boid& boid)
+		{
+			int i = &boid - boids;
+
+			sf::Vector2f pos = sf::Vector2f(
+				util::random(0, border.width()) - border.left,
+				util::random(0, border.height()) - border.top);
+
+			boids[i] = Boid(pos, &cfg);
+		});
+
 	Grid* grid = new Grid(
-		border.left  - cfg.boid_min_distance * extra_grid_cells,
-		border.top   - cfg.boid_min_distance * extra_grid_cells,
+		border.left - cfg.boid_min_distance * extra_grid_cells,
+		border.top - cfg.boid_min_distance * extra_grid_cells,
 		border.right + cfg.boid_min_distance * extra_grid_cells,
-		border.bot   + cfg.boid_min_distance * extra_grid_cells,
+		border.bot + cfg.boid_min_distance * extra_grid_cells,
 		cfg.boid_min_distance, cfg.boid_min_distance);
-
-	for (int i = 0; i < cfg.boid_count; ++i)
-	{
-		sf::Vector2f pos = sf::Vector2f(
-			(float)(rand() % border.width()) - border.left,
-			(float)(rand() % border.height() - border.top));
-
-		boids[i] = Boid(pos, &cfg);
-	}
 
 	glClearColor(
 		cfg.background.x, 
@@ -116,9 +122,9 @@ int main()
 							std::execution::par_unseq,
 							boids,
 							boids + cfg.boid_count,
-							[&](Boid& boid)
+							[&](Boid& boid) 
 							{
-								boid.set_container(nullptr);
+								boid.set_container(nullptr); 
 							});
 
 						delete grid;
@@ -162,11 +168,7 @@ int main()
 						boid.steer_away(mousePos, cfg.cursor_away);
 				}
 
-				const sf::Vector2f ori = boid.get_origin();
-
-				std::vector<const Container<Boid>*> cntns = grid->query_containers(ori, cfg.boid_min_distance);
-
-				boid.update(deltaTime, border, cntns);
+				boid.update(deltaTime, border);
 
 				int v = (&boid - boids) * 3;
 
@@ -202,10 +204,10 @@ int main()
 		window.display();
 	}
 
-	delete grid;
 	delete[] boids;
 	delete[] vertices;
 	delete[] colors;
+	delete grid;
 
 	return 0;
 }

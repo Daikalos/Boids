@@ -5,21 +5,21 @@
 #include "Utilities.h"
 #include "VecUtil.h"
 #include "Rectangle.h"
-#include "Container.h"
 #include "Config.h"
+#include "Container.h"
 
 class Boid
 {
 public:
 	Boid(sf::Vector2f pos, Config* cfg);
 
-	void update(float deltaTime, const Rect_i& border, const std::vector<const Container<Boid>*>& containers);
+	void update(float deltaTime, const Rect_i& border);
 
 	void steer_towards(sf::Vector2f point, float weight);
 	void steer_away(sf::Vector2f point, float weight);
 
 private: // Flocking
-	void flock(const std::vector<const Container<Boid>*>& containers);
+	void flock();
 
 	sf::Vector2f steer_at(const sf::Vector2f& steer_direction);
 
@@ -48,11 +48,11 @@ public: // Properties
 			position.y + (cfg->boid_size_height / 2));
 	}
 
-	inline Container<Boid>* get_container() const
+	inline Container* get_container() const
 	{
 		return container;
 	}
-	void set_container(Container<Boid>* container)
+	void set_container(Container* container)
 	{
 		this->container = container;
 	}
@@ -71,7 +71,7 @@ private: // Variables
 	sf::Vector2f velocity;
 	float rotation;		 // Current rotation
 
-	Container<Boid>* container = nullptr;
+	Container* container = nullptr;
 	Config* cfg = nullptr;
 };
 

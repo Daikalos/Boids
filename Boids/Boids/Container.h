@@ -1,26 +1,33 @@
 #pragma once
 
 #include <unordered_set>
-#include <mutex>
+#include <vector>
+
 #include "Rectangle.h"
 
-static std::mutex insert_mtx;
-static std::mutex erase_mtx;
+class Boid;
 
-template<typename T> struct Container
+struct Container
 {
-	Container() { }
-	Container(Rect_i rect) : rect(rect) { }
+	Container() : items(std::unordered_set<const Boid*>()), neighbours(std::vector<const Container*>()) 
+	{
+		neighbours.reserve(8);
+	}
 
-	void insert(const T* item)
+	void insert(const Boid* item)
 	{
 		items.insert(item);
 	}
-	void erase(const T* item)
+	void erase(const Boid* item)
 	{
 		items.erase(item);
 	}
 
-	Rect_i rect;
-	std::unordered_set<const T*> items;
+	void add_neighbour(const Container* cntn)
+	{
+		neighbours.push_back(cntn);
+	}
+
+	std::unordered_set<const Boid*> items;
+	std::vector<const Container*> neighbours;
 };

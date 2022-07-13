@@ -4,20 +4,20 @@ Boid::Boid(sf::Vector2f pos, Config* cfg)
 	: position(pos), rotation(0.0f), cfg(cfg)
 {
 	velocity = sf::Vector2f(
-		util::fRand(-cfg->boid_max_speed, cfg->boid_max_speed),
-		util::fRand(-cfg->boid_max_speed, cfg->boid_max_speed));
+		util::random(-cfg->boid_max_speed, cfg->boid_max_speed),
+		util::random(-cfg->boid_max_speed, cfg->boid_max_speed));
 }
 
-void Boid::update(float deltaTime, const Rect_i& border, const std::vector<const Container<Boid>*>& containers)
+void Boid::update(float deltaTime, const Rect_i& border)
 {
-	flock(containers);
+	flock();
 	position += velocity * deltaTime;
 	outside_border(border, deltaTime);
 
-	rotation = v2f::angle(velocity);
-
 	// draw-info
 	{
+		rotation = v2f::angle(velocity);
+
 		sf::Vector2f origin = get_origin();
 
 		pointA = v2f::rotate_point({ position.x + cfg->boid_size_width, position.y + (cfg->boid_size_height / 2) }, origin, rotation); // middle right tip
@@ -36,9 +36,9 @@ void Boid::update(float deltaTime, const Rect_i& border, const std::vector<const
 	}
 }
 
-void Boid::flock(const std::vector<const Container<Boid>*>& containers)
+void Boid::flock()
 {
-	if (containers.size() == 0)
+	if (container == nullptr)
 		return;
 
 	sf::Vector2f sep(0, 0);
@@ -49,7 +49,7 @@ void Boid::flock(const std::vector<const Container<Boid>*>& containers)
 	int aliCount = 0;
 	int cohCount = 0;
 
-	for (const Container<Boid>* c : containers)
+	for (const Container* c : container->neighbours)
 		for (const Boid* b : c->items) // do in one loop
 		{
 			if (b == this || b == nullptr)
