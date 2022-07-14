@@ -29,7 +29,7 @@ int main()
 
 	sf::Window window(sf::VideoMode(
 		sf::VideoMode::getDesktopMode().width,
-		sf::VideoMode::getDesktopMode().height), "Boids"); //sf::Style::Fullscreen);
+		sf::VideoMode::getDesktopMode().height), "Boids", sf::Style::Fullscreen);
 
 	window.setVerticalSyncEnabled(Config::vertical_sync);
 	window.setFramerateLimit(Config::max_framerate);
@@ -38,13 +38,13 @@ int main()
 	Camera camera(window);
 	InputHandler inputHandler;
 
+	sf::Vector2f mousePos;
+
 	sf::Clock clock;
-	float deltaTime = FLT_EPSILON;;
+	float deltaTime = FLT_EPSILON;
 
 	Rect_i border(0, 0, window.getSize().x, window.getSize().y);
-	size_t vertex_count = Config::boid_count * 3;
-
-	sf::Vector2f mousePos;
+	GLsizei vertex_count = Config::boid_count * 3;
 
 	Boid* boids = (Boid*)::operator new(Config::boid_count * sizeof(Boid));
 	Vertex* vertices = (Vertex*)::operator new(vertex_count * sizeof(Vertex));

@@ -5,11 +5,13 @@
 #include <fstream>
 #include "json.hpp"
 
+// ugly but does not matter in small project
+//
 struct Config
 {
 	static sf::Vector3f background;
 
-	static size_t boid_count;
+	static int boid_count;
 
 	static float boid_size_width;
 	static float boid_size_height;
@@ -84,17 +86,13 @@ struct Config
 				turn_factor = json["settings"]["turn_factor"];
 
 				grid_cell_max_boids = json["settings"]["grid_cell_max_boids"];
+				grid_extra_cells = json["settings"]["grid_extra_cells"];
 
 				vertical_sync = json["settings"]["vertical_sync"];
 				max_framerate = json["settings"]["max_framerate"];
 			}
-			catch (std::exception e)
-			{
-				onError();
-			}
+			catch (std::exception e) { }
 		}
-		else
-			onError();
 	}
 
 	static inline sf::Vector3f convert(std::string strColor)
@@ -119,43 +117,5 @@ struct Config
 		catch (std::exception e) {}
 
 		return color;
-	}
-
-private:
-	static void onError()
-	{
-		background = sf::Vector3f(0.0f, 0.0f, 0.0f);
-
-		boid_count = 2500;
-
-		boid_size_width = 20.0f;
-		boid_size_height = 10.0f;
-		boid_max_speed = 340.0f;
-		boid_max_steer = 3.0f;
-		boid_view_angle = 280.0f;
-		boid_min_distance = 52;
-
-		boid_color_top_left = sf::Vector3f(0.73f, 0.33f, 0.82f);
-		boid_color_top_right = sf::Vector3f(1.0f, 0.0f, 1.0f);
-		boid_color_bot_left = sf::Vector3f(0.85f, 0.75f, 0.85f);
-		boid_color_bot_right = sf::Vector3f(0.35f, 0.0f, 0.35f);
-
-		weight_sep = 2.25f;
-		weight_ali = 1.20f;
-		weight_coh = 1.60f;
-
-		cursor_enabled = true;
-		cursor_towards = 1.2f;
-		cursor_away = 1.2f;
-
-		turn_at_border = true;
-		turn_margin_factor = 0.85f;
-		turn_factor = 120.0f;
-
-		grid_cell_max_boids = 8;
-		grid_extra_cells = 24;
-
-		vertical_sync = true;
-		max_framerate = 144;
 	}
 };
