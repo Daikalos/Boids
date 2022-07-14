@@ -14,9 +14,7 @@ public:
 	Boid(sf::Vector2f pos);
 
 	void update(float deltaTime, const Rect_i& border);
-
 	void steer_towards(sf::Vector2f point, float weight);
-	void steer_away(sf::Vector2f point, float weight);
 
 private: // Flocking
 	void flock();

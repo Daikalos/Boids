@@ -44,6 +44,8 @@ int main()
 	Rect_i border(0, 0, window.getSize().x, window.getSize().y);
 	size_t vertex_count = Config::boid_count * 3;
 
+	sf::Vector2f mousePos;
+
 	Boid* boids = (Boid*)::operator new(Config::boid_count * sizeof(Boid));
 	Vertex* vertices = (Vertex*)::operator new(vertex_count * sizeof(Vertex));
 	Color* colors = (Color*)::operator new(vertex_count * sizeof(Color));
@@ -138,7 +140,9 @@ int main()
 		}
 
 		camera.update(inputHandler);
-		sf::Vector2f mousePos = (sf::Vector2f)camera.get_mouse_world_position();
+
+		if (Config::cursor_enabled && (inputHandler.get_left_held() || inputHandler.get_right_held()))
+			mousePos = (sf::Vector2f)camera.get_mouse_world_position();
 
 		std::for_each(
 			std::execution::seq,
@@ -160,7 +164,7 @@ int main()
 					if (inputHandler.get_left_held())
 						boid.steer_towards(mousePos, Config::cursor_towards);
 					if (inputHandler.get_right_held())
-						boid.steer_away(mousePos, Config::cursor_away);
+						boid.steer_towards(mousePos, -Config::cursor_away);
 				}
 
 				boid.update(deltaTime, border);

@@ -120,14 +120,6 @@ void Boid::steer_towards(sf::Vector2f point, float weight)
 	apply_force(steer);
 }
 
-void Boid::steer_away(sf::Vector2f point, float weight)
-{
-	sf::Vector2f steer = v2f::direction(v2f::normalize(v2f::direction(get_origin(), point), v2f::length(velocity)), velocity);
-	steer = v2f::normalize(steer, Config::boid_max_steer * weight);
-
-	apply_force(steer);
-}
-
 void Boid::outside_border(const Rect_i& border, float deltaTime)
 {
 	if (!Config::turn_at_border)

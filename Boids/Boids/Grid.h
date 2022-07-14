@@ -25,7 +25,7 @@ public:
 
 	void insert(Boid& item) const;
 
-	Grid& operator=(Grid&& rhs)
+	Grid& operator=(Grid&& rhs) noexcept
 	{
 		std::swap(containers, rhs.containers);
 		std::swap(contDims, rhs.contDims);
