@@ -2,7 +2,7 @@
 
 sf::Vector3f Config::background				= sf::Vector3f(0.0f, 0.0f, 0.0f);
 
-int Config::boid_count					= 2500;
+int Config::boid_count						= 2500;
 
 float Config::boid_size_width				= 20.0f;
 float Config::boid_size_height				= 10.0f;
@@ -20,9 +20,13 @@ float Config::weight_sep					= 2.25f;
 float Config::weight_ali					= 1.20f;
 float Config::weight_coh					= 1.60f;
 
-bool Config::cursor_enabled					= true;
-float Config::cursor_towards				= 1.2f;
-float Config::cursor_away					= 1.2f;
+bool Config::gravity_enabled				= true;
+float Config::gravity_towards_factor		= 0.8f;
+float Config::gravity_away_factor			= 0.8f;
+
+bool Config::predator_enabled				= true;
+float Config::predator_distance				= 30.0f;
+float Config::predator_factor				= 0.5f;
 
 bool Config::turn_at_border					= false;
 float Config::turn_margin_factor			= 0.85f;
@@ -31,5 +35,6 @@ float Config::turn_factor					= 160.0f;
 int Config::grid_cell_max_boids				= 16;
 int Config::grid_extra_cells				= 24;
 
+bool Config::camera_enabled					= true;
 bool Config::vertical_sync					= true;
 int Config::max_framerate					= 144;

@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include "InputHandler.h"
+#include "Config.h"
 
 class Camera
 {

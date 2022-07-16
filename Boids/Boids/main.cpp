@@ -29,7 +29,7 @@ int main()
 
 	sf::Window window(sf::VideoMode(
 		sf::VideoMode::getDesktopMode().width,
-		sf::VideoMode::getDesktopMode().height), "Boids", sf::Style::Fullscreen);
+		sf::VideoMode::getDesktopMode().height), "Boids");// sf::Style::Fullscreen);
 
 	window.setVerticalSyncEnabled(Config::vertical_sync);
 	window.setFramerateLimit(Config::max_framerate);
@@ -138,9 +138,7 @@ int main()
 		}
 
 		camera.update(inputHandler);
-
-		if (Config::cursor_enabled && (inputHandler.get_left_held() || inputHandler.get_right_held()))
-			mousePos = (sf::Vector2f)camera.get_mouse_world_position();
+		mousePos = (sf::Vector2f)camera.get_mouse_world_position();
 
 		std::for_each(
 			std::execution::seq,
@@ -157,12 +155,18 @@ int main()
 			boids + Config::boid_count,
 			[&](Boid& boid)
 			{
-				if (Config::cursor_enabled)
+				if (Config::gravity_enabled)
 				{
 					if (inputHandler.get_left_held())
-						boid.steer_towards(mousePos, Config::cursor_towards);
+						boid.steer_towards(mousePos, Config::gravity_towards_factor);
 					if (inputHandler.get_right_held())
-						boid.steer_towards(mousePos, -Config::cursor_away);
+						boid.steer_towards(mousePos, -Config::gravity_away_factor);
+				}
+
+				if (Config::predator_enabled)
+				{
+					if (v2f::distance(boid.get_origin(), mousePos) <= Config::predator_distance)
+						boid.steer_towards(mousePos, -Config::predator_factor);
 				}
 
 				boid.update(deltaTime, border);

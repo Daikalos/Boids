@@ -29,9 +29,13 @@ struct Config
 	static float weight_ali;
 	static float weight_coh;
 
-	static bool cursor_enabled;
-	static float cursor_towards;
-	static float cursor_away;
+	static bool gravity_enabled;
+	static float gravity_towards_factor;
+	static float gravity_away_factor;
+
+	static bool predator_enabled;
+	static float predator_distance;
+	static float predator_factor;
 
 	static bool turn_at_border;
 	static float turn_margin_factor;
@@ -40,6 +44,7 @@ struct Config
 	static int grid_cell_max_boids;
 	static int grid_extra_cells;
 
+	static bool camera_enabled;
 	static bool vertical_sync;
 	static int max_framerate;
 
@@ -77,9 +82,13 @@ struct Config
 				weight_ali = json["settings"]["alignment"];
 				weight_coh = json["settings"]["cohesion"];
 
-				cursor_enabled = json["settings"]["cursor_enabled"];
-				cursor_towards = json["settings"]["cursor_towards"];
-				cursor_away = json["settings"]["cursor_away"];
+				gravity_enabled = json["settings"]["gravity_enabled"];
+				gravity_towards_factor = json["settings"]["gravity_towards_factor"];
+				gravity_away_factor = json["settings"]["gravity_away_factor"];
+
+				predator_enabled = json["settings"]["predator_enabled"];
+				predator_distance = json["settings"]["predator_distance"];
+				predator_factor = json["settings"]["predator_factor"];
 
 				turn_at_border = json["settings"]["turn_at_border"];
 				turn_margin_factor = json["settings"]["turn_margin_factor"];
@@ -88,6 +97,7 @@ struct Config
 				grid_cell_max_boids = json["settings"]["grid_cell_max_boids"];
 				grid_extra_cells = json["settings"]["grid_extra_cells"];
 
+				camera_enabled = json["settings"]["camera_enabled"];
 				vertical_sync = json["settings"]["vertical_sync"];
 				max_framerate = json["settings"]["max_framerate"];
 			}
@@ -102,9 +112,7 @@ struct Config
 		std::vector<std::string> values;
 
 		while (std::getline(stream, segment, ' '))
-		{
 			values.push_back(segment);
-		}
 
 		sf::Vector3f color(1.0f, 1.0f, 1.0f);
 
