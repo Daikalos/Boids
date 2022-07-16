@@ -85,6 +85,9 @@ int main()
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
 
+	glVertexPointer(2, GL_FLOAT, 0, vertices);
+	glColorPointer(3, GL_FLOAT, 0, colors);
+
 	while (window.isOpen())
 	{
 		deltaTime = std::clamp(clock.restart().asSeconds(), 0.0f, 0.075f);
@@ -108,12 +111,7 @@ int main()
 						gluOrtho2D(0, window.getSize().x, 0, window.getSize().y);
 						glMatrixMode(GL_MODELVIEW);
 
-						border = Rect_i(
-							0,
-							0,
-							window.getSize().x,
-							window.getSize().y);
-
+						border = Rect_i(0, 0, window.getSize().x, window.getSize().y);
 						camera.set_position((sf::Vector2f)window.getSize() / 2.0f);
 
 						std::for_each(
@@ -187,9 +185,6 @@ int main()
 			});
 
 		glClear(GL_COLOR_BUFFER_BIT);
-
-		glVertexPointer(2, GL_FLOAT, sizeof(Vertex), vertices);
-		glColorPointer(3, GL_FLOAT, sizeof(Color), colors);
 
 		glPushMatrix();
 
