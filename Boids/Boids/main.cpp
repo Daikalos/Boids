@@ -29,7 +29,7 @@ int main()
 
 	sf::Window window(sf::VideoMode(
 		sf::VideoMode::getDesktopMode().width,
-		sf::VideoMode::getDesktopMode().height), "Boids", sf::Style::Fullscreen);
+		sf::VideoMode::getDesktopMode().height), "Boids");//, sf::Style::Fullscreen);
 
 	window.setVerticalSyncEnabled(Config::vertical_sync);
 	window.setFramerateLimit(Config::max_framerate);
@@ -50,27 +50,28 @@ int main()
 	Vertex* vertices = (Vertex*)::operator new(vertex_count * sizeof(Vertex));
 	Color* colors = (Color*)::operator new(vertex_count * sizeof(Color));
 
+	Grid grid(
+		border.left	 - Config::boid_min_distance * (Config::grid_extra_cells + 1),
+		border.top	 - Config::boid_min_distance * (Config::grid_extra_cells + 1),
+		border.right + Config::boid_min_distance * (Config::grid_extra_cells + 1),
+		border.bot   + Config::boid_min_distance * (Config::grid_extra_cells + 1),
+		Config::boid_min_distance * 2.0f, Config::boid_min_distance * 2.0f);
+
 	std::for_each(
 		std::execution::par_unseq,
 		boids,
 		boids + Config::boid_count,
 		[&](Boid& boid)
 		{
-			int i = &boid - boids;
+			__int64 i = &boid - boids;
 
 			sf::Vector2f pos = sf::Vector2f(
 				util::random(0, border.width()) - border.left,
 				util::random(0, border.height()) - border.top);
 
-			new(boids + i) Boid(pos);
+			new(boids + i) Boid(&grid, boids, pos);
 		});
 
-	Grid grid(
-		border.left  - Config::boid_min_distance * Config::grid_extra_cells,
-		border.top	 - Config::boid_min_distance * Config::grid_extra_cells,
-		border.right + Config::boid_min_distance * Config::grid_extra_cells,
-		border.bot	 + Config::boid_min_distance * Config::grid_extra_cells,
-		Config::boid_min_distance, Config::boid_min_distance);
 
 	glClearColor(
 		Config::background.x, 
@@ -114,21 +115,12 @@ int main()
 						border = Rect_i(0, 0, window.getSize().x, window.getSize().y);
 						camera.set_position((sf::Vector2f)window.getSize() / 2.0f);
 
-						std::for_each(
-							std::execution::par_unseq,
-							boids,
-							boids + Config::boid_count,
-							[&](Boid& boid) 
-							{
-								boid.set_container(nullptr); 
-							});
-
 						grid = Grid(
-							border.left  - Config::boid_min_distance * Config::grid_extra_cells,
-							border.top   - Config::boid_min_distance * Config::grid_extra_cells,
-							border.right + Config::boid_min_distance * Config::grid_extra_cells,
-							border.bot   + Config::boid_min_distance * Config::grid_extra_cells,
-							Config::boid_min_distance, Config::boid_min_distance);
+							border.left  - Config::boid_min_distance * (Config::grid_extra_cells + 1),
+							border.top   - Config::boid_min_distance * (Config::grid_extra_cells + 1),
+							border.right + Config::boid_min_distance * (Config::grid_extra_cells + 1),
+							border.bot   + Config::boid_min_distance * (Config::grid_extra_cells + 1),
+							Config::boid_min_distance * 2.0f, Config::boid_min_distance * 2.0f);
 					}
 					break;
 				case sf::Event::MouseWheelScrolled:
@@ -140,13 +132,54 @@ int main()
 		camera.update(inputHandler);
 		mousePos = (sf::Vector2f)camera.get_mouse_world_position();
 
-		std::for_each(
-			std::execution::seq,
+		grid.reset_buffers();
+
+		std::for_each(std::execution::par_unseq,
 			boids,
 			boids + Config::boid_count,
 			[&](Boid& boid)
 			{
-				grid.insert(boid);
+				boid.set_index(grid.at_pos(boid.get_origin()));
+			});
+
+		std::sort(std::execution::par_unseq, 
+			boids, 
+			boids + Config::boid_count, 
+			[](const Boid& b0, const Boid& b1)
+			{
+				return b0.get_index() < b1.get_index();
+			});
+
+		std::for_each(std::execution::par_unseq,
+			boids,
+			boids + Config::boid_count,
+			[&](const Boid& boid)
+			{
+				__int64 index = &boid - boids;
+				int thisIndex = boid.get_index();
+
+				if (thisIndex < 0)
+					return;
+
+				if (index == 0)
+				{
+					grid.cellsStartIndices[thisIndex] = index;
+					return;
+				}
+
+				if (index == Config::boid_count - 1)
+					grid.cellsEndIndices[thisIndex] = index;
+
+				int otherIndex = boids[index - 1].get_index();
+
+				if (otherIndex < 0)
+					return;
+
+				if (otherIndex != thisIndex)
+				{
+					grid.cellsStartIndices[thisIndex] = index;
+					grid.cellsEndIndices[otherIndex] = index - 1;
+				}
 			});
 
 		std::for_each(
@@ -176,7 +209,7 @@ int main()
 
 				boid.update(deltaTime, border);
 
-				int v = (&boid - boids) * 3;
+				__int64 v = (&boid - boids) * 3;
 
 				sf::Vector2f p0 = boid.get_pointA();
 				sf::Vector2f p1 = boid.get_pointB();

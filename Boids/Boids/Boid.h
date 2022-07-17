@@ -6,15 +6,24 @@
 #include "VecUtil.h"
 #include "Rectangle.h"
 #include "Config.h"
-#include "Container.h"
+#include "Grid.h"
 
 class Boid
 {
 public:
-	Boid(sf::Vector2f pos);
+	Boid(Grid* grid, Boid* boids, sf::Vector2f pos);
 
 	void update(float deltaTime, const Rect_i& border);
 	void steer_towards(sf::Vector2f point, float weight);
+
+	void set_index(int index)
+	{
+		this->index = index;
+	}
+    int get_index() const
+	{
+		return index;
+	}
 
 private: // Flocking
 	void flock();
@@ -46,29 +55,22 @@ public: // Properties
 			position.y + (Config::boid_size_height / 2));
 	}
 
-	inline Container* get_container() const
-	{
-		return container;
-	}
-	void set_container(Container* container)
-	{
-		this->container = container;
-	}
-
 private:
 	int interpolate(int a, int b, int c, int d, double t, double s) const
 	{
 		return (int)(a * (1 - t) * (1 - s) + b * t * (1 - s) + c * (1 - t) * s + d * t * s);
 	}
 
-private: // Variables
+private:
+	Grid* grid;
+	Boid* boids;
+	int index;
+
 	sf::Vector2f pointA, pointB, pointC;
 	sf::Vector3f color;
 
 	sf::Vector2f position;
 	sf::Vector2f velocity;
-	float rotation;		 // Current rotation
-
-	Container* container = nullptr;
+	float rotation;
 };
 

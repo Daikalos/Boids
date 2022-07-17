@@ -1,7 +1,7 @@
 #include "Boid.h"
 
-Boid::Boid(sf::Vector2f pos) 
-	: position(pos), rotation(0.0f)
+Boid::Boid(Grid* grid, Boid* boids, sf::Vector2f pos)
+	: grid(grid), boids(boids), position(pos), rotation(0.0f)
 {
 	velocity = sf::Vector2f(
 		util::random(-Config::boid_max_speed, Config::boid_max_speed),
@@ -39,9 +39,6 @@ void Boid::update(float deltaTime, const Rect_i& border)
 
 void Boid::flock()
 {
-	if (container == nullptr)
-		return;
-
 	sf::Vector2f sep(0, 0);
 	sf::Vector2f ali(0, 0);
 	sf::Vector2f coh(0, 0);
@@ -52,9 +49,35 @@ void Boid::flock()
 
 	float sepDistance = (Config::boid_min_distance / 2.0f);
 
-	for (const Container* c : container->neighbours)
-		for (const Boid* b : c->items) // do in one loop
+	int neighbours = 0;
+	int neighbourIndices[4];
+
+	sf::Vector2f gridCellIndicesRaw = grid->relative_pos(position);
+	sf::Vector2i gridCellIndices = sf::Vector2i(gridCellIndicesRaw);
+	sf::Vector2f gridCellOverflow = gridCellIndicesRaw - sf::Vector2f(gridCellIndices);
+
+	int xNeighbor = gridCellIndices.x + (gridCellOverflow.x > 0.5f ? 1 : -1);
+	if (xNeighbor < 0 || xNeighbor > grid->width) xNeighbor = 0;
+	int yNeighbor = gridCellIndices.y + (gridCellOverflow.y > 0.5f ? 1 : -1);
+	if (yNeighbor < 0 || yNeighbor > grid->width) yNeighbor = 0;
+
+	neighbourIndices[neighbours++] = grid->at_pos(gridCellIndices.x, gridCellIndices.y);
+
+	if (xNeighbor) neighbourIndices[neighbours++] = grid->at_pos(xNeighbor, gridCellIndices.y);
+	if (yNeighbor) neighbourIndices[neighbours++] = grid->at_pos(gridCellIndices.x, yNeighbor);
+	if (xNeighbor && yNeighbor) neighbourIndices[neighbours++] = grid->at_pos(xNeighbor, yNeighbor);
+
+	for (int i = 0; i < neighbours; ++i)
+	{
+		int gridCellIndex = neighbourIndices[i];
+		
+		if (gridCellIndex < 0)
+			continue;
+
+		for (int j = grid->cellsStartIndices[gridCellIndex]; j <= grid->cellsEndIndices[gridCellIndex] && j > -1; ++j) // do in one loop
 		{
+			Boid* b = &boids[j];
+
 			if (b == this)
 				continue;
 
@@ -64,7 +87,7 @@ void Boid::flock()
 				sf::Vector2f dir = v2f::direction(get_origin(), b->get_origin());
 				float angle = v2f::angle(velocity, dir);
 
-				if (util::to_degrees(angle) <= (Config::boid_view_angle / 2))
+				if (util::to_degrees(angle) <= (Config::boid_view_angle / 2.0f))
 				{
 					ali += b->get_velocity(); // Align with every boids velocity
 					coh += b->get_origin();   // Head towards center of boids
@@ -80,6 +103,7 @@ void Boid::flock()
 				}
 			}
 		}
+	}
 
 	if (sepCount > 0) // seperation
 	{
