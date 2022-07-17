@@ -165,8 +165,13 @@ int main()
 
 				if (Config::predator_enabled)
 				{
-					if (v2f::distance(boid.get_origin(), mousePos) <= Config::predator_distance)
-						boid.steer_towards(mousePos, -Config::predator_factor);
+					float dist = v2f::distance(boid.get_origin(), mousePos);
+
+					if (dist <= Config::predator_distance)
+					{
+						float factor = (dist > FLT_EPSILON) ? (dist / Config::predator_distance) : FLT_MIN;
+						boid.steer_towards(mousePos, -Config::predator_factor / factor);
+					}
 				}
 
 				boid.update(deltaTime, border);

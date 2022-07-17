@@ -24,7 +24,7 @@ void Camera::update(const InputHandler& inputHandler)
 		position += (sf::Vector2f)(dragPos - get_mouse_world_position());
 
 	if (inputHandler.get_scroll_down())
-		scale *= 0.85f;
+		scale *= 0.8f;
 	if (inputHandler.get_scroll_up())
-		scale *= 1.15f;
+		scale *= 1.25f;
 }

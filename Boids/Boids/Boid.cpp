@@ -11,6 +11,7 @@ Boid::Boid(sf::Vector2f pos)
 void Boid::update(float deltaTime, const Rect_i& border)
 {
 	flock();
+
 	position += velocity * deltaTime;
 	outside_border(border, deltaTime);
 
@@ -21,8 +22,8 @@ void Boid::update(float deltaTime, const Rect_i& border)
 		sf::Vector2f origin = get_origin();
 
 		pointA = v2f::rotate_point({ position.x + Config::boid_size_width, position.y + (Config::boid_size_height / 2) }, origin, rotation); // middle right tip
-		pointB = v2f::rotate_point({ position.x						  , position.y								 }, origin, rotation); // top left corner
-		pointC = v2f::rotate_point({ position.x						  , position.y + Config::boid_size_height		 }, origin, rotation); // bot left corner
+		pointB = v2f::rotate_point({ position.x							 , position.y								   }, origin, rotation); // top left corner
+		pointC = v2f::rotate_point({ position.x							 , position.y + Config::boid_size_height	   }, origin, rotation); // bot left corner
 
 		float t = position.x / border.width();
 		float s = position.y / border.height();
@@ -45,18 +46,20 @@ void Boid::flock()
 	sf::Vector2f ali(0, 0);
 	sf::Vector2f coh(0, 0);
 
-	int sepCount = 0;
-	int aliCount = 0;
-	int cohCount = 0;
+	float sepCount = 0;
+	float aliCount = 0;
+	float cohCount = 0;
+
+	float sepDistance = (Config::boid_min_distance / 2.0f);
 
 	for (const Container* c : container->neighbours)
 		for (const Boid* b : c->items) // do in one loop
 		{
-			if (b == this || b == nullptr)
+			if (b == this)
 				continue;
 
 			float distance = v2f::distance(get_origin(), b->get_origin());
-			if (distance <= Config::boid_min_distance)
+			if (distance >= FLT_EPSILON && distance <= Config::boid_min_distance)
 			{
 				sf::Vector2f dir = v2f::direction(get_origin(), b->get_origin());
 				float angle = v2f::angle(velocity, dir);
@@ -70,9 +73,9 @@ void Boid::flock()
 					++cohCount;
 				}
 
-				if (distance <= (Config::boid_min_distance / 2.0f))
+				if (distance <= sepDistance)
 				{
-					sep += (get_origin() - b->get_origin()) / (float)pow(distance, 2);
+					sep += v2f::direction(b->get_origin(), get_origin()) / powf(distance, 2.0f);
 					++sepCount;
 				}
 			}
@@ -80,28 +83,24 @@ void Boid::flock()
 
 	if (sepCount > 0) // seperation
 	{
-		sep /= (float)sepCount;
-		sep = v2f::normalize(sep, Config::boid_max_speed);
-
+		sep = v2f::normalize(sep / sepCount, Config::boid_max_speed);
 		apply_force(steer_at(sep) * Config::weight_sep);
 	}
 	if (aliCount > 0) // alignment
 	{
-		ali /= (float)aliCount;
-		ali = v2f::normalize(ali, Config::boid_max_speed);
-
+		ali = v2f::normalize(ali / aliCount, Config::boid_max_speed);
 		apply_force(steer_at(ali) * Config::weight_ali);
 	}
 	if (cohCount > 0) // cohesion
 	{
-		coh /= (float)cohCount;
-		coh = v2f::direction(get_origin(), coh);
+		coh = v2f::direction(get_origin(), coh / cohCount);
 		coh = v2f::normalize(coh, Config::boid_max_speed);
 
 		apply_force(steer_at(coh) * Config::weight_coh);
 	}
 
 	velocity = v2f::limit(velocity, Config::boid_max_speed);
+	velocity = v2f::min(velocity, Config::boid_min_speed);
 }
 
 sf::Vector2f Boid::steer_at(const sf::Vector2f& steer_direction)
@@ -127,13 +126,13 @@ void Boid::outside_border(const Rect_i& border, float deltaTime)
 		if (position.x + Config::boid_size_width < border.left)
 			position.x = (float)border.right;
 
-		if (position.x - Config::boid_size_width > border.right)
+		if (position.x > border.right)
 			position.x = border.left - Config::boid_size_width;
 
 		if (position.y + Config::boid_size_height < border.top)
 			position.y = (float)border.bot;
 
-		if (position.y - Config::boid_size_height > border.bot)
+		if (position.y > border.bot)
 			position.y = border.top - Config::boid_size_height;
 	}
 	else
@@ -141,16 +140,21 @@ void Boid::outside_border(const Rect_i& border, float deltaTime)
 		float width_margin = border.width() - border.width() * Config::turn_margin_factor;
 		float height_margin = border.height() - border.height() * Config::turn_margin_factor;
 
-		if (position.x + Config::boid_size_width < width_margin)
-			velocity.x += Config::turn_factor * deltaTime;
+		float left_margin = border.left + width_margin;
+		float top_margin = border.top + height_margin;
+		float right_margin = border.right - width_margin;
+		float bot_margin = border.bot - height_margin;
 
-		if (position.x - Config::boid_size_width > border.right - width_margin)
-			velocity.x -= Config::turn_factor * deltaTime;
+		if (position.x + Config::boid_size_width < left_margin)
+			velocity.x += Config::turn_factor * deltaTime * (1.0f + std::powf(std::abs(position.x - left_margin) / width_margin, 2.0f));
 
-		if (position.y + Config::boid_size_height < height_margin)
-			velocity.y += Config::turn_factor * deltaTime;
+		if (position.x > right_margin)
+			velocity.x -= Config::turn_factor * deltaTime * (1.0f + std::powf(std::abs(position.x - right_margin) / width_margin, 2.0f));
 
-		if (position.y - Config::boid_size_height > border.bot - height_margin)
-			velocity.y -= Config::turn_factor * deltaTime;
+		if (position.y + Config::boid_size_height < top_margin)
+			velocity.y += Config::turn_factor * deltaTime * (1.0f + std::powf(std::abs(position.y - top_margin) / height_margin, 2.0f));
+
+		if (position.y > bot_margin)
+			velocity.y -= Config::turn_factor * deltaTime * (1.0f + std::powf(std::abs(position.y - bot_margin) / height_margin, 2.0f));
 	}
 }

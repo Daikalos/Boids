@@ -16,6 +16,7 @@ struct Config
 	static float boid_size_width;
 	static float boid_size_height;
 	static float boid_max_speed;
+	static float boid_min_speed;
 	static float boid_max_steer;
 	static float boid_view_angle;
 	static float boid_min_distance;
@@ -69,6 +70,7 @@ struct Config
 				boid_size_width = json["settings"]["boid_size_width"];
 				boid_size_height = json["settings"]["boid_size_height"];
 				boid_max_speed = json["settings"]["boid_max_speed"];
+				boid_min_speed = json["settings"]["boid_min_speed"];
 				boid_max_steer = json["settings"]["boid_max_steer"];
 				boid_view_angle = json["settings"]["boid_view_angle"];
 				boid_min_distance = json["settings"]["boid_min_distance"];

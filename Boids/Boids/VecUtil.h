@@ -8,28 +8,28 @@
 template<typename T> struct v2
 {
 public:
-	static inline float length(const sf::Vector2<T>& vector)
+	static constexpr float length(const sf::Vector2<T>& vector)
 	{
 		return std::sqrt(vector.x * vector.x + vector.y * vector.y);
 	}
-	static inline float angle(const sf::Vector2<T>& vector)
+	static constexpr float angle(const sf::Vector2<T>& vector)
 	{
 		return atan2f(vector.y, vector.x);
 	}
-	static inline float angle(const sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs)
+	static constexpr float angle(const sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs)
 	{
 		return acosf(util::clamp(dot(lhs, rhs) / (length(lhs) * length(rhs)), -1.0f, 1.0f));
 	}
-	static inline float dot(const sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs)
+	static constexpr float dot(const sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs)
 	{
 		return lhs.x * rhs.x + lhs.y * rhs.y;
 	}
-	static inline float distance(const sf::Vector2<T>& from, const sf::Vector2<T>& to)
+	static constexpr float distance(const sf::Vector2<T>& from, const sf::Vector2<T>& to)
 	{
 		return length(direction(from, to));
 	}
 
-	static inline sf::Vector2<T> normalize(sf::Vector2<T> vector, float radius = 1.0f)
+	static constexpr sf::Vector2<T> normalize(sf::Vector2<T> vector, const float& radius = 1.0f)
 	{
 		float len = length(vector);
 
@@ -41,19 +41,25 @@ public:
 
 		return vector;
 	}
-	static inline sf::Vector2<T> limit(const sf::Vector2<T>& vector, float maxLength)
+	static constexpr sf::Vector2<T> limit(const sf::Vector2<T>& vector, const float& maxLength)
 	{
 		if (length(vector) > maxLength)
-		{
 			return normalize(vector, maxLength);
-		}
+
 		return vector;
 	}
-	static inline sf::Vector2<T> direction(const sf::Vector2<T>& from, const sf::Vector2<T>& to)
+	static constexpr sf::Vector2<T> min(const sf::Vector2<T>& vector, const float& minLength)
+	{
+		if (length(vector) < minLength)
+			return normalize(vector, minLength);
+
+		return vector;
+	}
+	static constexpr sf::Vector2<T> direction(const sf::Vector2<T>& from, const sf::Vector2<T>& to)
 	{
 		return sf::Vector2<T>(to.x - from.x, to.y - from.y);
 	}
-	static inline sf::Vector2<T> rotate_point(const sf::Vector2<T>& point, const sf::Vector2<T>& center, float angle)
+	static constexpr sf::Vector2<T> rotate_point(const sf::Vector2<T>& point, const sf::Vector2<T>& center, const float& angle)
 	{
 		sf::Vector2<T> newPoint = sf::Vector2<T>();
 
@@ -75,7 +81,7 @@ typedef v2<float> v2f;
 typedef v2<double> v2d;
 
 template <typename T> 
-static sf::Vector2<T> operator /=(sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs)
+static constexpr sf::Vector2<T> operator /=(sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs)
 {
 	lhs.x /= rhs.x;
 	lhs.y /= rhs.y;
@@ -83,7 +89,7 @@ static sf::Vector2<T> operator /=(sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs
 }
 
 template <typename T>
-static sf::Vector2<T> operator /(const sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs)
+static constexpr sf::Vector2<T> operator /(const sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs)
 {
 	sf::Vector2<T> result = lhs;
 	result.x /= rhs.x;
