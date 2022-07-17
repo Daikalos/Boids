@@ -58,9 +58,7 @@ int main()
 		Config::boid_min_distance * 2.0f, Config::boid_min_distance * 2.0f);
 
 	std::for_each(
-		std::execution::par_unseq,
-		boids,
-		boids + Config::boid_count,
+		boids, boids + Config::boid_count,
 		[&](Boid& boid)
 		{
 			__int64 i = &boid - boids;

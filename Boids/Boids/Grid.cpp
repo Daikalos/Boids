@@ -7,14 +7,13 @@ Grid::Grid(int grid_left, int grid_top, int grid_right, int grid_bot, int cont_w
     height = gridRect.height() / cont_height;
 	count = width * height;
 
-	cellsStartIndices = new int[count];
-	cellsEndIndices = new int[count];
+	cellsStartIndices = (int*)::operator new(count * sizeof(int));
+	cellsEndIndices = (int*)::operator new(count * sizeof(int));
 
 	reset_buffers();
 }
 
 Grid::~Grid()
 {
-	delete[] cellsStartIndices;
-	delete[] cellsEndIndices;
+
 }
