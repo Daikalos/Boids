@@ -29,7 +29,7 @@ int main()
 
 	sf::Window window(sf::VideoMode(
 		sf::VideoMode::getDesktopMode().width,
-		sf::VideoMode::getDesktopMode().height), "Boids");//, sf::Style::Fullscreen);
+		sf::VideoMode::getDesktopMode().height), "Boids", sf::Style::Fullscreen);
 
 	window.setVerticalSyncEnabled(Config::vertical_sync);
 	window.setFramerateLimit(Config::max_framerate);
@@ -130,7 +130,7 @@ int main()
 		}
 
 		camera.update(inputHandler);
-		mousePos = (sf::Vector2f)camera.get_mouse_world_position();
+		mousePos = sf::Vector2f(camera.get_mouse_world_position());
 
 		grid.reset_buffers();
 

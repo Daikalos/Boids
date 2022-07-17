@@ -57,23 +57,25 @@ void Boid::flock()
 	sf::Vector2f gridCellOverflow = gridCellIndicesRaw - sf::Vector2f(gridCellIndices);
 
 	int xNeighbor = gridCellIndices.x + (gridCellOverflow.x > 0.5f ? 1 : -1);
-	if (xNeighbor < 0 || xNeighbor > grid->width) xNeighbor = 0;
 	int yNeighbor = gridCellIndices.y + (gridCellOverflow.y > 0.5f ? 1 : -1);
-	if (yNeighbor < 0 || yNeighbor > grid->width) yNeighbor = 0;
+
+	if (xNeighbor < 0 || xNeighbor >= grid->width)
+		xNeighbor = -1;
+	if (yNeighbor < 0 || yNeighbor >= grid->height)
+		yNeighbor = -1;
 
 	neighbourIndices[neighbours++] = grid->at_pos(gridCellIndices.x, gridCellIndices.y);
 
-	if (xNeighbor) neighbourIndices[neighbours++] = grid->at_pos(xNeighbor, gridCellIndices.y);
-	if (yNeighbor) neighbourIndices[neighbours++] = grid->at_pos(gridCellIndices.x, yNeighbor);
-	if (xNeighbor && yNeighbor) neighbourIndices[neighbours++] = grid->at_pos(xNeighbor, yNeighbor);
+	if (xNeighbor != -1)
+		neighbourIndices[neighbours++] = grid->at_pos(xNeighbor, gridCellIndices.y);
+	if (yNeighbor != -1)
+		neighbourIndices[neighbours++] = grid->at_pos(gridCellIndices.x, yNeighbor);
+	if (xNeighbor != -1 && yNeighbor != -1)
+		neighbourIndices[neighbours++] = grid->at_pos(xNeighbor, yNeighbor);
 
 	for (int i = 0; i < neighbours; ++i)
 	{
 		int gridCellIndex = neighbourIndices[i];
-		
-		if (gridCellIndex < 0)
-			continue;
-
 		for (int j = grid->cellsStartIndices[gridCellIndex]; j <= grid->cellsEndIndices[gridCellIndex] && j > -1; ++j) // do in one loop
 		{
 			Boid* b = &boids[j];

@@ -33,7 +33,6 @@ bool Config::turn_at_border					= false;
 float Config::turn_margin_factor			= 0.85f;
 float Config::turn_factor					= 160.0f;
 
-int Config::grid_cell_max_boids				= 32;
 int Config::grid_extra_cells				= 12;
 
 bool Config::camera_enabled					= false;

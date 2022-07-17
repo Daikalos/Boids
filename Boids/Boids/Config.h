@@ -42,7 +42,6 @@ struct Config
 	static float turn_margin_factor;
 	static float turn_factor;
 
-	static int grid_cell_max_boids;
 	static int grid_extra_cells;
 
 	static bool camera_enabled;
@@ -96,7 +95,6 @@ struct Config
 				turn_margin_factor = json["settings"]["turn_margin_factor"];
 				turn_factor = json["settings"]["turn_factor"];
 
-				grid_cell_max_boids = json["settings"]["grid_cell_max_boids"];
 				grid_extra_cells = json["settings"]["grid_extra_cells"];
 
 				camera_enabled = json["settings"]["camera_enabled"];
