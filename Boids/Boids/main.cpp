@@ -4,7 +4,6 @@
 
 #include <SFML/Graphics.hpp>
 #include <SFML/OpenGL.hpp>
-#include <gl/GLU.h>
 
 #include "Boid.h"
 #include "Grid.h"
@@ -74,7 +73,7 @@ int main()
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glScalef(1.0f, -1.0f, 1.0f);
-	gluOrtho2D(0, window.getSize().x, 0, window.getSize().y);
+	glOrtho(0, window.getSize().x, 0, window.getSize().y, -1.0, 1.0);
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
@@ -102,7 +101,7 @@ int main()
 						glMatrixMode(GL_PROJECTION);
 						glLoadIdentity();
 						glScalef(1.0f, -1.0f, 1.0f);
-						gluOrtho2D(0, window.getSize().x, 0, window.getSize().y);
+						glOrtho(0, window.getSize().x, 0, window.getSize().y, -1.0, 1.0);
 						glMatrixMode(GL_MODELVIEW);
 
 						border = Rect_i(0, 0, window.getSize().x, window.getSize().y);

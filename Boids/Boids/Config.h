@@ -3,6 +3,7 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <fstream>
+
 #include "json.hpp"
 
 // ugly but does not matter in small project
