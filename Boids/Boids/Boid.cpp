@@ -184,3 +184,25 @@ void Boid::outside_border(const Rect_i& border, float deltaTime)
 			velocity.y -= Config::turn_factor * deltaTime * (1.0f + std::powf(std::abs(position.y - bot_margin) / height_margin, 2.0f));
 	}
 }
+
+void Boid::update_grid_cells() const
+{
+	int index = static_cast<int>(this - boids);
+
+	if (index == 0)
+	{
+		grid->cellsStartIndices[cell_index] = index;
+		return;
+	}
+
+	if (index == Config::boid_count - 1)
+		grid->cellsEndIndices[cell_index] = index;
+
+	int otherIndex = boids[index - 1].get_cell_index();
+
+	if (otherIndex != cell_index)
+	{
+		grid->cellsStartIndices[cell_index] = index;
+		grid->cellsEndIndices[otherIndex] = index - 1;
+	}
+}

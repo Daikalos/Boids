@@ -22,7 +22,6 @@
     <ClCompile Include="Boid.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Config.cpp" />
-    <ClCompile Include="Grid.cpp" />
     <ClCompile Include="InputHandler.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Quadtree.cpp" />

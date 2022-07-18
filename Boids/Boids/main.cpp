@@ -57,19 +57,14 @@ int main()
 		border.bot   + Config::boid_min_distance * (Config::grid_extra_cells + 1),
 		Config::boid_min_distance * 2.0f, Config::boid_min_distance * 2.0f);
 
-	std::for_each(
-		boids, boids + Config::boid_count,
-		[&](Boid& boid)
-		{
-			__int64 i = &boid - boids;
+	for (int i = 0; i < Config::boid_count; ++i)
+	{
+		sf::Vector2f pos = sf::Vector2f(
+			util::random(0, border.width()) - border.left,
+			util::random(0, border.height()) - border.top);
 
-			sf::Vector2f pos = sf::Vector2f(
-				util::random(0, border.width()) - border.left,
-				util::random(0, border.height()) - border.top);
-
-			new(boids + i) Boid(&grid, boids, pos);
-		});
-
+		new(boids + i) Boid(&grid, boids, pos);
+	}
 
 	glClearColor(
 		Config::background.x, 
@@ -135,9 +130,9 @@ int main()
 		std::for_each(std::execution::par_unseq,
 			boids,
 			boids + Config::boid_count,
-			[&](Boid& boid)
+			[](Boid& boid)
 			{
-				boid.set_index(grid.at_pos(boid.get_origin()));
+				boid.set_cell_index();
 			});
 
 		std::sort(std::execution::par_unseq, 
@@ -145,39 +140,15 @@ int main()
 			boids + Config::boid_count, 
 			[](const Boid& b0, const Boid& b1)
 			{
-				return b0.get_index() < b1.get_index();
+				return b0.get_cell_index() < b1.get_cell_index();
 			});
 
 		std::for_each(std::execution::par_unseq,
 			boids,
 			boids + Config::boid_count,
-			[&](const Boid& boid)
+			[](const Boid& boid)
 			{
-				__int64 index = &boid - boids;
-				int thisIndex = boid.get_index();
-
-				if (thisIndex < 0)
-					return;
-
-				if (index == 0)
-				{
-					grid.cellsStartIndices[thisIndex] = index;
-					return;
-				}
-
-				if (index == Config::boid_count - 1)
-					grid.cellsEndIndices[thisIndex] = index;
-
-				int otherIndex = boids[index - 1].get_index();
-
-				if (otherIndex < 0)
-					return;
-
-				if (otherIndex != thisIndex)
-				{
-					grid.cellsStartIndices[thisIndex] = index;
-					grid.cellsEndIndices[otherIndex] = index - 1;
-				}
+				boid.update_grid_cells();
 			});
 
 		std::for_each(

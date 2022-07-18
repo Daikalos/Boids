@@ -16,13 +16,15 @@ public:
 	void update(float deltaTime, const Rect_i& border);
 	void steer_towards(sf::Vector2f point, float weight);
 
-	void set_index(int index)
+	void update_grid_cells() const;
+
+	void set_cell_index()
 	{
-		this->index = index;
+		this->cell_index = grid->at_pos(get_origin());
 	}
-    int get_index() const
+	int get_cell_index() const
 	{
-		return index;
+		return cell_index;
 	}
 
 private: // Flocking
@@ -64,6 +66,8 @@ private:
 private:
 	Grid* grid;
 	Boid* boids;
+
+	int cell_index;
 	int index;
 
 	sf::Vector2f pointA, pointB, pointC;
