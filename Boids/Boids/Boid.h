@@ -52,9 +52,7 @@ public: // Properties
 
 	inline sf::Vector2f get_origin() const
 	{
-		return sf::Vector2f(
-			position.x + (Config::boid_size_width / 2),
-			position.y + (Config::boid_size_height / 2));
+		return origin;
 	}
 
 private:
@@ -75,6 +73,7 @@ private:
 
 	sf::Vector2f position;
 	sf::Vector2f velocity;
+	sf::Vector2f origin;
 	float rotation;
 };
 

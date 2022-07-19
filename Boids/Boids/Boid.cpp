@@ -13,39 +13,40 @@ void Boid::update(float deltaTime, const Rect_i& border)
 	flock();
 
 	position += velocity * deltaTime;
+
 	outside_border(border, deltaTime);
+
+	origin = sf::Vector2f(
+		position.x + (Config::boid_size_width / 2.0f),
+		position.y + (Config::boid_size_height / 2.0f));
 
 	// draw-info
 	{
 		rotation = v2f::angle(velocity);
 
-		sf::Vector2f origin = get_origin();
-
 		pointA = v2f::rotate_point({ position.x + Config::boid_size_width, position.y + (Config::boid_size_height / 2) }, origin, rotation); // middle right tip
-		pointB = v2f::rotate_point({ position.x							 , position.y								   }, origin, rotation); // top left corner
-		pointC = v2f::rotate_point({ position.x							 , position.y + Config::boid_size_height	   }, origin, rotation); // bot left corner
+		pointB = v2f::rotate_point({ position.x						  , position.y								    }, origin, rotation); // top left corner
+		pointC = v2f::rotate_point({ position.x						  , position.y + Config::boid_size_height	    }, origin, rotation); // bot left corner
 
 		float t = position.x / border.width();
 		float s = position.y / border.height();
 
-		color =
-		{
+		color = sf::Vector3f(
 			(float)interpolate(Config::boid_color_top_left.x * 255, Config::boid_color_top_right.x * 255, Config::boid_color_bot_left.x * 255, Config::boid_color_bot_right.x * 255, t, s) / 255.0f,
 			(float)interpolate(Config::boid_color_top_left.y * 255, Config::boid_color_top_right.y * 255, Config::boid_color_bot_left.y * 255, Config::boid_color_bot_right.y * 255, t, s) / 255.0f,
-			(float)interpolate(Config::boid_color_top_left.z * 255, Config::boid_color_top_right.z * 255, Config::boid_color_bot_left.z * 255, Config::boid_color_bot_right.z * 255, t, s) / 255.0f
-		};
+			(float)interpolate(Config::boid_color_top_left.z * 255, Config::boid_color_top_right.z * 255, Config::boid_color_bot_left.z * 255, Config::boid_color_bot_right.z * 255, t, s) / 255.0f);
 	}
 }
 
 void Boid::flock()
 {
-	sf::Vector2f sep(0, 0);
-	sf::Vector2f ali(0, 0);
-	sf::Vector2f coh(0, 0);
+	sf::Vector2f sep;
+	sf::Vector2f ali;
+	sf::Vector2f coh;
 
-	float sepCount = 0;
-	float aliCount = 0;
-	float cohCount = 0;
+	int sepCount = 0;
+	int aliCount = 0;
+	int cohCount = 0;
 
 	float sepDistance = (Config::boid_min_distance / 2.0f);
 
@@ -83,16 +84,18 @@ void Boid::flock()
 			if (b == this)
 				continue;
 
-			float distance = v2f::distance(get_origin(), b->get_origin());
+			sf::Vector2f otherOrigin = b->get_origin();
+
+			float distance = v2f::distance(origin, otherOrigin);
 			if (distance >= FLT_EPSILON && distance <= Config::boid_min_distance)
 			{
-				sf::Vector2f dir = v2f::direction(get_origin(), b->get_origin());
+				sf::Vector2f dir = v2f::direction(origin, otherOrigin);
 				float angle = v2f::angle(velocity, dir);
 
 				if (util::to_degrees(angle) <= (Config::boid_view_angle / 2.0f))
 				{
 					ali += b->get_velocity(); // Align with every boids velocity
-					coh += b->get_origin();   // Head towards center of boids
+					coh += otherOrigin;		  // Head towards center of boids
 
 					++aliCount;
 					++cohCount;
@@ -109,17 +112,17 @@ void Boid::flock()
 
 	if (sepCount > 0) // seperation
 	{
-		sep = v2f::normalize(sep / sepCount, Config::boid_max_speed);
+		sep = v2f::normalize(sep / (float)sepCount, Config::boid_max_speed);
 		apply_force(steer_at(sep) * Config::weight_sep);
 	}
 	if (aliCount > 0) // alignment
 	{
-		ali = v2f::normalize(ali / aliCount, Config::boid_max_speed);
+		ali = v2f::normalize(ali / (float)aliCount, Config::boid_max_speed);
 		apply_force(steer_at(ali) * Config::weight_ali);
 	}
 	if (cohCount > 0) // cohesion
 	{
-		coh = v2f::direction(get_origin(), coh / cohCount);
+		coh = v2f::direction(origin, coh / (float)cohCount);
 		coh = v2f::normalize(coh, Config::boid_max_speed);
 
 		apply_force(steer_at(coh) * Config::weight_coh);
