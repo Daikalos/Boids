@@ -61,7 +61,7 @@ public:
 	}
 	static constexpr sf::Vector2<T> rotate_point(const sf::Vector2<T>& point, const sf::Vector2<T>& center, const float& angle)
 	{
-		sf::Vector2<T> newPoint = sf::Vector2<T>();
+		sf::Vector2<T> newPoint;
 
 		float s = sinf(angle);
 		float c = cosf(angle);

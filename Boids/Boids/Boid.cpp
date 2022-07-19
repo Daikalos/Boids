@@ -1,7 +1,7 @@
 #include "Boid.h"
 
 Boid::Boid(Grid* grid, Boid* boids, sf::Vector2f pos)
-	: grid(grid), boids(boids), position(pos), rotation(0.0f)
+	: grid(grid), boids(boids), index(0), cell_index(0), position(pos), rotation(0.0f)
 {
 	velocity = sf::Vector2f(
 		util::random(-Config::boid_max_speed, Config::boid_max_speed),
@@ -100,7 +100,7 @@ void Boid::flock()
 
 				if (distance <= sepDistance)
 				{
-					sep += v2f::direction(b->get_origin(), get_origin()) / powf(distance, 2.0f);
+					sep += -dir / powf(distance, 2.0f);
 					++sepCount;
 				}
 			}
@@ -125,13 +125,17 @@ void Boid::flock()
 		apply_force(steer_at(coh) * Config::weight_coh);
 	}
 
-	velocity = v2f::limit(velocity, Config::boid_max_speed);
-	velocity = v2f::min(velocity, Config::boid_min_speed);
+	float length = v2f::length(velocity);
+
+	if (length > Config::boid_max_speed)
+		velocity = v2f::normalize(velocity, Config::boid_max_speed);
+	else if (length < Config::boid_min_speed)
+		velocity = v2f::normalize(velocity, Config::boid_min_speed);
 }
 
 sf::Vector2f Boid::steer_at(const sf::Vector2f& steer_direction)
 {
-	sf::Vector2f steer = steer_direction - velocity; // steering direction
+	sf::Vector2f steer = v2f::direction(velocity, steer_direction); // steering direction
 	steer = v2f::limit(steer, Config::boid_max_steer);
 
 	return steer;

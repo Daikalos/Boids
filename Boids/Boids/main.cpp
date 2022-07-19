@@ -83,7 +83,10 @@ int main()
 
 	while (window.isOpen())
 	{
-		deltaTime = std::clamp(clock.restart().asSeconds(), 0.0f, 0.075f);
+		deltaTime = clock.restart().asSeconds();
+
+		if (deltaTime > 0.075f)
+			deltaTime = 0.075f;
 
 		inputHandler.update();
 
