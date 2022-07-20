@@ -5,6 +5,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/OpenGL.hpp>
 
+#include "Impulse.h"
 #include "Boid.h"
 #include "Grid.h"
 #include "VecUtil.h"
@@ -31,17 +32,22 @@ int main()
 
 	window.setVerticalSyncEnabled(Config::vertical_sync);
 	window.setFramerateLimit(Config::max_framerate);
-	window.setActive(true);
+	
+	if (!window.setActive(true))
+		return -1;
+
+	Rect_i border(0, 0, window.getSize().x, window.getSize().y);
+	float window_size = v2f::length({ (float)border.width(), (float)border.height() });
 
 	Camera camera(&window);
 	InputHandler inputHandler;
 
-	sf::Vector2f mousePos;
-
 	sf::Clock clock;
 	float deltaTime = FLT_EPSILON;
 
-	Rect_i border(0, 0, window.getSize().x, window.getSize().y);
+	sf::Vector2f mouse_pos;
+
+	float min_distance = std::fmaxf(std::fmaxf(Config::sep_distance, Config::ali_distance), Config::coh_distance);
 	GLsizei vertex_count = Config::boid_count * 3;
 
 	Boid* boids = (Boid*)::operator new(Config::boid_count * sizeof(Boid));
@@ -49,11 +55,11 @@ int main()
 	Color* colors = (Color*)::operator new(vertex_count * sizeof(Color));
 
 	Grid grid(
-		border.left	 - Config::boid_min_distance * (Config::grid_extra_cells + 1),
-		border.top	 - Config::boid_min_distance * (Config::grid_extra_cells + 1),
-		border.right + Config::boid_min_distance * (Config::grid_extra_cells + 1),
-		border.bot   + Config::boid_min_distance * (Config::grid_extra_cells + 1),
-		Config::boid_min_distance * 2.0f, Config::boid_min_distance * 2.0f);
+		border.left	 - min_distance * (Config::grid_extra_cells + 1),
+		border.top	 - min_distance * (Config::grid_extra_cells + 1),
+		border.right + min_distance * (Config::grid_extra_cells + 1),
+		border.bot   + min_distance * (Config::grid_extra_cells + 1),
+		min_distance * 2.0f, min_distance * 2.0f);
 
 	for (int i = 0; i < Config::boid_count; ++i)
 	{
@@ -82,10 +88,7 @@ int main()
 
 	while (window.isOpen())
 	{
-		deltaTime = clock.restart().asSeconds();
-
-		if (deltaTime > 0.075f)
-			deltaTime = 0.075f;
+		deltaTime = std::fminf(clock.restart().asSeconds(), 0.075f);
 
 		inputHandler.update();
 
@@ -110,11 +113,11 @@ int main()
 						camera.set_position((sf::Vector2f)window.getSize() / 2.0f);
 
 						grid = Grid(
-							border.left  - Config::boid_min_distance * (Config::grid_extra_cells + 1),
-							border.top   - Config::boid_min_distance * (Config::grid_extra_cells + 1),
-							border.right + Config::boid_min_distance * (Config::grid_extra_cells + 1),
-							border.bot   + Config::boid_min_distance * (Config::grid_extra_cells + 1),
-							Config::boid_min_distance * 2.0f, Config::boid_min_distance * 2.0f);
+							border.left  - min_distance * (Config::grid_extra_cells + 1),
+							border.top   - min_distance * (Config::grid_extra_cells + 1),
+							border.right + min_distance * (Config::grid_extra_cells + 1),
+							border.bot   + min_distance * (Config::grid_extra_cells + 1),
+							min_distance * 2.0f, min_distance * 2.0f);
 					}
 					break;
 				case sf::Event::MouseWheelScrolled:
@@ -124,7 +127,18 @@ int main()
 		}
 
 		camera.update(inputHandler);
-		mousePos = sf::Vector2f(camera.get_mouse_world_position());
+		mouse_pos = sf::Vector2f(camera.get_mouse_world_position());
+
+		for (int i = Config::impulses.size() - 1; i >= 0; --i)
+		{
+			float length = (Config::impulses[i].length += Config::impulse_speed * deltaTime);
+
+			if (length > window_size)
+				Config::impulses.erase(Config::impulses.begin() + i);
+		}
+
+		if (inputHandler.get_left_pressed())
+			Config::impulses.push_back(Impulse(mouse_pos, 0.0f));
 
 		grid.reset_buffers();
 
@@ -161,19 +175,19 @@ int main()
 				if (Config::gravity_enabled)
 				{
 					if (inputHandler.get_left_held())
-						boid.steer_towards(mousePos, Config::gravity_towards_factor);
+						boid.steer_towards(mouse_pos, Config::gravity_towards_factor);
 					if (inputHandler.get_right_held())
-						boid.steer_towards(mousePos, -Config::gravity_away_factor);
+						boid.steer_towards(mouse_pos, -Config::gravity_away_factor);
 				}
 
 				if (Config::predator_enabled)
 				{
-					float dist = v2f::distance(boid.get_origin(), mousePos);
+					float dist = v2f::distance(boid.get_origin(), mouse_pos);
 
 					if (dist <= Config::predator_distance)
 					{
 						float factor = (dist > FLT_EPSILON) ? (dist / Config::predator_distance) : FLT_MIN;
-						boid.steer_towards(mousePos, -Config::predator_factor / factor);
+						boid.steer_towards(mouse_pos, -Config::predator_factor / factor);
 					}
 				}
 

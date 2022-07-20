@@ -10,14 +10,22 @@
         "boid_min_speed" : 150.0,
         "boid_max_steer" : 3.0,
         "boid_view_angle" : 240.0,
-        "boid_min_distance" : 60.0,
+        
+        "sep_distance" : 30.0,
+        "ali_distance" : 60.0,
+        "coh_distance" : 60.0,
 
+        "sep_weight" : 2.4,
+        "ali_weight" : 1.2,
+        "coh_weight" : 1.7,
+
+        "color_option" : 2,
+        
         "boid_color_top_left" : "255 20 255",
         "boid_color_top_right" : "150 0 255",
         "boid_color_bot_left" : "216 191 216",
         "boid_color_bot_right" : "90 0 90",
 
-        "boid_cycle_colors_enabled" : true,
         "boid_cycle_colors_random" : true,
         "boid_cycle_colors_speed" : 1.0,
         "boid_cycle_colors" : 
@@ -28,9 +36,19 @@
             "90 0 90"
         ],
 
-        "separation" : 2.4,
-        "alignment" : 1.2,
-        "cohesion" : 1.7,
+        "boid_density" : 50,
+        "boid_density_colors" : 
+        [
+            "90 0 90",
+            "255 20 255", 
+            "150 0 255", 
+            "90 0 90"
+        ],
+
+        "impulse_enabled" : true,
+        "impulse_color" : "255 0 255",
+        "impulse_size" : 25.0,
+        "impulse_speed" : 800.0,
 
         "gravity_enabled" : true,
         "gravity_towards_factor" : 0.8,
@@ -45,7 +63,6 @@
         "turn_factor" : 50.0,
 
         "grid_extra_cells" : 8,
-
         "camera_enabled" : false,
         "vertical_sync" : true,
         "max_framerate" : 144

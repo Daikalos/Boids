@@ -27,12 +27,24 @@ public:
 		return cell_index;
 	}
 
-private: // Flocking
+private:
 	void flock();
 
 	sf::Vector2f steer_at(const sf::Vector2f& steer_direction);
 
-	void outside_border(const Rect_i& border, float deltaTime);
+	void outside_border(const float& deltaTime, const Rect_i& border);
+	void turn_at_border(const float& deltaTime, const Rect_i& border);
+	void teleport_at_border(const Rect_i& border);
+
+	void position_color(const Rect_i& border);
+	void cycle_color(const float& deltaTime);
+	void density_color();
+	void impulse_color();
+
+	int interpolate(int a, int b, int c, int d, double t, double s) const
+	{
+		return (int)(a * (1 - t) * (1 - s) + b * t * (1 - s) + c * (1 - t) * s + d * t * s);
+	}
 
 	inline void apply_force(const sf::Vector2f& force)
 	{
@@ -56,12 +68,6 @@ public: // Properties
 	}
 
 private:
-	int interpolate(int a, int b, int c, int d, double t, double s) const
-	{
-		return (int)(a * (1 - t) * (1 - s) + b * t * (1 - s) + c * (1 - t) * s + d * t * s);
-	}
-
-private:
 	Grid* grid;
 	Boid* boids;
 
@@ -77,5 +83,6 @@ private:
 	float rotation;
 
 	float duration;
+	float density;
 };
 

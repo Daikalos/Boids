@@ -5,6 +5,7 @@
 #include <fstream>
 
 #include "json.hpp"
+#include "Impulse.h"
 
 // ugly but does not matter in small project
 //
@@ -20,21 +21,33 @@ struct Config
 	static float boid_min_speed;
 	static float boid_max_steer;
 	static float boid_view_angle;
-	static float boid_min_distance;
+
+	static float sep_distance;
+	static float ali_distance;
+	static float coh_distance;
+
+	static float sep_weight;
+	static float ali_weight;
+	static float coh_weight;
+
+	static int color_option;
 
 	static sf::Vector3f boid_color_top_left;
 	static sf::Vector3f boid_color_top_right;
 	static sf::Vector3f boid_color_bot_left;
 	static sf::Vector3f boid_color_bot_right;
 
-	static bool boid_cycle_colors_enabled;
 	static bool boid_cycle_colors_random;
 	static float boid_cycle_colors_speed;
 	static std::vector<sf::Vector3f> boid_cycle_colors;
 
-	static float weight_sep;
-	static float weight_ali;
-	static float weight_coh;
+	static int boid_density;
+	static std::vector<sf::Vector3f> boid_density_colors;
+
+	static bool impulse_enabled;
+	static sf::Vector3f impulse_color;
+	static float impulse_size;
+	static float impulse_speed;
 
 	static bool gravity_enabled;
 	static float gravity_towards_factor;
@@ -53,6 +66,8 @@ struct Config
 	static bool camera_enabled;
 	static bool vertical_sync;
 	static int max_framerate;
+
+	static std::vector<Impulse> impulses;
 
 	static void load()
 	{
@@ -78,26 +93,56 @@ struct Config
 				boid_min_speed = json["settings"]["boid_min_speed"];
 				boid_max_steer = json["settings"]["boid_max_steer"];
 				boid_view_angle = json["settings"]["boid_view_angle"];
-				boid_min_distance = json["settings"]["boid_min_distance"];
 
-				boid_color_top_left = convert(json["settings"]["boid_color_top_left"]);
-				boid_color_top_right = convert(json["settings"]["boid_color_top_right"]);
-				boid_color_bot_left = convert(json["settings"]["boid_color_bot_left"]);
-				boid_color_bot_right = convert(json["settings"]["boid_color_bot_right"]);
+				sep_distance = json["settings"]["sep_distance"];
+				ali_distance = json["settings"]["ali_distance"];
+				coh_distance = json["settings"]["coh_distance"];
 
-				boid_cycle_colors_enabled = json["settings"]["boid_cycle_colors_enabled"];
-				boid_cycle_colors_random = json["settings"]["boid_cycle_colors_random"];
-				boid_cycle_colors_speed = json["settings"]["boid_cycle_colors_speed"];
+				sep_weight = json["settings"]["sep_weight"];
+				ali_weight = json["settings"]["ali_weight"];
+				coh_weight = json["settings"]["coh_weight"];
 
-				std::vector<std::string> temp_colors = json["settings"]["boid_cycle_colors"];
-				boid_cycle_colors = std::vector<sf::Vector3f>(temp_colors.size());
+				color_option = json["settings"]["color_option"];
 
-				for (int i = 0; i < temp_colors.size(); ++i)
-					boid_cycle_colors[i] = convert(temp_colors[i]);
+				switch (Config::color_option)
+				{
+					case 0:
+					{
+						boid_color_top_left = convert(json["settings"]["boid_color_top_left"]);
+						boid_color_top_right = convert(json["settings"]["boid_color_top_right"]);
+						boid_color_bot_left = convert(json["settings"]["boid_color_bot_left"]);
+						boid_color_bot_right = convert(json["settings"]["boid_color_bot_right"]);
+					}
+					break;
+					case 2:
+					{
+						boid_density = json["settings"]["boid_density"];
 
-				weight_sep = json["settings"]["separation"];
-				weight_ali = json["settings"]["alignment"];
-				weight_coh = json["settings"]["cohesion"];
+						std::vector<std::string> temp_colors = json["settings"]["boid_density_colors"];
+						boid_density_colors = std::vector<sf::Vector3f>(temp_colors.size());
+
+						for (int i = 0; i < temp_colors.size(); ++i)
+							boid_density_colors[i] = convert(temp_colors[i]);
+					}
+					break;
+					default:
+					{
+						boid_cycle_colors_random = json["settings"]["boid_cycle_colors_random"];
+						boid_cycle_colors_speed = json["settings"]["boid_cycle_colors_speed"];
+
+						std::vector<std::string> temp_colors = json["settings"]["boid_cycle_colors"];
+						boid_cycle_colors = std::vector<sf::Vector3f>(temp_colors.size());
+
+						for (int i = 0; i < temp_colors.size(); ++i)
+							boid_cycle_colors[i] = convert(temp_colors[i]);
+					}
+					break;
+				}
+
+				impulse_enabled = json["settings"]["impulse_enabled"];
+				impulse_color = convert(json["settings"]["impulse_color"]);
+				impulse_size = json["settings"]["impulse_size"];
+				impulse_speed = json["settings"]["impulse_speed"];
 
 				gravity_enabled = json["settings"]["gravity_enabled"];
 				gravity_towards_factor = json["settings"]["gravity_towards_factor"];
@@ -112,7 +157,6 @@ struct Config
 				turn_factor = json["settings"]["turn_factor"];
 
 				grid_extra_cells = json["settings"]["grid_extra_cells"];
-
 				camera_enabled = json["settings"]["camera_enabled"];
 				vertical_sync = json["settings"]["vertical_sync"];
 				max_framerate = json["settings"]["max_framerate"];

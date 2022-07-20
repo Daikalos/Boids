@@ -9,15 +9,23 @@ float Config::boid_size_height				= 8.5f;
 float Config::boid_max_speed				= 340.0f;
 float Config::boid_min_speed				= 100.0f;
 float Config::boid_max_steer				= 3.0f;
-float Config::boid_view_angle				= 280.0f;
-float Config::boid_min_distance				= 54;
+float Config::boid_view_angle				= 240.0f;
+
+float Config::sep_distance					= 30.0f;
+float Config::ali_distance					= 60.0f;
+float Config::coh_distance					= 60.0f;
+
+float Config::sep_weight					= 2.4f;
+float Config::ali_weight					= 1.2f;
+float Config::coh_weight					= 1.7f;
+
+int Config::color_option					= 2;
 
 sf::Vector3f Config::boid_color_top_left	= sf::Vector3f(0.73f, 0.33f, 0.82f);
 sf::Vector3f Config::boid_color_top_right	= sf::Vector3f(1.0f, 0.0f, 1.0f);
 sf::Vector3f Config::boid_color_bot_left	= sf::Vector3f(0.85f, 0.75f, 0.85f);
 sf::Vector3f Config::boid_color_bot_right	= sf::Vector3f(0.35f, 0.0f, 0.35f);
 
-bool Config::boid_cycle_colors_enabled		= true;
 bool Config::boid_cycle_colors_random		= true;
 float Config::boid_cycle_colors_speed		= 0.1f;
 std::vector<sf::Vector3f> Config::boid_cycle_colors = 
@@ -28,9 +36,19 @@ std::vector<sf::Vector3f> Config::boid_cycle_colors =
 	sf::Vector3f(0.35f, 0.0f, 0.35f)
 };
 
-float Config::weight_sep					= 2.5f;
-float Config::weight_ali					= 1.2f;
-float Config::weight_coh					= 1.65f;
+int Config::boid_density					= 35;
+std::vector<sf::Vector3f> Config::boid_density_colors =
+{
+	sf::Vector3f(0.35f, 0.0f, 0.35f),
+	sf::Vector3f(1.0f, 0.1f, 1.0f),
+	sf::Vector3f(0.6f, 0.0f, 1.0f),
+	sf::Vector3f(0.35f, 0.0f, 0.35f)
+};
+
+bool Config::impulse_enabled				= true;
+sf::Vector3f Config::impulse_color			= sf::Vector3f(0.35, 0.0f, 0.35f);
+float Config::impulse_size					= 30.0f;
+float Config::impulse_speed					= 250.0f;
 
 bool Config::gravity_enabled				= true;
 float Config::gravity_towards_factor		= 0.8f;
@@ -45,7 +63,8 @@ float Config::turn_margin_factor			= 0.85f;
 float Config::turn_factor					= 160.0f;
 
 int Config::grid_extra_cells				= 12;
-
 bool Config::camera_enabled					= false;
 bool Config::vertical_sync					= true;
 int Config::max_framerate					= 144;
+
+std::vector<Impulse> Config::impulses = {};
