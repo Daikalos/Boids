@@ -1,11 +1,14 @@
 #include "Boid.h"
 
 Boid::Boid(Grid* grid, Boid* boids, sf::Vector2f pos)
-	: grid(grid), boids(boids), index(0), cell_index(0), position(pos), rotation(0.0f)
+	: grid(grid), boids(boids), index(0), cell_index(0), position(pos), rotation(0.0f), duration(0.0f)
 {
 	velocity = sf::Vector2f(
 		util::random(-Config::boid_max_speed, Config::boid_max_speed),
 		util::random(-Config::boid_max_speed, Config::boid_max_speed));
+
+	if (Config::boid_cycle_colors_random)
+		duration = util::random(0.0f, 1.0f);
 }
 
 void Boid::update(float deltaTime, const Rect_i& border)
@@ -25,16 +28,35 @@ void Boid::update(float deltaTime, const Rect_i& border)
 		rotation = v2f::angle(velocity);
 
 		pointA = v2f::rotate_point({ position.x + Config::boid_size_width, position.y + (Config::boid_size_height / 2) }, origin, rotation); // middle right tip
-		pointB = v2f::rotate_point({ position.x						  , position.y								    }, origin, rotation); // top left corner
-		pointC = v2f::rotate_point({ position.x						  , position.y + Config::boid_size_height	    }, origin, rotation); // bot left corner
+		pointB = v2f::rotate_point({ position.x							 , position.y								   }, origin, rotation); // top left corner
+		pointC = v2f::rotate_point({ position.x							 , position.y + Config::boid_size_height	   }, origin, rotation); // bot left corner
 
-		float t = position.x / border.width();
-		float s = position.y / border.height();
+		if (!Config::boid_cycle_colors_enabled)
+		{
+			float t = position.x / border.width();
+			float s = position.y / border.height();
 
-		color = sf::Vector3f(
-			(float)interpolate(Config::boid_color_top_left.x * 255, Config::boid_color_top_right.x * 255, Config::boid_color_bot_left.x * 255, Config::boid_color_bot_right.x * 255, t, s) / 255.0f,
-			(float)interpolate(Config::boid_color_top_left.y * 255, Config::boid_color_top_right.y * 255, Config::boid_color_bot_left.y * 255, Config::boid_color_bot_right.y * 255, t, s) / 255.0f,
-			(float)interpolate(Config::boid_color_top_left.z * 255, Config::boid_color_top_right.z * 255, Config::boid_color_bot_left.z * 255, Config::boid_color_bot_right.z * 255, t, s) / 255.0f);
+			color = sf::Vector3f(
+				(float)interpolate(Config::boid_color_top_left.x * 255, Config::boid_color_top_right.x * 255, Config::boid_color_bot_left.x * 255, Config::boid_color_bot_right.x * 255, t, s) / 255.0f,
+				(float)interpolate(Config::boid_color_top_left.y * 255, Config::boid_color_top_right.y * 255, Config::boid_color_bot_left.y * 255, Config::boid_color_bot_right.y * 255, t, s) / 255.0f,
+				(float)interpolate(Config::boid_color_top_left.z * 255, Config::boid_color_top_right.z * 255, Config::boid_color_bot_left.z * 255, Config::boid_color_bot_right.z * 255, t, s) / 255.0f);
+		}
+		else
+		{
+			duration = std::fmodf(duration + deltaTime * Config::boid_cycle_colors_speed, 1.0f);
+			
+			float scaled_time = duration * (float)(Config::boid_cycle_colors.size() - 1);
+
+			int index1 = (int)scaled_time;
+			int index2 = ((int)scaled_time + 1) % Config::boid_cycle_colors.size();
+
+			sf::Vector3f color1 = Config::boid_cycle_colors[index1];
+			sf::Vector3f color2 = Config::boid_cycle_colors[index2];
+
+			float newT = scaled_time - std::floorf(scaled_time);
+
+			color = v2f::lerp(color1, color2, newT);
+		}
 	}
 }
 

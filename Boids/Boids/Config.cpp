@@ -17,6 +17,17 @@ sf::Vector3f Config::boid_color_top_right	= sf::Vector3f(1.0f, 0.0f, 1.0f);
 sf::Vector3f Config::boid_color_bot_left	= sf::Vector3f(0.85f, 0.75f, 0.85f);
 sf::Vector3f Config::boid_color_bot_right	= sf::Vector3f(0.35f, 0.0f, 0.35f);
 
+bool Config::boid_cycle_colors_enabled		= true;
+bool Config::boid_cycle_colors_random		= true;
+float Config::boid_cycle_colors_speed		= 0.1f;
+std::vector<sf::Vector3f> Config::boid_cycle_colors = 
+{ 
+	sf::Vector3f(0.35f, 0.0f, 0.35f), 
+	sf::Vector3f(1.0f, 0.1f, 1.0f), 
+	sf::Vector3f(0.6f, 0.0f, 1.0f), 
+	sf::Vector3f(0.35f, 0.0f, 0.35f)
+};
+
 float Config::weight_sep					= 2.5f;
 float Config::weight_ali					= 1.2f;
 float Config::weight_coh					= 1.65f;

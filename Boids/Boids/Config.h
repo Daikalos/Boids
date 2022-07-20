@@ -27,6 +27,11 @@ struct Config
 	static sf::Vector3f boid_color_bot_left;
 	static sf::Vector3f boid_color_bot_right;
 
+	static bool boid_cycle_colors_enabled;
+	static bool boid_cycle_colors_random;
+	static float boid_cycle_colors_speed;
+	static std::vector<sf::Vector3f> boid_cycle_colors;
+
 	static float weight_sep;
 	static float weight_ali;
 	static float weight_coh;
@@ -79,6 +84,16 @@ struct Config
 				boid_color_top_right = convert(json["settings"]["boid_color_top_right"]);
 				boid_color_bot_left = convert(json["settings"]["boid_color_bot_left"]);
 				boid_color_bot_right = convert(json["settings"]["boid_color_bot_right"]);
+
+				boid_cycle_colors_enabled = json["settings"]["boid_cycle_colors_enabled"];
+				boid_cycle_colors_random = json["settings"]["boid_cycle_colors_random"];
+				boid_cycle_colors_speed = json["settings"]["boid_cycle_colors_speed"];
+
+				std::vector<std::string> temp_colors = json["settings"]["boid_cycle_colors"];
+				boid_cycle_colors = std::vector<sf::Vector3f>(temp_colors.size());
+
+				for (int i = 0; i < temp_colors.size(); ++i)
+					boid_cycle_colors[i] = convert(temp_colors[i]);
 
 				weight_sep = json["settings"]["separation"];
 				weight_ali = json["settings"]["alignment"];

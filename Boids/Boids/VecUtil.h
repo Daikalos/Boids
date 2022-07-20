@@ -61,15 +61,25 @@ public:
 	}
 	static constexpr sf::Vector2<T> rotate_point(const sf::Vector2<T>& point, const sf::Vector2<T>& center, const float& angle)
 	{
-		sf::Vector2<T> newPoint;
+		sf::Vector2<T> dir = direction(center, point);
 
 		float s = sinf(angle);
 		float c = cosf(angle);
 
-		newPoint.x = (((point.x - center.x) * c - (point.y - center.y) * s)) + center.x;
-		newPoint.y = (((point.x - center.x) * s + (point.y - center.y) * c)) + center.y;
-
-		return newPoint;
+		return sf::Vector2<T>(
+			(dir.x * c - dir.y * s) + center.x,
+			(dir.x * s + dir.y * c) + center.y);
+	}
+	static constexpr float lerp(float a, float b, float f)
+	{
+		return (a * (1.0 - f)) + (b * f);
+	}
+	static constexpr sf::Vector3<T> lerp(sf::Vector3<T> lhs, sf::Vector3<T> rhs, float a)
+	{
+		return sf::Vector3<T>(
+			lerp(lhs.x, rhs.x, a),
+			lerp(lhs.y, rhs.y, a),
+			lerp(lhs.z, rhs.z, a));
 	}
 
 private:

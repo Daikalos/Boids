@@ -75,5 +75,7 @@ private:
 	sf::Vector2f velocity;
 	sf::Vector2f origin;
 	float rotation;
+
+	float duration;
 };
 
