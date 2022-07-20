@@ -26,6 +26,14 @@ public:
 	}
 	static constexpr float distance(const sf::Vector2<T>& from, const sf::Vector2<T>& to)
 	{
+		//T dx = std::abs(to.x - from.x);
+		//T dy = std::abs(to.y - from.y);
+
+		//if (dy > dx)
+		//	std::swap(dx, dy);
+
+		//return 1007.f / 1024.f * dx + 441.f / 1024.f * dy;
+
 		return length(direction(from, to));
 	}
 

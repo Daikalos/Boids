@@ -3,9 +3,9 @@
 Boid::Boid(Grid* grid, Boid* boids, sf::Vector2f pos)
 	: grid(grid), boids(boids), index(0), cell_index(0), position(pos), rotation(0.0f), duration(0.0f)
 {
-	velocity = sf::Vector2f(
+	velocity = v2f::normalize(sf::Vector2f(
 		util::random(-Config::boid_max_speed, Config::boid_max_speed),
-		util::random(-Config::boid_max_speed, Config::boid_max_speed));
+		util::random(-Config::boid_max_speed, Config::boid_max_speed)), Config::boid_max_speed);
 
 	if (Config::boid_cycle_colors_random)
 		duration = util::random(0.0f, 1.0f);
@@ -28,8 +28,8 @@ void Boid::update(float deltaTime, const Rect_i& border)
 		rotation = v2f::angle(velocity);
 
 		pointA = v2f::rotate_point({ position.x + Config::boid_size_width, position.y + (Config::boid_size_height / 2) }, origin, rotation); // middle right tip
-		pointB = v2f::rotate_point({ position.x							 , position.y								   }, origin, rotation); // top left corner
-		pointC = v2f::rotate_point({ position.x							 , position.y + Config::boid_size_height	   }, origin, rotation); // bot left corner
+		pointB = v2f::rotate_point({ position.x						  , position.y								    }, origin, rotation); // top left corner
+		pointC = v2f::rotate_point({ position.x						  , position.y + Config::boid_size_height	    }, origin, rotation); // bot left corner
 
 		if (!Config::boid_cycle_colors_enabled)
 		{
@@ -109,7 +109,7 @@ void Boid::flock()
 			sf::Vector2f otherOrigin = b->get_origin();
 
 			float distance = v2f::distance(origin, otherOrigin);
-			if (distance >= FLT_EPSILON && distance <= Config::boid_min_distance)
+			if (distance <= Config::boid_min_distance)
 			{
 				sf::Vector2f dir = v2f::direction(origin, otherOrigin);
 				float angle = v2f::angle(velocity, dir);

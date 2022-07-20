@@ -26,10 +26,10 @@ namespace util
 	{
 		if (val < min)
 			return min;
-		else if (val > max)
+		if (val > max)
 			return max;
-		else 
-			return val;
+			
+		return val;
 	}
 
 	static thread_local std::mt19937_64 dre(std::chrono::steady_clock::now().time_since_epoch().count());

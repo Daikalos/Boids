@@ -3,7 +3,7 @@
     {
         "background" : "0 0 0",
 
-        "boid_count" : 1500,
+        "boid_count" : 1750,
         "boid_size_width" : 22.0,
         "boid_size_height" : 11.0,
         "boid_max_speed" : 340.0,
@@ -19,13 +19,12 @@
 
         "boid_cycle_colors_enabled" : true,
         "boid_cycle_colors_random" : true,
-        "boid_cycle_colors_speed" : 0.1,
+        "boid_cycle_colors_speed" : 1.0,
         "boid_cycle_colors" : 
         [
             "90 0 90",
             "255 20 255", 
             "150 0 255", 
-            "216 191 216", 
             "90 0 90"
         ],
 
