@@ -37,7 +37,7 @@ int main()
 		return -1;
 
 	Rect_i border(0, 0, window.getSize().x, window.getSize().y);
-	float window_size = v2f::length({ (float)border.width(), (float)border.height() });
+	float window_size = v2f::length({ (float)border.width(), (float)border.height() }) * 5.0f;
 
 	Camera camera(&window);
 	InputHandler inputHandler;
