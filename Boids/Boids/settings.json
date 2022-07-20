@@ -27,7 +27,7 @@
         "turn_margin_factor" : 0.85,
         "turn_factor" : 50.0,
         "grid_extra_cells" : 8,
-        "camera_enabled" : false,
+        "camera_enabled" : true,
         "vertical_sync" : true,
         "max_framerate" : 144
     }

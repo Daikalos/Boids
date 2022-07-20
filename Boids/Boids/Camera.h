@@ -6,12 +6,13 @@
 
 #include "InputHandler.h"
 #include "Config.h"
+#include "VecUtil.h"
 
 class Camera
 {
 public:
 	Camera() = delete;
-	Camera(const sf::Window& window);
+	Camera(const sf::Window* window);
 
 	// call after poll event
 	//
@@ -26,20 +27,20 @@ public:
 	inline const float* get_world_matrix() const
 	{
 		return sf::Transform()
-			.translate((sf::Vector2f)window.getSize() / 2.0f)
-			.scale(scale, scale)
+			.translate((sf::Vector2f)window->getSize() / 2.0f)
+			.scale(scale)
 			.translate(-position).getMatrix();
 	}
 	inline sf::Transform get_view_matrix() const
 	{
 		return sf::Transform()
 			.translate(position)
-			.scale(1.0f / scale, 1.0f / scale)
-			.translate((sf::Vector2f)window.getSize() / -2.0f);
+			.scale(1.0f / scale)
+			.translate((sf::Vector2f)window->getSize() / -2.0f);
 	}
 
 	inline sf::Vector2f get_position() const { return position; }
-	inline sf::Vector2i get_mouse_world_position() const { return view_to_world(sf::Mouse::getPosition(window)); }
+	inline sf::Vector2i get_mouse_world_position() const { return view_to_world(sf::Mouse::getPosition(*window)); }
 
 	inline void set_position(sf::Vector2f position)
 	{
@@ -47,16 +48,18 @@ public:
 	}
 	inline void set_scale(float scale)
 	{
-		this->scale = scale;
+		this->scale.x = scale;
+		this->scale.y = scale;
 	}
 
-	inline double get_scale() const { return scale; }
+	inline sf::Vector2f get_scale() const { return scale; }
 
 private:
-	const sf::Window& window;
+	const sf::Window* window;
 
 	sf::Vector2f position;
+	sf::Vector2f scale;
+
 	sf::Vector2i dragPos;
-	float scale;
 };
 

@@ -27,14 +27,13 @@ int main()
 	Config::load();
 
 	sf::Window window(sf::VideoMode(
-		sf::VideoMode::getDesktopMode().width,
-		sf::VideoMode::getDesktopMode().height), "Boids", sf::Style::Fullscreen);
+		sf::VideoMode::getDesktopMode().size), "Boids", sf::Style::Fullscreen);
 
 	window.setVerticalSyncEnabled(Config::vertical_sync);
 	window.setFramerateLimit(Config::max_framerate);
 	window.setActive(true);
 
-	Camera camera(window);
+	Camera camera(&window);
 	InputHandler inputHandler;
 
 	sf::Vector2f mousePos;
