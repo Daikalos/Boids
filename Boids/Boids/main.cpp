@@ -27,8 +27,7 @@ int main()
 {
 	Config::load();
 
-	sf::Window window(sf::VideoMode(
-		sf::VideoMode::getDesktopMode().size), "Boids", sf::Style::Fullscreen);
+	sf::Window window(sf::VideoMode::getDesktopMode(), "Boids", sf::Style::Fullscreen);
 
 	window.setVerticalSyncEnabled(Config::vertical_sync);
 	window.setFramerateLimit(Config::max_framerate);
@@ -120,25 +119,25 @@ int main()
 							min_distance * 2.0f, min_distance * 2.0f);
 					}
 					break;
-				case sf::Event::MouseWheelScrolled:
-					inputHandler.set_scrollDelta(event.mouseWheelScroll.delta);
-					break;
 			}
 		}
 
 		camera.update(inputHandler);
 		mouse_pos = sf::Vector2f(camera.get_mouse_world_position());
 
-		for (int i = Config::impulses.size() - 1; i >= 0; --i)
-		{
-			float length = (Config::impulses[i].length += Config::impulse_speed * deltaTime);
-
-			if (length > window_size)
-				Config::impulses.erase(Config::impulses.begin() + i);
-		}
-
 		if (inputHandler.get_left_pressed())
-			Config::impulses.push_back(Impulse(mouse_pos, 0.0f));
+			Config::impulses.push_back(Impulse(mouse_pos, Config::impulse_speed, Config::impulse_size, 0.0f));
+
+		std::for_each(
+			Config::impulses.rbegin(), 
+			Config::impulses.rend(),
+			[deltaTime, window_size](Impulse& impulse)
+			{
+				impulse.update(deltaTime);
+
+				if (impulse.get_length() > window_size)
+					Config::impulses.erase(Config::impulses.begin() + (&impulse - Config::impulses.data()));
+			});
 
 		grid.reset_buffers();
 
@@ -186,7 +185,7 @@ int main()
 
 					if (dist <= Config::predator_distance)
 					{
-						float factor = (dist > FLT_EPSILON) ? (dist / Config::predator_distance) : FLT_MIN;
+						float factor = (dist > FLT_EPSILON) ? (dist / Config::predator_distance) : FLT_EPSILON;
 						boid.steer_towards(mouse_pos, -Config::predator_factor / factor);
 					}
 				}

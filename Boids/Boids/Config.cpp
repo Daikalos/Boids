@@ -37,6 +37,8 @@ std::vector<sf::Vector3f> Config::boid_cycle_colors =
 };
 
 int Config::boid_density					= 35;
+bool Config::boid_density_cycle_enabled		= true;
+float Config::boid_density_cycle_speed		= 5.0f;
 std::vector<sf::Vector3f> Config::boid_density_colors =
 {
 	sf::Vector3f(0.35f, 0.0f, 0.35f),
@@ -64,6 +66,7 @@ float Config::turn_factor					= 160.0f;
 
 int Config::grid_extra_cells				= 12;
 bool Config::camera_enabled					= false;
+float Config::camera_zoom					= 1.0f;
 bool Config::vertical_sync					= true;
 int Config::max_framerate					= 144;
 

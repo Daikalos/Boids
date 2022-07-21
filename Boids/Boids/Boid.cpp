@@ -1,14 +1,14 @@
 #include "Boid.h"
 
 Boid::Boid(Grid* grid, Boid* boids, sf::Vector2f pos)
-	: grid(grid), boids(boids), index(0), cell_index(0), position(pos), rotation(0.0f), duration(0.0f), density(0.0f)
+	: grid(grid), boids(boids), position(pos)
 {
 	velocity = v2f::normalize(sf::Vector2f(
 		util::random(-Config::boid_max_speed, Config::boid_max_speed),
 		util::random(-Config::boid_max_speed, Config::boid_max_speed)), Config::boid_max_speed);
 
 	if (Config::boid_cycle_colors_random)
-		duration = util::random(0.0f, 1.0f);
+		cycle_time = util::random(0.0f, 1.0f);
 
 	origin = sf::Vector2f(
 		position.x + (Config::boid_size_width / 2.0f),
@@ -41,7 +41,7 @@ void Boid::update(float deltaTime, const Rect_i& border)
 			position_color(border);
 			break;
 		case 2:
-			density_color();
+			density_color(deltaTime);
 			break;
 		default:
 			cycle_color(deltaTime);
@@ -104,19 +104,24 @@ void Boid::flock()
 			float distance = v2f::distance(origin, otherOrigin);
 			sf::Vector2f dir = v2f::direction(origin, otherOrigin);
 
-			float angle = v2f::angle(velocity, dir);
+			bool use_angle = distance <= std::fminf(Config::coh_distance, Config::ali_distance);
 
-			if (util::to_degrees(angle) <= (Config::boid_view_angle / 2.0f))
+			if (use_angle)
 			{
-				if (distance <= Config::coh_distance)
+				float angle = v2f::angle(velocity, dir);
+
+				if (util::to_degrees(angle) <= (Config::boid_view_angle / 2.0f))
 				{
-					coh += otherOrigin;		  // Head towards center of boids
-					++cohCount;
-				}
-				if (distance <= Config::ali_distance)
-				{
-					ali += b->get_velocity(); // Align with every boids velocity
-					++aliCount;
+					if (distance <= Config::coh_distance)
+					{
+						coh += otherOrigin;		  // Head towards center of boids
+						++cohCount;
+					}
+					if (distance <= Config::ali_distance)
+					{
+						ali += b->get_velocity(); // Align with every boids velocity
+						++aliCount;
+					}
 				}
 			}
 			if (distance <= Config::sep_distance)
@@ -127,7 +132,7 @@ void Boid::flock()
 		}
 	}
 
-	if (sepCount > 0) // seperation
+	if (sepCount > 0) // separation
 	{
 		sep = v2f::normalize(sep / (float)sepCount, Config::boid_max_speed);
 		apply_force(steer_at(sep) * Config::sep_weight);
@@ -152,7 +157,7 @@ void Boid::flock()
 	else if (length < Config::boid_min_speed)
 		velocity = v2f::normalize(velocity, Config::boid_min_speed);
 
-	density = sepCount + aliCount + cohCount;
+	density = std::max(std::max(cohCount, aliCount), sepCount);
 }
 
 sf::Vector2f Boid::steer_at(const sf::Vector2f& steer_direction)
@@ -232,9 +237,9 @@ void Boid::position_color(const Rect_i& border)
 }
 void Boid::cycle_color(const float& deltaTime)
 {
-	duration = std::fmodf(duration + deltaTime * Config::boid_cycle_colors_speed, 1.0f);
+	cycle_time = std::fmodf(cycle_time + deltaTime * Config::boid_cycle_colors_speed, 1.0f);
 
-	float scaled_time = duration * (float)(Config::boid_cycle_colors.size() - 1);
+	float scaled_time = cycle_time * (float)(Config::boid_cycle_colors.size() - 1);
 
 	int index1 = (int)scaled_time;
 	int index2 = ((int)scaled_time + 1) % Config::boid_cycle_colors.size();
@@ -246,35 +251,39 @@ void Boid::cycle_color(const float& deltaTime)
 
 	color = v2f::lerp(color1, color2, newT);
 }
-void Boid::density_color()
+void Boid::density_color(const float& deltaTime)
 {
-	float scaled_density = std::fmodf((float)density / Config::boid_density, 1.0f);
+	if (Config::boid_density_cycle_enabled)
+		density_time = std::fmodf(density_time + deltaTime * Config::boid_density_cycle_speed, 1.0f);
 
-	float scaled_time = scaled_density * (float)(Config::boid_density_colors.size() - 1);
+	float scaled_density = std::fmodf(((float)density / Config::boid_density) + density_time, 1.0f) * (float)(Config::boid_density_colors.size() - 1);
 
-	int index1 = (int)scaled_time;
-	int index2 = ((int)scaled_time + 1) % Config::boid_density_colors.size();
+	int index1 = (int)scaled_density;
+	int index2 = ((int)scaled_density + 1) % Config::boid_density_colors.size();
 
 	sf::Vector3f color1 = Config::boid_density_colors[index1];
 	sf::Vector3f color2 = Config::boid_density_colors[index2];
 
-	float newT = scaled_time - std::floorf(scaled_time);
+	float newT = scaled_density - std::floorf(scaled_density);
 
 	color = v2f::lerp(color1, color2, newT);
 }
 void Boid::impulse_color()
 {
-	for (int i = Config::impulses.size() - 1; i >= 0; --i)
-	{
-		sf::Vector2f impulse_pos = Config::impulses[i].position;
-		float impulse_length = Config::impulses[i].length;
+	std::for_each(
+		Config::impulses.begin(),
+		Config::impulses.end(),
+		[&](const Impulse& impulse)
+		{
+			sf::Vector2f impulse_pos = impulse.get_position();
+			float impulse_length = impulse.get_length();
 
-		float length = v2f::length(v2f::direction(impulse_pos, position));
-		float diff = std::abs(length - impulse_length);
+			float length = v2f::length(v2f::direction(impulse_pos, position));
+			float diff = std::abs(length - impulse_length);
 
-		if (diff <= Config::impulse_size)
-			color = Config::impulse_color;
-	}
+			if (diff <= impulse.get_size())
+				color = Config::impulse_color;
+		});
 }
 
 void Boid::update_grid_cells() const

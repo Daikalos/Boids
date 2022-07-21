@@ -42,6 +42,8 @@ struct Config
 	static std::vector<sf::Vector3f> boid_cycle_colors;
 
 	static int boid_density;
+	static bool boid_density_cycle_enabled;
+	static float boid_density_cycle_speed;
 	static std::vector<sf::Vector3f> boid_density_colors;
 
 	static bool impulse_enabled;
@@ -64,6 +66,7 @@ struct Config
 	static int grid_extra_cells;
 
 	static bool camera_enabled;
+	static float camera_zoom;
 	static bool vertical_sync;
 	static int max_framerate;
 
@@ -72,13 +75,7 @@ struct Config
 	static void load()
 	{
 		std::ifstream project_file("settings.json", std::ifstream::binary);
-		std::stringstream buffer;
-
-		buffer << project_file.rdbuf();
-
-		nlohmann::json json;
-		if (!buffer.str().empty())
-			json = nlohmann::json::parse(buffer.str());
+		nlohmann::json json = nlohmann::json::parse(project_file);
 
 		if (!json.empty())
 		{
@@ -117,6 +114,8 @@ struct Config
 					case 2:
 					{
 						boid_density = json["settings"]["boid_density"];
+						boid_density_cycle_enabled = json["settings"]["boid_density_cycle_enabled"];
+						boid_density_cycle_speed = json["settings"]["boid_density_cycle_speed"];
 
 						std::vector<std::string> temp_colors = json["settings"]["boid_density_colors"];
 						boid_density_colors = std::vector<sf::Vector3f>(temp_colors.size());
@@ -158,6 +157,7 @@ struct Config
 
 				grid_extra_cells = json["settings"]["grid_extra_cells"];
 				camera_enabled = json["settings"]["camera_enabled"];
+				camera_zoom = json["settings"]["camera_zoom"];
 				vertical_sync = json["settings"]["vertical_sync"];
 				max_framerate = json["settings"]["max_framerate"];
 			}

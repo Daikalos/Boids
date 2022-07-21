@@ -1,7 +1,7 @@
 #include "Camera.h"
 
 Camera::Camera(const sf::Window* window) 
-	: window(window), position(sf::Vector2f(window->getSize()) / 2.0f), scale({ 1.0f, 1.0f })
+	: window(window), position(sf::Vector2f(window->getSize()) / 2.0f), scale({ Config::camera_zoom, Config::camera_zoom })
 {
 
 }
@@ -14,16 +14,10 @@ void Camera::update(const InputHandler& inputHandler)
 	if (inputHandler.get_key_pressed(sf::Keyboard::Key::Space))
 	{
 		set_position(sf::Vector2f(window->getSize()) / 2.0f);
-		set_scale(1.0f);
 	}
 
 	if (inputHandler.get_middle_pressed())
 		dragPos = get_mouse_world_position();
 	if (inputHandler.get_middle_held())
 		position += (sf::Vector2f)(dragPos - get_mouse_world_position());
-
-	if (inputHandler.get_scroll_down())
-		scale *= 0.8f;
-	if (inputHandler.get_scroll_up())
-		scale *= 1.25f;
 }

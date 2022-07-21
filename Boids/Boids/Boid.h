@@ -38,7 +38,7 @@ private:
 
 	void position_color(const Rect_i& border);
 	void cycle_color(const float& deltaTime);
-	void density_color();
+	void density_color(const float& deltaTime);
 	void impulse_color();
 
 	int interpolate(int a, int b, int c, int d, double t, double s) const
@@ -71,8 +71,8 @@ private:
 	Grid* grid;
 	Boid* boids;
 
-	int cell_index;
-	int index;
+	int cell_index{0};
+	int index{0};
 
 	sf::Vector2f pointA, pointB, pointC;
 	sf::Vector3f color;
@@ -80,9 +80,10 @@ private:
 	sf::Vector2f position;
 	sf::Vector2f velocity;
 	sf::Vector2f origin;
-	float rotation;
+	float rotation{0.0f};
 
-	float duration;
-	float density;
+	float cycle_time{0.0f};
+	float density_time{0.0f};
+	float density{0.0f};
 };
 
