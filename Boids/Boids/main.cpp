@@ -4,6 +4,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <SFML/OpenGL.hpp>
+#include <SFML/Audio.hpp>
 
 #include "Impulse.h"
 #include "Boid.h"
@@ -12,6 +13,7 @@
 #include "Camera.h"
 #include "InputHandler.h"
 #include "Config.h"
+#include "CustomRecorder.h"
 
 struct Vertex
 {
@@ -39,6 +41,11 @@ int main()
 
 	Camera camera(&window);
 	InputHandler inputHandler;
+
+	if (CustomRecorder::isAvailable())
+	{
+		CustomRecorder sound_recorder;
+	}
 
 	sf::Clock clock;
 	float deltaTime = FLT_EPSILON;
