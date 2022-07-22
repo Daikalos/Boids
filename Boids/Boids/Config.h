@@ -50,6 +50,7 @@ struct Config
 	static sf::Vector3f impulse_color;
 	static float impulse_size;
 	static float impulse_speed;
+	static float impulse_fade_distance;
 
 	static bool gravity_enabled;
 	static float gravity_towards_factor;
@@ -142,6 +143,7 @@ struct Config
 				impulse_color = convert(json["settings"]["impulse_color"]);
 				impulse_size = json["settings"]["impulse_size"];
 				impulse_speed = json["settings"]["impulse_speed"];
+				impulse_fade_distance = json["settings"]["impulse_fade_distance"];
 
 				gravity_enabled = json["settings"]["gravity_enabled"];
 				gravity_towards_factor = json["settings"]["gravity_towards_factor"];

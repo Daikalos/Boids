@@ -10,6 +10,8 @@ public:
 
 	Impulse& operator=(const Impulse& rhs)
 	{
+		position = rhs.position;
+		length = rhs.length;
 		return *this;
 	}
 
@@ -36,7 +38,7 @@ public:
 	}
 
 private:
-	const sf::Vector2f position{0.0f, 0.0f};
+	sf::Vector2f position{0.0f, 0.0f};
 	const float speed{0.0f};
 	const float size{ 0.0f };
 	float length{0.0f};

@@ -36,7 +36,6 @@ int main()
 		return -1;
 
 	Rect_i border(0, 0, window.getSize().x, window.getSize().y);
-	float window_size = v2f::length({ (float)border.width(), (float)border.height() }) * 5.0f;
 
 	Camera camera(&window);
 	InputHandler inputHandler;
@@ -128,16 +127,15 @@ int main()
 		if (inputHandler.get_left_pressed())
 			Config::impulses.push_back(Impulse(mouse_pos, Config::impulse_speed, Config::impulse_size, 0.0f));
 
-		std::for_each(
-			Config::impulses.rbegin(), 
-			Config::impulses.rend(),
-			[deltaTime, window_size](Impulse& impulse)
-			{
-				impulse.update(deltaTime);
+		for (int i = Config::impulses.size() - 1; i >= 0; --i)
+		{
+			Impulse& impulse = Config::impulses[i];
 
-				if (impulse.get_length() > window_size)
-					Config::impulses.erase(Config::impulses.begin() + (&impulse - Config::impulses.data()));
-			});
+			impulse.update(deltaTime);
+
+			if (impulse.get_length() > Config::impulse_fade_distance)
+				Config::impulses.erase(Config::impulses.begin() + i);
+		}
 
 		grid.reset_buffers();
 

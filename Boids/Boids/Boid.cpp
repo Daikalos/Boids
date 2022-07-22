@@ -270,20 +270,19 @@ void Boid::density_color(const float& deltaTime)
 }
 void Boid::impulse_color()
 {
-	std::for_each(
-		Config::impulses.begin(),
-		Config::impulses.end(),
-		[&](const Impulse& impulse)
-		{
-			sf::Vector2f impulse_pos = impulse.get_position();
-			float impulse_length = impulse.get_length();
+	for (const Impulse& impulse : Config::impulses)
+	{
+		sf::Vector2f impulse_pos = impulse.get_position();
+		float impulse_length = impulse.get_length();
 
-			float length = v2f::length(v2f::direction(impulse_pos, position));
-			float diff = std::abs(length - impulse_length);
+		float length = v2f::length(v2f::direction(impulse_pos, position));
+		float diff = std::abs(length - impulse_length);
 
-			if (diff <= impulse.get_size())
-				color = Config::impulse_color;
-		});
+		float size = impulse.get_size() * (1.0f - (impulse_length / Config::impulse_fade_distance));
+
+		if (diff <= size)
+			color = Config::impulse_color;
+	}
 }
 
 void Boid::update_grid_cells() const
