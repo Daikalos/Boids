@@ -11,9 +11,9 @@ float Config::boid_min_speed				= 150.0f;
 float Config::boid_max_steer				= 3.0f;
 float Config::boid_view_angle				= 240.0f;
 
-float Config::sep_distance					= 25.0f;
-float Config::ali_distance					= 50.0f;
-float Config::coh_distance					= 50.0f;
+float Config::sep_distance					= 30.0f;
+float Config::ali_distance					= 60.0f;
+float Config::coh_distance					= 60.0f;
 
 float Config::sep_weight					= 2.6f;
 float Config::ali_weight					= 1.2f;

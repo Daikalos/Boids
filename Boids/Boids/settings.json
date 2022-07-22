@@ -11,9 +11,9 @@
         "boid_max_steer" : 3.0,
         "boid_view_angle" : 240.0,
         
-        "sep_distance" : 25.0,
-        "ali_distance" : 50.0,
-        "coh_distance" : 50.0,
+        "sep_distance" : 30.0,
+        "ali_distance" : 60.0,
+        "coh_distance" : 60.0,
 
         "sep_weight" : 2.6,
         "ali_weight" : 1.2,
