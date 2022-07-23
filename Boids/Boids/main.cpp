@@ -33,7 +33,9 @@ int main()
 	sf::Window window(sf::VideoMode::getDesktopMode(), "Boids", sf::Style::Fullscreen);
 
 	window.setVerticalSyncEnabled(Config::vertical_sync);
-	window.setFramerateLimit(Config::max_framerate);
+
+	if (!Config::vertical_sync)
+		window.setFramerateLimit(Config::max_framerate);
 	
 	if (!window.setActive(true))
 		return -1;
