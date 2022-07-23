@@ -4,8 +4,8 @@
 
 #include <SFML/Graphics.hpp>
 #include <SFML/OpenGL.hpp>
-#include <SFML/Audio.hpp>
 
+#include "AudioRecorder.h"
 #include "Impulse.h"
 #include "Boid.h"
 #include "Grid.h"
@@ -13,7 +13,6 @@
 #include "Camera.h"
 #include "InputHandler.h"
 #include "Config.h"
-#include "CustomRecorder.h"
 
 struct Vertex
 {
@@ -27,9 +26,10 @@ struct Color
 
 int main()
 {
+	srand(time(NULL));
 	Config::load();
 
-	sf::Window window(sf::VideoMode::getDesktopMode(), "Boids", sf::Style::Fullscreen);
+	sf::Window window(sf::VideoMode::getDesktopMode(), "Boids");// sf::Style::Fullscreen);
 
 	window.setVerticalSyncEnabled(Config::vertical_sync);
 	window.setFramerateLimit(Config::max_framerate);
@@ -37,15 +37,17 @@ int main()
 	if (!window.setActive(true))
 		return -1;
 
+	AudioRecorder audioRecorder;
+	
+	if (!audioRecorder.initialize())
+		return -1;
+
+	audioRecorder.start();
+
 	Rect_i border(0, 0, window.getSize().x, window.getSize().y);
 
 	Camera camera(&window);
 	InputHandler inputHandler;
-
-	if (CustomRecorder::isAvailable())
-	{
-		CustomRecorder sound_recorder;
-	}
 
 	sf::Clock clock;
 	float deltaTime = FLT_EPSILON;

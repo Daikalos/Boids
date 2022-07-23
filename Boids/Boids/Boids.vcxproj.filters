@@ -68,5 +68,8 @@
     <ClInclude Include="Impulse.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AudioRecorder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
