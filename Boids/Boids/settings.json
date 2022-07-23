@@ -78,7 +78,7 @@
         "grid_extra_cells" : 8,
         "camera_enabled" : false,
         "camera_zoom" : 1.0,
-        "vertical_sync" : false,
-        "max_framerate" : 300
+        "vertical_sync" : true,
+        "max_framerate" : 144
     }
 }
