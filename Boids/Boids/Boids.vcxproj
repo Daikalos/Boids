@@ -36,6 +36,7 @@
     <ClInclude Include="json.hpp" />
     <ClInclude Include="Quadtree.h" />
     <ClInclude Include="Rectangle.h" />
+    <ClInclude Include="State.h" />
     <ClInclude Include="Utilities.h" />
     <ClInclude Include="VecUtil.h" />
   </ItemGroup>

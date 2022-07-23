@@ -36,6 +36,19 @@ public:
 
 		return length(direction(from, to));
 	}
+	static constexpr float distance_sqrt(const sf::Vector2<T>& from, const sf::Vector2<T>& to)
+	{
+		//T dx = std::abs(to.x - from.x);
+		//T dy = std::abs(to.y - from.y);
+
+		//if (dy > dx)
+		//	std::swap(dx, dy);
+
+		//return 1007.f / 1024.f * dx + 441.f / 1024.f * dy;
+
+		sf::Vector2f dir = direction(from, to);
+		return dir.x * dir.x + dir.y * dir.y;
+	}
 
 	static constexpr sf::Vector2<T> normalize(sf::Vector2<T> vector, const float& radius = 1.0f)
 	{
@@ -81,6 +94,12 @@ public:
 	static constexpr float lerp(float a, float b, float f)
 	{
 		return (a * (1.0 - f)) + (b * f);
+	}
+	static constexpr sf::Vector2<T> lerp(sf::Vector2<T> lhs, sf::Vector2<T> rhs, float a)
+	{
+		return sf::Vector3<T>(
+			lerp(lhs.x, rhs.x, a),
+			lerp(lhs.y, rhs.y, a));
 	}
 	static constexpr sf::Vector3<T> lerp(sf::Vector3<T> lhs, sf::Vector3<T> rhs, float a)
 	{

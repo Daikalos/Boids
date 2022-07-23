@@ -23,6 +23,8 @@ struct Color
 	GLfloat r, g, b;
 };
 
+#include "State.h"
+
 int main()
 {
 	srand(time(NULL));
@@ -42,23 +44,22 @@ int main()
 	InputHandler inputHandler;
 
 	sf::Clock clock;
-	float deltaTime = FLT_EPSILON;
+	float deltaTime = 1.0f / 80.0f;
+	float accumulator = 0.0f;
 
 	sf::Vector2f mouse_pos;
-
-	float min_distance = std::fmaxf(std::fmaxf(Config::sep_distance, Config::ali_distance), Config::coh_distance);
 	GLsizei vertex_count = Config::boid_count * 3;
 
 	Boid* boids = (Boid*)::operator new(Config::boid_count * sizeof(Boid));
-	Vertex* vertices = (Vertex*)::operator new(vertex_count * sizeof(Vertex));
-	Color* colors = (Color*)::operator new(vertex_count * sizeof(Color));
 
 	Grid grid(
-		border.left	 - min_distance * (Config::grid_extra_cells + 1),
-		border.top	 - min_distance * (Config::grid_extra_cells + 1),
-		border.right + min_distance * (Config::grid_extra_cells + 1),
-		border.bot   + min_distance * (Config::grid_extra_cells + 1),
-		min_distance * 2.0f, min_distance * 2.0f);
+		border.left	 - Config::min_distance * (Config::grid_extra_cells + 1),
+		border.top	 - Config::min_distance * (Config::grid_extra_cells + 1),
+		border.right + Config::min_distance * (Config::grid_extra_cells + 1),
+		border.bot   + Config::min_distance * (Config::grid_extra_cells + 1),
+		Config::min_distance * 2.0f, Config::min_distance * 2.0f);
+
+	State state(vertex_count);
 
 	for (int i = 0; i < Config::boid_count; ++i)
 	{
@@ -67,6 +68,9 @@ int main()
 			util::random(0, border.height()) - border.top);
 
 		new(boids + i) Boid(&grid, boids, pos);
+
+		state.get_vertices()[i] = *(Vertex*)(&pos);
+		state.get_colors()[i] = {};
 	}
 
 	glClearColor(
@@ -82,12 +86,12 @@ int main()
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
 
-	glVertexPointer(2, GL_FLOAT, 0, vertices);
-	glColorPointer(3, GL_FLOAT, 0, colors);
+	glVertexPointer(2, GL_FLOAT, 0, state.get_vertices());
+	glColorPointer(3, GL_FLOAT, 0, state.get_colors());
 
 	while (window.isOpen())
 	{
-		deltaTime = std::fminf(clock.restart().asSeconds(), 0.075f);
+		accumulator += std::fminf(clock.restart().asSeconds(), 0.075f);
 
 		inputHandler.update();
 
@@ -112,11 +116,11 @@ int main()
 						camera.set_position((sf::Vector2f)window.getSize() / 2.0f);
 
 						grid = Grid(
-							border.left  - min_distance * (Config::grid_extra_cells + 1),
-							border.top   - min_distance * (Config::grid_extra_cells + 1),
-							border.right + min_distance * (Config::grid_extra_cells + 1),
-							border.bot   + min_distance * (Config::grid_extra_cells + 1),
-							min_distance * 2.0f, min_distance * 2.0f);
+							border.left  - Config::min_distance * (Config::grid_extra_cells + 1),
+							border.top   - Config::min_distance * (Config::grid_extra_cells + 1),
+							border.right + Config::min_distance * (Config::grid_extra_cells + 1),
+							border.bot   + Config::min_distance * (Config::grid_extra_cells + 1),
+							Config::min_distance * 2.0f, Config::min_distance * 2.0f);
 					}
 					break;
 			}
@@ -128,85 +132,77 @@ int main()
 		if (inputHandler.get_left_pressed())
 			Config::impulses.push_back(Impulse(mouse_pos, Config::impulse_speed, Config::impulse_size, 0.0f));
 
-		for (int i = Config::impulses.size() - 1; i >= 0; --i)
+		while (accumulator >= deltaTime)
 		{
-			Impulse& impulse = Config::impulses[i];
+			for (int i = Config::impulses.size() - 1; i >= 0; --i)
+			{
+				Impulse& impulse = Config::impulses[i];
 
-			impulse.update(deltaTime);
+				impulse.update(deltaTime);
 
-			if (impulse.get_length() > Config::impulse_fade_distance)
-				Config::impulses.erase(Config::impulses.begin() + i);
+				if (impulse.get_length() > Config::impulse_fade_distance)
+					Config::impulses.erase(Config::impulses.begin() + i);
+			}
+
+			grid.reset_buffers();
+
+			std::for_each(std::execution::par_unseq,
+				boids,
+				boids + Config::boid_count,
+				[](Boid& boid)
+				{
+					boid.set_cell_index();
+				});
+
+			std::sort(std::execution::par_unseq,
+				boids,
+				boids + Config::boid_count,
+				[](const Boid& b0, const Boid& b1)
+				{
+					return b0.get_cell_index() < b1.get_cell_index();
+				});
+
+			std::for_each(std::execution::par_unseq,
+				boids,
+				boids + Config::boid_count,
+				[](const Boid& boid)
+				{
+					boid.update_grid_cells();
+				});
+
+			std::for_each(
+				std::execution::par_unseq,
+				boids,
+				boids + Config::boid_count,
+				[&](Boid& boid)
+				{
+					if (Config::gravity_enabled)
+					{
+						if (inputHandler.get_left_held())
+							boid.steer_towards(mouse_pos, Config::gravity_towards_factor);
+						if (inputHandler.get_right_held())
+							boid.steer_towards(mouse_pos, -Config::gravity_away_factor);
+					}
+
+					if (Config::predator_enabled)
+					{
+						float dist = v2f::distance(boid.get_origin(), mouse_pos);
+
+						if (dist <= Config::predator_distance)
+						{
+							float factor = (dist > FLT_EPSILON) ? (dist / Config::predator_distance) : FLT_EPSILON;
+							boid.steer_towards(mouse_pos, -Config::predator_factor / factor);
+						}
+					}
+
+					boid.update(deltaTime, border);
+				});
+
+			accumulator -= deltaTime;
 		}
 
-		grid.reset_buffers();
-
-		std::for_each(std::execution::par_unseq,
-			boids,
-			boids + Config::boid_count,
-			[](Boid& boid)
-			{
-				boid.set_cell_index();
-			});
-
-		std::sort(std::execution::par_unseq, 
-			boids, 
-			boids + Config::boid_count, 
-			[](const Boid& b0, const Boid& b1)
-			{
-				return b0.get_cell_index() < b1.get_cell_index();
-			});
-
-		std::for_each(std::execution::par_unseq,
-			boids,
-			boids + Config::boid_count,
-			[](const Boid& boid)
-			{
-				boid.update_grid_cells();
-			});
-
-		std::for_each(
-			std::execution::par_unseq,
-			boids,
-			boids + Config::boid_count,
-			[&](Boid& boid)
-			{
-				if (Config::gravity_enabled)
-				{
-					if (inputHandler.get_left_held())
-						boid.steer_towards(mouse_pos, Config::gravity_towards_factor);
-					if (inputHandler.get_right_held())
-						boid.steer_towards(mouse_pos, -Config::gravity_away_factor);
-				}
-
-				if (Config::predator_enabled)
-				{
-					float dist = v2f::distance(boid.get_origin(), mouse_pos);
-
-					if (dist <= Config::predator_distance)
-					{
-						float factor = (dist > FLT_EPSILON) ? (dist / Config::predator_distance) : FLT_EPSILON;
-						boid.steer_towards(mouse_pos, -Config::predator_factor / factor);
-					}
-				}
-
-				boid.update(deltaTime, border);
-
-				__int64 v = (&boid - boids) * 3;
-
-				sf::Vector2f p0 = boid.get_pointA();
-				sf::Vector2f p1 = boid.get_pointB();
-				sf::Vector2f p2 = boid.get_pointC();
-
-				vertices[v	  ] = *(Vertex*)(&p0);
-				vertices[v + 1] = *(Vertex*)(&p1);
-				vertices[v + 2] = *(Vertex*)(&p2);
-
-				sf::Vector3f color = boid.get_color();
-
-				colors[v    ] = *(Color*)(&color);
-				colors[v + 1] = *(Color*)(&color);
-				colors[v + 2] = *(Color*)(&color);
-			});
+		float interp = accumulator / deltaTime;
+		state.draw(boids, interp);
 
 		glClear(GL_COLOR_BUFFER_BIT);
 

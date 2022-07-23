@@ -72,6 +72,7 @@ struct Config
 	static int max_framerate;
 
 	static std::vector<Impulse> impulses;
+	static float min_distance;
 
 	static void load()
 	{
@@ -172,6 +173,12 @@ struct Config
 			}
 			catch (std::exception e) { }
 		}
+
+		min_distance = std::fmaxf(std::fmaxf(Config::sep_distance, Config::ali_distance), Config::coh_distance);
+
+		sep_distance *= sep_distance;
+		ali_distance *= ali_distance;
+		coh_distance *= coh_distance;
 	}
 
 	static inline sf::Vector3f convert(std::string strColor)

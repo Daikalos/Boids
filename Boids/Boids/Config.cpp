@@ -80,3 +80,4 @@ bool Config::vertical_sync					= true;
 int Config::max_framerate					= 144;
 
 std::vector<Impulse> Config::impulses = {};
+float Config::min_distance = 0.0f;

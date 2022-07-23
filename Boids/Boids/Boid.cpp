@@ -17,24 +17,37 @@ Boid::Boid(Grid* grid, Boid* boids, sf::Vector2f pos)
 
 void Boid::update(float deltaTime, const Rect_i& border)
 {
+	prev_color = color;
+
+	prev_pointA = pointA;
+	prev_pointB = pointB;
+	prev_pointC = pointC;
+
 	flock();
 
 	position += velocity * deltaTime;
 
-	outside_border(deltaTime, border);
+	bool outside = outside_border(deltaTime, border);
+
+	rotation = v2f::angle(velocity);
 
 	origin = sf::Vector2f(
 		position.x + (Config::boid_size_width / 2.0f),
 		position.y + (Config::boid_size_height / 2.0f));
 
+	pointA = v2f::rotate_point({ position.x + Config::boid_size_width, position.y + (Config::boid_size_height / 2) }, origin, rotation); // middle right tip
+	pointB = v2f::rotate_point({ position.x							 , position.y								   }, origin, rotation); // top left corner
+	pointC = v2f::rotate_point({ position.x							 , position.y + Config::boid_size_height	   }, origin, rotation); // bot left corner
+
+	if (outside)
+	{
+		prev_pointA = pointA;
+		prev_pointB = pointB;
+		prev_pointC = pointC;
+	}
+
 	// draw-info
 	{
-		rotation = v2f::angle(velocity);
-
-		pointA = v2f::rotate_point({ position.x + Config::boid_size_width, position.y + (Config::boid_size_height / 2) }, origin, rotation); // middle right tip
-		pointB = v2f::rotate_point({ position.x						  , position.y								    }, origin, rotation); // top left corner
-		pointC = v2f::rotate_point({ position.x						  , position.y + Config::boid_size_height	    }, origin, rotation); // bot left corner
-
 		switch (Config::color_option)
 		{
 		case 0:
@@ -87,8 +100,6 @@ void Boid::flock()
 	if (xNeighbor != -1 && yNeighbor != -1)
 		neighbourIndices[neighbours++] = grid->at_pos(xNeighbor, yNeighbor);
 
-	density = 0.0f;
-
 	for (int i = 0; i < neighbours; ++i)
 	{
 		int gridCellIndex = neighbourIndices[i];
@@ -100,11 +111,11 @@ void Boid::flock()
 				continue;
 
 			sf::Vector2f otherOrigin = b->get_origin();
+			float sqrt_distance = v2f::distance_sqrt(origin, otherOrigin);
 
-			float distance = v2f::distance(origin, otherOrigin);
 			sf::Vector2f dir = v2f::direction(origin, otherOrigin);
 
-			bool use_angle = distance <= std::fminf(Config::coh_distance, Config::ali_distance);
+			bool use_angle = sqrt_distance <= std::fminf(Config::coh_distance, Config::ali_distance);
 
 			if (use_angle)
 			{
@@ -112,21 +123,21 @@ void Boid::flock()
 
 				if (util::to_degrees(angle) <= (Config::boid_view_angle / 2.0f))
 				{
-					if (distance <= Config::coh_distance)
+					if (sqrt_distance <= Config::coh_distance)
 					{
 						coh += otherOrigin;		  // Head towards center of boids
 						++cohCount;
 					}
-					if (distance <= Config::ali_distance)
+					if (sqrt_distance <= Config::ali_distance)
 					{
 						ali += b->get_velocity(); // Align with every boids velocity
 						++aliCount;
 					}
 				}
 			}
-			if (distance <= Config::sep_distance)
+			if (sqrt_distance <= Config::sep_distance)
 			{
-				sep += -dir / powf(distance, 2.0f);
+				sep += -dir / sqrt_distance;
 				++sepCount;
 			}
 		}
@@ -176,19 +187,17 @@ void Boid::steer_towards(sf::Vector2f point, float weight)
 	apply_force(steer);
 }
 
-void Boid::outside_border(const float& deltaTime, const Rect_i& border)
+bool Boid::outside_border(const float& deltaTime, const Rect_i& border)
 {
 	switch (Config::turn_at_border)
 	{
 	case true:
-		turn_at_border(deltaTime, border);
-		break;
+		return turn_at_border(deltaTime, border);
 	default:
-		teleport_at_border(border);
-		break;
+		return teleport_at_border(border);
 	}
 }
-void Boid::turn_at_border(const float& deltaTime, const Rect_i& border)
+bool Boid::turn_at_border(const float& deltaTime, const Rect_i& border)
 {
 	float width_margin = border.width() - border.width() * Config::turn_margin_factor;
 	float height_margin = border.height() - border.height() * Config::turn_margin_factor;
@@ -209,20 +218,38 @@ void Boid::turn_at_border(const float& deltaTime, const Rect_i& border)
 
 	if (position.y > bot_margin)
 		velocity.y -= Config::turn_factor * deltaTime * (1.0f + std::powf(std::abs(position.y - bot_margin) / height_margin, 2.0f));
+
+	return false;
 }
-void Boid::teleport_at_border(const Rect_i& border)
+bool Boid::teleport_at_border(const Rect_i& border)
 {
+	bool teleported = false;
+
 	if (position.x + Config::boid_size_width < border.left)
+	{
 		position.x = (float)border.right;
+		teleported = true;
+	}
 
 	if (position.x > border.right)
+	{
 		position.x = border.left - Config::boid_size_width;
+		teleported = true;
+	}
 
 	if (position.y + Config::boid_size_height < border.top)
+	{
 		position.y = (float)border.bot;
+		teleported = true;
+	}
 
 	if (position.y > border.bot)
+	{
 		position.y = border.top - Config::boid_size_height;
+		teleported = true;
+	}
+
+	return teleported;
 }
 
 void Boid::position_color(const Rect_i& border)
