@@ -51,10 +51,17 @@
         ],
 
         "impulse_enabled" : true,
-        "impulse_color" : "255 0 255",
         "impulse_size" : 50.0,
         "impulse_speed" : 600.0,
         "impulse_fade_distance" : 750.0,
+        "impulse_colors" :
+        [
+            "255 20 255",
+            "255 20 255",
+            "255 20 255",
+            "150 0 255", 
+            "90 0 90"
+        ],
 
         "gravity_enabled" : true,
         "gravity_towards_factor" : 0.8,

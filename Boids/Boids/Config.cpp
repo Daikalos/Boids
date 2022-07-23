@@ -51,10 +51,15 @@ std::vector<sf::Vector3f> Config::boid_density_colors =
 };
 
 bool Config::impulse_enabled				= true;
-sf::Vector3f Config::impulse_color			= sf::Vector3f(1.0f, 0.0f, 1.0);
 float Config::impulse_size					= 50.0f;
 float Config::impulse_speed					= 600.0f;
 float Config::impulse_fade_distance			= 750.0f;
+std::vector<sf::Vector3f> Config::impulse_colors =
+{
+	sf::Vector3f(1.0f, 0.0f, 1.0),
+	sf::Vector3f(0.6f, 0.0f, 1.0f),
+	sf::Vector3f(0.35f, 0.0f, 0.35f),
+};
 
 bool Config::gravity_enabled				= true;
 float Config::gravity_towards_factor		= 0.8f;

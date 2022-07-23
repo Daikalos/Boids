@@ -278,10 +278,21 @@ void Boid::impulse_color()
 		float length = v2f::length(v2f::direction(impulse_pos, position));
 		float diff = std::abs(length - impulse_length);
 
-		float size = impulse.get_size() * (1.0f - (impulse_length / Config::impulse_fade_distance));
+		float percentage = (impulse_length / Config::impulse_fade_distance);
+		float size = impulse.get_size() * (1.0f - percentage);
+
+		float scaled_length = std::fmodf(percentage, 1.0f) * (float)(Config::impulse_colors.size() - 1);
+
+		int index1 = (int)scaled_length;
+		int index2 = ((int)scaled_length + 1) % Config::impulse_colors.size();
+
+		sf::Vector3f color1 = Config::impulse_colors[index1];
+		sf::Vector3f color2 = Config::impulse_colors[index2];
+
+		float newT = scaled_length - std::floorf(scaled_length);
 
 		if (diff <= size)
-			color = Config::impulse_color;
+			color = v2f::lerp(color1, color2, newT);
 	}
 }
 
