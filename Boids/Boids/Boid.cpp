@@ -107,14 +107,16 @@ void Boid::flock()
 		{
 			Boid* b = &boids[j];
 
-			if (b == this)
+			if (b == this && b != nullptr)
 				continue;
 
 			sf::Vector2f otherOrigin = b->get_origin();
-			float sqrt_distance = v2f::distance_sqrt(origin, otherOrigin);
+			float sqrt_distance = v2f::distance_squared(origin, otherOrigin);
+
+			if (sqrt_distance <= FLT_EPSILON)
+				continue;
 
 			sf::Vector2f dir = v2f::direction(origin, otherOrigin);
-
 			bool use_angle = sqrt_distance <= std::fminf(Config::coh_distance, Config::ali_distance);
 
 			if (use_angle)
@@ -208,48 +210,46 @@ bool Boid::turn_at_border(const float& deltaTime, const Rect_i& border)
 	float bot_margin = border.bot - height_margin;
 
 	if (position.x + Config::boid_size_width < left_margin)
-		velocity.x += Config::turn_factor * deltaTime * (1.0f + std::powf(std::abs(position.x - left_margin) / width_margin, 2.0f));
+		velocity.x += Config::turn_factor * deltaTime * (1.0f + std::powf(std::abs(position.x - left_margin) / width_margin, 2.0f)) * (1.0f / (density + 1.0f));
 
 	if (position.x > right_margin)
-		velocity.x -= Config::turn_factor * deltaTime * (1.0f + std::powf(std::abs(position.x - right_margin) / width_margin, 2.0f));
+		velocity.x -= Config::turn_factor * deltaTime * (1.0f + std::powf(std::abs(position.x - right_margin) / width_margin, 2.0f)) * (1.0f / (density + 1.0f));
 
 	if (position.y + Config::boid_size_height < top_margin)
-		velocity.y += Config::turn_factor * deltaTime * (1.0f + std::powf(std::abs(position.y - top_margin) / height_margin, 2.0f));
+		velocity.y += Config::turn_factor * deltaTime * (1.0f + std::powf(std::abs(position.y - top_margin) / height_margin, 2.0f)) * (1.0f / (density + 1.0f));
 
 	if (position.y > bot_margin)
-		velocity.y -= Config::turn_factor * deltaTime * (1.0f + std::powf(std::abs(position.y - bot_margin) / height_margin, 2.0f));
+		velocity.y -= Config::turn_factor * deltaTime * (1.0f + std::powf(std::abs(position.y - bot_margin) / height_margin, 2.0f)) * (1.0f / (density + 1.0f));
 
 	return false;
 }
 bool Boid::teleport_at_border(const Rect_i& border)
 {
-	bool teleported = false;
-
-	if (position.x + Config::boid_size_width < border.left)
+	if (position.x + Config::boid_size_width * 1.25f < border.left)
 	{
 		position.x = (float)border.right;
-		teleported = true;
+		return true;
 	}
 
 	if (position.x > border.right)
 	{
-		position.x = border.left - Config::boid_size_width;
-		teleported = true;
+		position.x = border.left - Config::boid_size_width * 1.25f;
+		return true;
 	}
 
-	if (position.y + Config::boid_size_height < border.top)
+	if (position.y + Config::boid_size_height * 1.25f < border.top)
 	{
 		position.y = (float)border.bot;
-		teleported = true;
+		return true;
 	}
 
 	if (position.y > border.bot)
 	{
-		position.y = border.top - Config::boid_size_height;
-		teleported = true;
+		position.y = border.top - Config::boid_size_height * 1.25f;
+		return true;
 	}
 
-	return teleported;
+	return false;
 }
 
 void Boid::position_color(const Rect_i& border)

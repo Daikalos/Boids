@@ -179,6 +179,8 @@ struct Config
 		sep_distance *= sep_distance;
 		ali_distance *= ali_distance;
 		coh_distance *= coh_distance;
+
+		predator_distance *= predator_distance;
 	}
 
 	static inline sf::Vector3f convert(std::string strColor)

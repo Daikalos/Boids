@@ -34,7 +34,7 @@ public:
 
 		return 1007.f / 1024.f * dx + 441.f / 1024.f * dy;
 	}
-	static constexpr float distance_sqrt(const sf::Vector2<T>& from, const sf::Vector2<T>& to)
+	static constexpr float distance_squared(const sf::Vector2<T>& from, const sf::Vector2<T>& to)
 	{
 		sf::Vector2f dir = direction(from, to);
 		return dir.x * dir.x + dir.y * dir.y;

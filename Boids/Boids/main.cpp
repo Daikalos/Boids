@@ -46,8 +46,9 @@ int main()
 	InputHandler inputHandler;
 
 	sf::Clock clock;
-	float deltaTime = 1.0f / 80.0f;
-	float accumulator = 0.0f;
+	float deltaTime = 1.0f / 90.0f;
+	float rDeltaTime = FLT_EPSILON;
+	float accumulator = FLT_EPSILON;
 
 	sf::Vector2f mouse_pos;
 	GLsizei vertex_count = Config::boid_count * 3;
@@ -93,7 +94,8 @@ int main()
 
 	while (window.isOpen())
 	{
-		accumulator += std::fminf(clock.restart().asSeconds(), 0.075f);
+		rDeltaTime = std::fminf(clock.restart().asSeconds(), 0.075f);
+		accumulator += rDeltaTime;
 
 		inputHandler.update();
 
@@ -134,18 +136,18 @@ int main()
 		if (inputHandler.get_left_pressed())
 			Config::impulses.push_back(Impulse(mouse_pos, Config::impulse_speed, Config::impulse_size, 0.0f));
 
+		for (int i = Config::impulses.size() - 1; i >= 0; --i)
+		{
+			Impulse& impulse = Config::impulses[i];
+
+			impulse.update(rDeltaTime);
+
+			if (impulse.get_length() > Config::impulse_fade_distance)
+				Config::impulses.erase(Config::impulses.begin() + i);
+		}
+
 		while (accumulator >= deltaTime)
 		{
-			for (int i = Config::impulses.size() - 1; i >= 0; --i)
-			{
-				Impulse& impulse = Config::impulses[i];
-
-				impulse.update(deltaTime);
-
-				if (impulse.get_length() > Config::impulse_fade_distance)
-					Config::impulses.erase(Config::impulses.begin() + i);
-			}
-
 			grid.reset_buffers();
 
 			std::for_each(std::execution::par_unseq,
@@ -188,11 +190,11 @@ int main()
 
 					if (Config::predator_enabled)
 					{
-						float dist = v2f::distance(boid.get_origin(), mouse_pos);
+						float dist = v2f::distance_squared(boid.get_origin(), mouse_pos);
 
 						if (dist <= Config::predator_distance)
 						{
-							float factor = (dist > FLT_EPSILON) ? (dist / Config::predator_distance) : FLT_EPSILON;
+							float factor = (dist > FLT_EPSILON) ? std::sqrtf(dist / Config::predator_distance) : FLT_EPSILON;
 							boid.steer_towards(mouse_pos, -Config::predator_factor / factor);
 						}
 					}
