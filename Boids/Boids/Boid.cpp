@@ -111,13 +111,13 @@ void Boid::flock()
 				continue;
 
 			sf::Vector2f otherOrigin = b->get_origin();
-			float sqrt_distance = v2f::distance_squared(origin, otherOrigin);
+			float distance = v2f::distance_squared(origin, otherOrigin);
 
-			if (sqrt_distance <= FLT_EPSILON)
+			if (distance <= FLT_EPSILON)
 				continue;
 
 			sf::Vector2f dir = v2f::direction(origin, otherOrigin);
-			bool use_angle = sqrt_distance <= std::fminf(Config::coh_distance, Config::ali_distance);
+			bool use_angle = distance <= std::fminf(Config::coh_distance, Config::ali_distance);
 
 			if (use_angle)
 			{
@@ -125,21 +125,21 @@ void Boid::flock()
 
 				if (util::to_degrees(angle) <= (Config::boid_view_angle / 2.0f))
 				{
-					if (sqrt_distance <= Config::coh_distance)
+					if (distance <= Config::coh_distance)
 					{
 						coh += otherOrigin;		  // Head towards center of boids
 						++cohCount;
 					}
-					if (sqrt_distance <= Config::ali_distance)
+					if (distance <= Config::ali_distance)
 					{
 						ali += b->get_velocity(); // Align with every boids velocity
 						++aliCount;
 					}
 				}
 			}
-			if (sqrt_distance <= Config::sep_distance)
+			if (distance <= Config::sep_distance)
 			{
-				sep += -dir / sqrt_distance;
+				sep += -dir / distance;
 				++sepCount;
 			}
 		}
