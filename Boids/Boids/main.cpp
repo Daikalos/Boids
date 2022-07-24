@@ -71,10 +71,9 @@ int main()
 			util::random(0, border.height()) - border.top);
 
 		new(boids + i) Boid(&grid, boids, pos);
-
-		state.get_vertices()[i] = *(Vertex*)(&pos);
-		state.get_colors()[i] = {};
 	}
+
+	state.draw(boids, 1.0f);
 
 	glClearColor(
 		Config::background.x, 

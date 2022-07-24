@@ -32,6 +32,8 @@ private:
 
 	sf::Vector2f steer_at(const sf::Vector2f& steer_direction);
 
+	void update_points();
+
 	bool outside_border(const float& deltaTime, const Rect_i& border);
 	bool turn_at_border(const float& deltaTime, const Rect_i& border);
 	bool teleport_at_border(const Rect_i& border);

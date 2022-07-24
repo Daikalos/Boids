@@ -10,9 +10,7 @@ Boid::Boid(Grid* grid, Boid* boids, sf::Vector2f pos)
 	if (Config::boid_cycle_colors_random)
 		cycle_time = util::random(0.0f, 1.0f);
 
-	origin = sf::Vector2f(
-		position.x + (Config::boid_size_width / 2.0f),
-		position.y + (Config::boid_size_height / 2.0f));
+	update_points();
 }
 
 void Boid::update(float deltaTime, const Rect_i& border)
@@ -29,15 +27,7 @@ void Boid::update(float deltaTime, const Rect_i& border)
 
 	bool outside = outside_border(deltaTime, border);
 
-	rotation = v2f::angle(velocity);
-
-	origin = sf::Vector2f(
-		position.x + (Config::boid_size_width / 2.0f),
-		position.y + (Config::boid_size_height / 2.0f));
-
-	pointA = v2f::rotate_point({ position.x + Config::boid_size_width, position.y + (Config::boid_size_height / 2) }, origin, rotation); // middle right tip
-	pointB = v2f::rotate_point({ position.x							 , position.y								   }, origin, rotation); // top left corner
-	pointC = v2f::rotate_point({ position.x							 , position.y + Config::boid_size_height	   }, origin, rotation); // bot left corner
+	update_points();
 
 	if (outside)
 	{
@@ -179,6 +169,19 @@ sf::Vector2f Boid::steer_at(const sf::Vector2f& steer_direction)
 	steer = v2f::limit(steer, Config::boid_max_steer);
 
 	return steer;
+}
+
+void Boid::update_points()
+{
+	rotation = v2f::angle(velocity);
+
+	origin = sf::Vector2f(
+		position.x + (Config::boid_size_width / 2.0f),
+		position.y + (Config::boid_size_height / 2.0f));
+
+	pointA = v2f::rotate_point({ position.x + Config::boid_size_width, position.y + (Config::boid_size_height / 2) }, origin, rotation); // middle right tip
+	pointB = v2f::rotate_point({ position.x							 , position.y								   }, origin, rotation); // top left corner
+	pointC = v2f::rotate_point({ position.x							 , position.y + Config::boid_size_height	   }, origin, rotation); // bot left corner
 }
 
 void Boid::steer_towards(sf::Vector2f point, float weight)
