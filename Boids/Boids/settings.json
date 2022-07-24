@@ -65,8 +65,8 @@
         ],
 
         "gravity_enabled" : true,
-        "gravity_towards_factor" : 0.8,
-        "gravity_away_factor" : 0.8,
+        "gravity_towards_factor" : 0.6,
+        "gravity_away_factor" : 0.6,
 
         "predator_enabled" : true,
         "predator_distance" : 250.0,

@@ -188,7 +188,7 @@ int main()
 							boid.steer_towards(mouse_pos, -Config::gravity_away_factor);
 					}
 
-					if (Config::predator_enabled)
+					if (Config::predator_enabled && !(Config::gravity_enabled && (inputHandler.get_left_held() || inputHandler.get_right_held())))
 					{
 						float dist = v2f::distance_squared(boid.get_origin(), mouse_pos);
 
