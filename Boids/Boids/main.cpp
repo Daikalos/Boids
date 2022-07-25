@@ -137,7 +137,7 @@ int main()
 
 		inputHandler.update();
 
-		if (pMeterInfo != NULL)
+		if (pMeterInfo)
 		{
 			HRESULT hr = pMeterInfo->GetPeakValue(&Config::volume);
 			if (FAILED(hr))
@@ -273,6 +273,11 @@ int main()
 
 		window.display();
 	}
+
+	SAFE_RELEASE(pEnumerator);
+	SAFE_RELEASE(pDevice);
+	SAFE_RELEASE(pMeterInfo);
+	CoUninitialize();
 
 	return 0;
 }
