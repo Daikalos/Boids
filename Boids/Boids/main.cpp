@@ -31,8 +31,7 @@ int main()
 		return -1;
 
 	AudioMeter audioMeter;
-	if (Config::color_option == 3)
-		audioMeter.initialize();
+	audioMeter.initialize();
 
 	sf::Clock clock;
 	float deltaTime = 1.0f / 90.0f;

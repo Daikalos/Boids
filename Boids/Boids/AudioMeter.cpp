@@ -2,6 +2,9 @@
 
 void AudioMeter::initialize()
 {
+	if (Config::color_option != 3)
+		return;
+
 	IMMDeviceEnumerator* pEnumerator = NULL;
 	IMMDevice* pDevice = NULL;
 
@@ -36,6 +39,9 @@ void AudioMeter::initialize()
 
 void AudioMeter::update(const float& deltaTime)
 {
+	if (Config::color_option != 3)
+		return;
+
 	Config::volume = 0.0f;
 
 	if (pMeterInfo)
