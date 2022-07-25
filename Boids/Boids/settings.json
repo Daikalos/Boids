@@ -19,7 +19,7 @@
         "ali_weight" : 1.6,
         "coh_weight" : 1.9,
 
-        "color_option" : 2,
+        "color_option" : 3,
         
         "boid_color_top_left" : "255 20 255",
         "boid_color_top_right" : "150 0 255",
@@ -50,6 +50,7 @@
             "90 0 90"
         ],
 
+        "audio_responsive_processes" : [ "spotify.exe", "msedge.exe" ],
         "audio_responsive_strength" : 0.75,
         "audio_responsive_limit" : 1.2,
         "audio_responsive_density" : 25,

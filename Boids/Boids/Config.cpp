@@ -50,6 +50,10 @@ std::vector<sf::Vector3f> Config::boid_density_colors =
 	sf::Vector3f(0.35f, 0.0f, 0.35f)
 };
 
+std::vector<std::wstring> Config::audio_responsive_processes =
+{
+
+};
 float Config::audio_responsive_strength		= 0.75f;
 float Config::audio_responsive_limit		= 1.2f;
 int Config::audio_responsive_density		= 25;

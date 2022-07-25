@@ -46,6 +46,7 @@ struct Config
 	static float boid_density_cycle_speed;
 	static std::vector<sf::Vector3f> boid_density_colors;
 
+	static std::vector<std::wstring> audio_responsive_processes;
 	static float audio_responsive_strength;
 	static float audio_responsive_limit;
 	static int audio_responsive_density;
@@ -144,6 +145,21 @@ struct Config
 							boid_cycle_colors[i] = convert(temp_colors[i]);
 					}
 					break;
+				}
+
+				{
+					std::vector<std::string> temp_processes = json["settings"]["audio_responsive_processes"];
+					audio_responsive_processes = std::vector<std::wstring>(temp_processes.size());
+
+					for (int i = 0; i < audio_responsive_processes.size(); ++i)
+					{
+						std::string process = temp_processes[i];
+						std::transform(process.begin(), process.end(), process.begin(), ::tolower);
+
+						std::wstring wide_string = std::wstring(process.begin(), process.end());
+
+						audio_responsive_processes[i] = wide_string;
+					}
 				}
 
 				audio_responsive_strength = json["settings"]["audio_responsive_strength"];

@@ -8,6 +8,7 @@
 #include <winerror.h>
 #include <mmdeviceapi.h>
 #include <endpointvolume.h>
+#include <audiopolicy.h>
 
 #include "Impulse.h"
 #include "Boid.h"
@@ -23,32 +24,102 @@
 IMMDeviceEnumerator* pEnumerator = NULL;
 IMMDevice* pDevice = NULL;
 IAudioMeterInformation* pMeterInfo = NULL;
+IAudioSessionManager2* pSessionManager = NULL;
+
+std::map<std::wstring, std::pair<IAudioSessionControl2*, IAudioMeterInformation*>> processes_session_control;
+
+std::mutex mutex;
+
+void refresh(std::wstring* comp)
+{
+	IAudioSessionEnumerator* pSessionEnumerator = NULL;
+
+	if (FAILED(pSessionManager->GetSessionEnumerator(&pSessionEnumerator)))
+		return;
+
+	int sessionCount = 0;
+	if (FAILED(pSessionEnumerator->GetCount(&sessionCount)))
+		return;
+
+	for (int i = 0; i < sessionCount; ++i)
+	{
+		IAudioSessionControl* sessionControl = NULL;
+		IAudioSessionControl2* sessionControl2 = NULL;
+		IAudioMeterInformation* meterInformation = NULL;
+
+		std::wstring process_name;
+
+		if (SUCCEEDED(pSessionEnumerator->GetSession(i, &sessionControl)))
+		{
+			AudioSessionState state;
+			if (SUCCEEDED(sessionControl->GetState(&state)) && state != AudioSessionStateExpired)
+			{
+				if (SUCCEEDED(sessionControl->QueryInterface(__uuidof(IAudioSessionControl2), (void**)&sessionControl2)))
+				{
+					LPWSTR sessionID;
+					if (SUCCEEDED(sessionControl2->GetSessionInstanceIdentifier(&sessionID)))
+					{
+						_wcslwr_s(sessionID, wcslen(sessionID) + 1);
+
+						for (int j = 0; j < Config::audio_responsive_processes.size(); ++j)
+						{
+							process_name = Config::audio_responsive_processes[j];
+
+							if (process_name.size() == 0)
+								continue;
+
+							if (comp != nullptr && *comp != process_name)
+								continue;
+
+							if (wcsstr(sessionID, process_name.c_str()) != 0)
+							{
+								if (SUCCEEDED(sessionControl->QueryInterface(__uuidof(IAudioMeterInformation), (void**)&meterInformation)))
+								{
+									break;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		if (sessionControl2 && meterInformation)
+			processes_session_control[process_name] = std::make_pair(sessionControl2, meterInformation);
+
+		SAFE_RELEASE(sessionControl);
+	}
+
+	SAFE_RELEASE(pSessionEnumerator);
+}
 
 bool initialize_audio()
 {
 	HRESULT hr;
 
-	hr = CoInitialize(NULL);
-
-	if (FAILED(hr))
+	if (FAILED(CoInitialize(NULL)))
 		return false;
 
 	// Get enumerator for audio endpoint devices.
-	hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), NULL, CLSCTX_INPROC_SERVER, __uuidof(IMMDeviceEnumerator), (void**)&pEnumerator);
-
-	if (FAILED(hr))
+	if (FAILED(CoCreateInstance(__uuidof(MMDeviceEnumerator), NULL, CLSCTX_INPROC_SERVER, __uuidof(IMMDeviceEnumerator), (void**)&pEnumerator)))
 		return false;
 
 	// Get peak meter for default audio-rendering device.
-	hr = pEnumerator->GetDefaultAudioEndpoint(eRender, eConsole, &pDevice);
-
-	if (FAILED(hr))
+	if (FAILED(pEnumerator->GetDefaultAudioEndpoint(eRender, eConsole, &pDevice)))
 		return false;
 
-	hr = pDevice->Activate(__uuidof(IAudioMeterInformation), CLSCTX_ALL, NULL, (void**)&pMeterInfo);
-
-	if (FAILED(hr))
+	if (FAILED(pDevice->Activate(__uuidof(IAudioSessionManager), CLSCTX_ALL, NULL, (void**)&pSessionManager)))
 		return false;
+
+	if (Config::audio_responsive_processes.size() > 0)
+	{
+		refresh(nullptr);
+	}
+	else
+	{
+		if (FAILED(pDevice->Activate(__uuidof(IAudioMeterInformation), CLSCTX_ALL, NULL, (void**)&pMeterInfo)))
+			return false;
+	}
 
 	return true;
 }
@@ -58,7 +129,7 @@ int main()
 	srand(time(NULL));
 	Config::load();
 
-	sf::Window window(sf::VideoMode::getDesktopMode(), "Boids", sf::Style::Fullscreen);
+	sf::Window window(sf::VideoMode::getDesktopMode(), "Boids");// sf::Style::Fullscreen);
 
 	if (!Config::vertical_sync)
 		window.setFramerateLimit(Config::max_framerate);
@@ -72,6 +143,9 @@ int main()
 
 	Camera camera(&window);
 	InputHandler inputHandler;
+
+	float refresh_freq_max = 1.0f;
+	float refresh_freq = refresh_freq_max;
 
 	if (Config::color_option == 3)
 	{
@@ -112,7 +186,7 @@ int main()
 		new(boids + i) Boid(&grid, boids, pos);
 	}
 
-	state.draw(boids, 1.0f);
+	state.update(boids, 1.0f);
 
 	glClearColor(
 		Config::background.x, 
@@ -137,18 +211,48 @@ int main()
 
 		inputHandler.update();
 
-		if (pMeterInfo)
 		{
-			HRESULT hr = pMeterInfo->GetPeakValue(&Config::volume);
-			if (FAILED(hr))
+			Config::volume = 0.0f;
+
+			if (pMeterInfo)
 			{
-				SAFE_RELEASE(pEnumerator);
-				SAFE_RELEASE(pDevice);
-				SAFE_RELEASE(pMeterInfo);
-				CoUninitialize();
+				if (SUCCEEDED(pMeterInfo->GetPeakValue(&Config::volume)))
+					Config::volume = -20 * std::log10f(1.0f - Config::volume);
 			}
-			else
-				Config::volume = -20 * std::log10f(1.0f - Config::volume);
+
+			for (int i = 0; i < Config::audio_responsive_processes.size(); ++i)
+			{
+				std::wstring process_name = Config::audio_responsive_processes[i];
+
+				if (processes_session_control.contains(process_name))
+				{
+					IAudioSessionControl2* sessionControl2 = processes_session_control[process_name].first;
+					IAudioMeterInformation* meterInformation = processes_session_control[process_name].second;
+
+					AudioSessionState state;
+					if (sessionControl2 == NULL || meterInformation == NULL || FAILED(sessionControl2->GetState(&state)) || state == AudioSessionStateExpired)
+					{
+						SAFE_RELEASE(processes_session_control[process_name].first);
+						SAFE_RELEASE(processes_session_control[process_name].second);
+						processes_session_control.erase(process_name);
+						continue;
+					}
+
+					float temp = 0.0f;
+					if (SUCCEEDED(meterInformation->GetPeakValue(&temp)) && temp > Config::volume)
+						Config::volume = -20 * std::log10f(1.0f - temp);
+				}
+				else
+				{
+					refresh_freq -= rDeltaTime;
+
+					if (refresh_freq <= 0.0f)
+					{
+						refresh(&process_name);
+						refresh_freq = refresh_freq_max;
+					}
+				}
+			}
 		}
 
 		sf::Event event;
@@ -258,7 +362,7 @@ int main()
 		}
 
 		float interp = accumulator / deltaTime;
-		state.draw(boids, interp);
+		state.update(boids, interp);
 
 		glClear(GL_COLOR_BUFFER_BIT);
 
@@ -277,6 +381,16 @@ int main()
 	SAFE_RELEASE(pEnumerator);
 	SAFE_RELEASE(pDevice);
 	SAFE_RELEASE(pMeterInfo);
+	SAFE_RELEASE(pSessionManager);
+
+	for (int i = 0; i < Config::audio_responsive_processes.size(); ++i)
+	{
+		std::wstring process_name = Config::audio_responsive_processes[i];
+
+		SAFE_RELEASE(processes_session_control[process_name].first);
+		SAFE_RELEASE(processes_session_control[process_name].second);
+	}
+
 	CoUninitialize();
 
 	return 0;

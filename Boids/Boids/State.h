@@ -39,7 +39,7 @@ public:
 		return colors;
 	}
 
-	void draw(const Boid* boids, float interp)
+	void update(const Boid* boids, float interp)
 	{
 		std::for_each(
 			std::execution::par_unseq,
