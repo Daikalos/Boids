@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AudioMeter.cpp" />
     <ClCompile Include="Boid.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Config.cpp" />
@@ -27,6 +28,7 @@
     <ClCompile Include="Quadtree.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AudioMeter.h" />
     <ClInclude Include="Boid.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Config.h" />

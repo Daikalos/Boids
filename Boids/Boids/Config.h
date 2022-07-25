@@ -154,11 +154,7 @@ struct Config
 					for (int i = 0; i < audio_responsive_processes.size(); ++i)
 					{
 						std::string process = temp_processes[i];
-						std::transform(process.begin(), process.end(), process.begin(), ::tolower);
-
-						std::wstring wide_string = std::wstring(process.begin(), process.end());
-
-						audio_responsive_processes[i] = wide_string;
+						audio_responsive_processes[i] = std::wstring(process.begin(), process.end());
 					}
 				}
 
