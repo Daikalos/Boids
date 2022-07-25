@@ -41,6 +41,7 @@ private:
 	void position_color(const Rect_i& border);
 	void cycle_color(const float& deltaTime);
 	void density_color(const float& deltaTime);
+	void audio_color(const float& deltaTime);
 	void impulse_color();
 
 	int interpolate(int a, int b, int c, int d, double t, double s) const

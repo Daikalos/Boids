@@ -5,6 +5,10 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/OpenGL.hpp>
 
+#include <winerror.h>
+#include <mmdeviceapi.h>
+#include <endpointvolume.h>
+
 #include "Impulse.h"
 #include "Boid.h"
 #include "Grid.h"
@@ -12,18 +16,42 @@
 #include "Camera.h"
 #include "InputHandler.h"
 #include "Config.h"
-
-struct Vertex
-{
-	GLfloat x, y;
-};
-
-struct Color
-{
-	GLfloat r, g, b;
-};
-
 #include "State.h"
+
+#define SAFE_RELEASE(p) { if ( (p) ) { (p)->Release(); (p) = NULL; } }
+
+IMMDeviceEnumerator* pEnumerator = NULL;
+IMMDevice* pDevice = NULL;
+IAudioMeterInformation* pMeterInfo = NULL;
+
+bool initialize_audio()
+{
+	HRESULT hr;
+
+	hr = CoInitialize(NULL);
+
+	if (FAILED(hr))
+		return false;
+
+	// Get enumerator for audio endpoint devices.
+	hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), NULL, CLSCTX_INPROC_SERVER, __uuidof(IMMDeviceEnumerator), (void**)&pEnumerator);
+
+	if (FAILED(hr))
+		return false;
+
+	// Get peak meter for default audio-rendering device.
+	hr = pEnumerator->GetDefaultAudioEndpoint(eRender, eConsole, &pDevice);
+
+	if (FAILED(hr))
+		return false;
+
+	hr = pDevice->Activate(__uuidof(IAudioMeterInformation), CLSCTX_ALL, NULL, (void**)&pMeterInfo);
+
+	if (FAILED(hr))
+		return false;
+
+	return true;
+}
 
 int main()
 {
@@ -32,10 +60,10 @@ int main()
 
 	sf::Window window(sf::VideoMode::getDesktopMode(), "Boids", sf::Style::Fullscreen);
 
-	window.setVerticalSyncEnabled(Config::vertical_sync);
-
 	if (!Config::vertical_sync)
 		window.setFramerateLimit(Config::max_framerate);
+	else
+		window.setVerticalSyncEnabled(Config::vertical_sync);
 	
 	if (!window.setActive(true))
 		return -1;
@@ -44,6 +72,17 @@ int main()
 
 	Camera camera(&window);
 	InputHandler inputHandler;
+
+	if (Config::color_option == 3)
+	{
+		if (!initialize_audio())
+		{
+			SAFE_RELEASE(pEnumerator);
+			SAFE_RELEASE(pDevice);
+			SAFE_RELEASE(pMeterInfo);
+			CoUninitialize();
+		}
+	}
 
 	sf::Clock clock;
 	float deltaTime = 1.0f / 90.0f;
@@ -97,6 +136,20 @@ int main()
 		accumulator += rDeltaTime;
 
 		inputHandler.update();
+
+		if (pMeterInfo != NULL)
+		{
+			HRESULT hr = pMeterInfo->GetPeakValue(&Config::volume);
+			if (FAILED(hr))
+			{
+				SAFE_RELEASE(pEnumerator);
+				SAFE_RELEASE(pDevice);
+				SAFE_RELEASE(pMeterInfo);
+				CoUninitialize();
+			}
+			else
+				Config::volume = -20 * std::log10f(1.0f - Config::volume);
+		}
 
 		sf::Event event;
 		while (window.pollEvent(event))

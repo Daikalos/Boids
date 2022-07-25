@@ -19,7 +19,7 @@
         "ali_weight" : 1.6,
         "coh_weight" : 1.9,
 
-        "color_option" : 2,
+        "color_option" : 3,
         
         "boid_color_top_left" : "255 20 255",
         "boid_color_top_right" : "150 0 255",
@@ -42,12 +42,29 @@
         "boid_density_colors" : 
         [
             "255 20 255",
-            "150 0 255", 
+            "150 0 255",
             "90 0 90",
             "90 0 90",
             "90 0 90",
             "90 0 90",
             "90 0 90"
+        ],
+
+        "audio_responsive_strength" : 0.75,
+        "audio_responsive_limit" : 1.2,
+        "audio_responsive_density" : 25,
+        "audio_responsive_colors" : 
+        [
+            "90 0 90",
+            "90 0 90",
+            "90 0 90",
+            "90 0 90",
+            "150 0 255",
+            "150 0 255",
+            "150 0 255",
+            "200 10 255",
+            "200 10 255",
+            "255 20 255"
         ],
 
         "impulse_enabled" : true,
@@ -79,7 +96,7 @@
         "grid_extra_cells" : 16,
         "camera_enabled" : false,
         "camera_zoom" : 1.0,
-        "vertical_sync" : true,
-        "max_framerate" : 144
+        "vertical_sync" : false,
+        "max_framerate" : 200
     }
 }

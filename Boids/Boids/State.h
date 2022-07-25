@@ -5,6 +5,16 @@
 #include <SFML/OpenGL.hpp>
 #include <SFML/Graphics.hpp>
 
+struct Vertex
+{
+	GLfloat x, y;
+};
+
+struct Color
+{
+	GLfloat r, g, b;
+};
+
 class State
 {
 public:

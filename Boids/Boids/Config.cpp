@@ -50,6 +50,23 @@ std::vector<sf::Vector3f> Config::boid_density_colors =
 	sf::Vector3f(0.35f, 0.0f, 0.35f)
 };
 
+float Config::audio_responsive_strength		= 0.75f;
+float Config::audio_responsive_limit		= 1.2f;
+int Config::audio_responsive_density		= 25;
+std::vector<sf::Vector3f> Config::audio_responsive_colors =
+{
+	sf::Vector3f(0.35f, 0.0f, 0.35f),
+	sf::Vector3f(0.35f, 0.0f, 0.35f),
+	sf::Vector3f(0.35f, 0.0f, 0.35f),
+	sf::Vector3f(0.6f, 0.0f, 1.0f),
+	sf::Vector3f(0.6f, 0.0f, 1.0f),
+	sf::Vector3f(0.6f, 0.0f, 1.0f),
+	sf::Vector3f(0.78f, 0.05f, 1.0f),
+	sf::Vector3f(0.78f, 0.05f, 1.0f),
+	sf::Vector3f(0.78f, 0.05f, 1.0f),
+	sf::Vector3f(1.0f, 0.1f, 1.0f),
+};
+
 bool Config::impulse_enabled				= true;
 float Config::impulse_size					= 50.0f;
 float Config::impulse_speed					= 600.0f;
@@ -81,3 +98,4 @@ int Config::max_framerate					= 144;
 
 std::vector<Impulse> Config::impulses = {};
 float Config::min_distance = 0.0f;
+float Config::volume = 0.0f;

@@ -46,6 +46,11 @@ struct Config
 	static float boid_density_cycle_speed;
 	static std::vector<sf::Vector3f> boid_density_colors;
 
+	static float audio_responsive_strength;
+	static float audio_responsive_limit;
+	static int audio_responsive_density;
+	static std::vector<sf::Vector3f> audio_responsive_colors;
+
 	static bool impulse_enabled;
 	static float impulse_size;
 	static float impulse_speed;
@@ -73,6 +78,7 @@ struct Config
 
 	static std::vector<Impulse> impulses;
 	static float min_distance;
+	static float volume;
 
 	static void load()
 	{
@@ -138,6 +144,18 @@ struct Config
 							boid_cycle_colors[i] = convert(temp_colors[i]);
 					}
 					break;
+				}
+
+				audio_responsive_strength = json["settings"]["audio_responsive_strength"];
+				audio_responsive_limit = json["settings"]["audio_responsive_limit"];
+				audio_responsive_density = json["settings"]["audio_responsive_density"];
+
+				{
+					std::vector<std::string> temp_colors = json["settings"]["audio_responsive_colors"];
+					audio_responsive_colors = std::vector<sf::Vector3f>(temp_colors.size());
+
+					for (int i = 0; i < temp_colors.size(); ++i)
+						audio_responsive_colors[i] = convert(temp_colors[i]);
 				}
 
 				impulse_enabled = json["settings"]["impulse_enabled"];

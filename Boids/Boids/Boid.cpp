@@ -46,6 +46,9 @@ void Boid::update(float deltaTime, const Rect_i& border)
 		case 2:
 			density_color(deltaTime);
 			break;
+		case 3:
+			audio_color(deltaTime);
+			break;
 		default:
 			cycle_color(deltaTime);
 			break;
@@ -286,7 +289,9 @@ void Boid::density_color(const float& deltaTime)
 	if (Config::boid_density_cycle_enabled)
 		density_time = std::fmodf(density_time + deltaTime * Config::boid_density_cycle_speed, 1.0f);
 
-	float scaled_density = std::fmodf(((float)density / Config::boid_density) + density_time, 1.0f) * (float)(Config::boid_density_colors.size() - 1);
+	float density_percentage = (density / (float)Config::boid_density);
+
+	float scaled_density = std::fmodf(density_percentage + density_time, 1.0f) * (float)(Config::boid_density_colors.size() - 1);
 
 	int index1 = (int)scaled_density;
 	int index2 = ((int)scaled_density + 1) % Config::boid_density_colors.size();
@@ -295,6 +300,23 @@ void Boid::density_color(const float& deltaTime)
 	sf::Vector3f color2 = Config::boid_density_colors[index2];
 
 	float newT = scaled_density - std::floorf(scaled_density);
+
+	color = v2f::lerp(color1, color2, newT);
+}
+void Boid::audio_color(const float& deltaTime)
+{
+	float density_percentage = (density / (float)Config::audio_responsive_density);
+	float max_volume = std::fminf(Config::volume * Config::audio_responsive_strength, Config::audio_responsive_limit);
+
+	float scaled_volume = std::fminf(max_volume * density_percentage, 1.0f) * (float)(Config::audio_responsive_colors.size() - 1);
+
+	int index1 = (int)scaled_volume;
+	int index2 = ((int)scaled_volume + 1) % Config::audio_responsive_colors.size();
+
+	sf::Vector3f color1 = Config::audio_responsive_colors[index1];
+	sf::Vector3f color2 = Config::audio_responsive_colors[index2];
+
+	float newT = scaled_volume - std::floorf(scaled_volume);
 
 	color = v2f::lerp(color1, color2, newT);
 }
@@ -322,7 +344,10 @@ void Boid::impulse_color()
 		float newT = scaled_length - std::floorf(scaled_length);
 
 		if (diff <= size)
+		{
 			color = v2f::lerp(color1, color2, newT);
+			return;
+		}
 	}
 }
 
