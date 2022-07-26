@@ -189,10 +189,11 @@ void Boid::update_points()
 
 void Boid::steer_towards(sf::Vector2f point, float weight)
 {
-	sf::Vector2f steer = v2f::direction(velocity, v2f::normalize(v2f::direction(get_origin(), point), v2f::length(velocity)));
-	steer = v2f::normalize(steer, Config::boid_max_steer * weight);
+	if (std::abs(weight) <= FLT_EPSILON)
+		return;
 
-	apply_force(steer);
+	sf::Vector2f steer = v2f::normalize(v2f::direction(get_origin(), point), Config::boid_max_speed); 
+	apply_force(steer_at(steer) * weight);
 }
 
 bool Boid::outside_border(const float& deltaTime, const Rect_i& border)

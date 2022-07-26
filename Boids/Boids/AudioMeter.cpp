@@ -24,7 +24,7 @@ void AudioMeter::initialize()
 	if (FAILED(pDevice->Activate(__uuidof(IAudioSessionManager), CLSCTX_ALL, NULL, (void**)&pSessionManager)))
 		return;
 
-	if (Config::audio_responsive_processes.size() > 0)
+	if (Config::audio_responsive_apps.size() > 0)
 	{
 		refresh(nullptr);
 	}
@@ -52,9 +52,9 @@ void AudioMeter::update(const float& deltaTime)
 		return;
 	}
 
-	for (int i = 0; i < Config::audio_responsive_processes.size(); ++i)
+	for (int i = 0; i < Config::audio_responsive_apps.size(); ++i)
 	{
-		std::wstring process_name = Config::audio_responsive_processes[i];
+		std::wstring process_name = Config::audio_responsive_apps[i];
 
 		if (processes_session_control.contains(process_name))
 		{
@@ -116,9 +116,9 @@ void AudioMeter::refresh(std::wstring* comp)
 					LPWSTR sessionID;
 					if (SUCCEEDED(sessionControl2->GetSessionInstanceIdentifier(&sessionID)))
 					{
-						for (int j = 0; j < Config::audio_responsive_processes.size(); ++j)
+						for (int j = 0; j < Config::audio_responsive_apps.size(); ++j)
 						{
-							process_name = Config::audio_responsive_processes[j];
+							process_name = Config::audio_responsive_apps[j];
 
 							if (process_name.size() == 0)
 								continue;

@@ -32,7 +32,7 @@ int main()
 	audioMeter.initialize();
 
 	sf::Clock clock;
-	float deltaTime = 1.0f / 90.0f;
+	float deltaTime = 1.0f / std::fmaxf(Config::physics_update_freq, 1.0f);
 	float rDeltaTime = FLT_EPSILON;
 	float accumulator = FLT_EPSILON;
 
@@ -43,10 +43,10 @@ int main()
 
 	Rect_i border(0, 0, window.getSize().x, window.getSize().y);
 	Grid grid(
-		border.left - Config::min_distance * (Config::grid_extra_cells + 1),
-		border.top - Config::min_distance * (Config::grid_extra_cells + 1),
+		border.left	 - Config::min_distance * (Config::grid_extra_cells + 1),
+		border.top	 - Config::min_distance * (Config::grid_extra_cells + 1),
 		border.right + Config::min_distance * (Config::grid_extra_cells + 1),
-		border.bot + Config::min_distance * (Config::grid_extra_cells + 1),
+		border.bot   + Config::min_distance * (Config::grid_extra_cells + 1),
 		Config::min_distance * 2.0f, Config::min_distance * 2.0f);
 
 	GLsizei vertex_count = Config::boid_count * 3;
@@ -169,15 +169,10 @@ int main()
 				boids + Config::boid_count,
 				[&](Boid& boid)
 				{
-					if (Config::gravity_enabled)
-					{
-						if (inputHandler.get_left_held())
-							boid.steer_towards(mouse_pos, Config::gravity_towards_factor);
-						if (inputHandler.get_right_held())
-							boid.steer_towards(mouse_pos, -Config::gravity_away_factor);
-					}
+					boid.steer_towards(mouse_pos, Config::steer_towards_factor * Config::steer_enabled * inputHandler.get_left_held());
+					boid.steer_towards(mouse_pos, -Config::steer_away_factor * Config::steer_enabled * inputHandler.get_right_held());
 
-					if (Config::predator_enabled && !(Config::gravity_enabled && (inputHandler.get_left_held() || inputHandler.get_right_held())))
+					if (Config::predator_enabled && !(Config::steer_enabled && (inputHandler.get_left_held() || inputHandler.get_right_held())))
 					{
 						float dist = v2f::distance_squared(boid.get_origin(), mouse_pos);
 

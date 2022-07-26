@@ -1,5 +1,5 @@
 {
-    "settings" :
+    "config" :
     {
         "background" : "0 0 0",
 
@@ -50,7 +50,7 @@
             "90 0 90"
         ],
 
-        "audio_responsive_processes" : [ ],
+        "audio_responsive_apps" : [ ],
         "audio_responsive_strength" : 0.75,
         "audio_responsive_limit" : 1.2,
         "audio_responsive_density" : 25,
@@ -82,9 +82,9 @@
             "90 0 90"
         ],
 
-        "gravity_enabled" : true,
-        "gravity_towards_factor" : 0.6,
-        "gravity_away_factor" : 0.6,
+        "steer_enabled" : true,
+        "steer_towards_factor" : 0.9,
+        "steer_away_factor" : 0.9,
 
         "predator_enabled" : true,
         "predator_distance" : 250.0,
@@ -97,7 +97,8 @@
         "grid_extra_cells" : 16,
         "camera_enabled" : false,
         "camera_zoom" : 1.0,
-        "vertical_sync" : false,
-        "max_framerate" : 200
+        "vertical_sync" : true,
+        "max_framerate" : 160,
+        "physics_update_freq" : 90
     }
 }

@@ -23,9 +23,9 @@ public:
 		SAFE_RELEASE(pMeterInfo);
 		SAFE_RELEASE(pSessionManager);
 
-		for (int i = 0; i < Config::audio_responsive_processes.size(); ++i)
+		for (int i = 0; i < Config::audio_responsive_apps.size(); ++i)
 		{
-			std::wstring process_name = Config::audio_responsive_processes[i];
+			std::wstring process_name = Config::audio_responsive_apps[i];
 
 			SAFE_RELEASE(processes_session_control[process_name].first);
 			SAFE_RELEASE(processes_session_control[process_name].second);
