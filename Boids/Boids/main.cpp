@@ -1,6 +1,4 @@
-#include <iostream>
 #include <execution>
-#include <functional>
 
 #include <SFML/Graphics.hpp>
 #include <SFML/OpenGL.hpp>

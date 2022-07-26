@@ -3,6 +3,7 @@
 #define _USE_MATH_DEFINES
 
 #include <SFML/Graphics.hpp>
+
 #include "Utilities.h"
 
 template<typename T> struct v2

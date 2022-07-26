@@ -25,7 +25,6 @@
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="InputHandler.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Quadtree.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AudioMeter.h" />
@@ -36,7 +35,6 @@
     <ClInclude Include="Impulse.h" />
     <ClInclude Include="InputHandler.h" />
     <ClInclude Include="json.hpp" />
-    <ClInclude Include="Quadtree.h" />
     <ClInclude Include="Rectangle.h" />
     <ClInclude Include="State.h" />
     <ClInclude Include="Utilities.h" />

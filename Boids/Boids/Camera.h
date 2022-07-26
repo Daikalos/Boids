@@ -2,7 +2,6 @@
 
 #include <SFML/Graphics.hpp>
 #include <SFML/OpenGL.hpp>
-#include <iostream>
 
 #include "InputHandler.h"
 #include "Config.h"
