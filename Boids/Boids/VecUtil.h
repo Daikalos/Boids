@@ -10,7 +10,7 @@ template<typename T> struct v2
 public:
 	static constexpr float length(const sf::Vector2<T>& vector)
 	{
-		return std::sqrt(vector.x * vector.x + vector.y * vector.y);
+		return std::sqrtf(vector.x * vector.x + vector.y * vector.y);
 	}
 	static constexpr float angle(const sf::Vector2<T>& vector)
 	{
