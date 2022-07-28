@@ -273,8 +273,6 @@ int main()
 
 		window.pushGLStates();
 
-		window.draw(debugText);
-
 		window.draw(background);
 
 		if (debug_toggle)
