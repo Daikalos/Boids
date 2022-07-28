@@ -22,6 +22,9 @@ void Debug::load(const ResourceManager& resourceManager)
 
 void Debug::update(const InputHandler& inputHandler, const float& deltaTime)
 {
+	if (!Config::debug_enabled)
+		return;
+
 	if (inputHandler.get_key_pressed(static_cast<sf::Keyboard::Key>(Config::debug_toggle_key)))
 		toggle();
 
@@ -42,6 +45,9 @@ void Debug::update(const InputHandler& inputHandler, const float& deltaTime)
 
 void Debug::draw(sf::RenderWindow& renderWindow)
 {
+	if (!Config::debug_enabled)
+		return;
+
 	renderWindow.draw(debug_text_state);
 	renderWindow.draw(debug_text_info);
 }

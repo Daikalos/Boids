@@ -17,7 +17,7 @@ public:
 
 	inline void toggle()
 	{
-		enabled = !enabled * Config::debug_enabled;
+		enabled = !enabled;
 		debug_text_state.setString(get_state());
 	}
 
