@@ -106,7 +106,8 @@ struct Config
 				load_var(json);
 				load_static(json);
 			}
-			catch (nlohmann::json::parse_error e) { }
+			catch (nlohmann::json::parse_error) { }
+			catch (nlohmann::detail::type_error e) { }
 		}
 
 		min_distance = std::fmaxf(std::fmaxf(Config::sep_distance, Config::ali_distance), Config::coh_distance);
@@ -278,6 +279,7 @@ struct Config
 				predator_distance *= predator_distance;
 			}
 			catch (nlohmann::json::parse_error e) {}
+			catch (nlohmann::detail::type_error e) {}
 		}
 	}
 
