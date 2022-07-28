@@ -1,9 +1,9 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include <nlohmann/json.hpp>
 #include <fstream>
 
-#include "json.hpp"
 #include "Impulse.h"
 
 static const std::string FILE_NAME = "config";
@@ -12,7 +12,14 @@ static const std::string FILE_NAME = "config";
 //
 struct Config
 {
-	static sf::Vector3f background;
+	static sf::Vector3f background_color;
+	static std::string background_texture;
+	static int background_position_x;
+	static int background_position_y;
+	static bool background_fit_screen;
+	static bool background_override_size;
+	static int background_width;
+	static int background_height;
 
 	static int boid_count;
 
@@ -79,6 +86,9 @@ struct Config
 	static int max_framerate;
 	static float physics_update_freq;
 
+	static bool debug_enabled;
+	static int debug_key;
+
 	static std::vector<Impulse> impulses;
 	static float min_distance;
 	static float volume;
@@ -94,43 +104,52 @@ struct Config
 			{
 				try
 				{
-					background = convert(json[FILE_NAME]["background"]);
+					auto config = json[FILE_NAME];
 
-					boid_count = json[FILE_NAME]["boid_count"];
-					boid_size_width = json[FILE_NAME]["boid_size_width"];
-					boid_size_height = json[FILE_NAME]["boid_size_height"];
-					boid_max_speed = json[FILE_NAME]["boid_max_speed"];
-					boid_min_speed = json[FILE_NAME]["boid_min_speed"];
-					boid_max_steer = json[FILE_NAME]["boid_max_steer"];
-					boid_view_angle = json[FILE_NAME]["boid_view_angle"];
+					background_color = convert(config["background_color"]);
+					background_texture = config["background_texture"];
+					background_position_x = config["background_position_x"];
+					background_position_y = config["background_position_y"];
+					background_fit_screen = config["background_fit_screen"];
+					background_override_size = config["background_override_size"];
+					background_width = config["background_width"];
+					background_height = config["background_height"];
 
-					sep_distance = json[FILE_NAME]["sep_distance"];
-					ali_distance = json[FILE_NAME]["ali_distance"];
-					coh_distance = json[FILE_NAME]["coh_distance"];
+					boid_count = config["boid_count"];
+					boid_size_width = config["boid_size_width"];
+					boid_size_height = config["boid_size_height"];
+					boid_max_speed = config["boid_max_speed"];
+					boid_min_speed = config["boid_min_speed"];
+					boid_max_steer = config["boid_max_steer"];
+					boid_view_angle = config["boid_view_angle"];
 
-					sep_weight = json[FILE_NAME]["sep_weight"];
-					ali_weight = json[FILE_NAME]["ali_weight"];
-					coh_weight = json[FILE_NAME]["coh_weight"];
+					sep_distance = config["sep_distance"];
+					ali_distance = config["ali_distance"];
+					coh_distance = config["coh_distance"];
 
-					color_option = json[FILE_NAME]["color_option"];
+					sep_weight = config["sep_weight"];
+					ali_weight = config["ali_weight"];
+					coh_weight = config["coh_weight"];
+
+					color_option = config["color_option"];
 
 					switch (Config::color_option)
 					{
 					case 0:
 					{
-						boid_color_top_left = convert(json[FILE_NAME]["boid_color_top_left"]);
-						boid_color_top_right = convert(json[FILE_NAME]["boid_color_top_right"]);
-						boid_color_bot_left = convert(json[FILE_NAME]["boid_color_bot_left"]);
-						boid_color_bot_right = convert(json[FILE_NAME]["boid_color_bot_right"]);
+						boid_color_top_left = convert(config["boid_color_top_left"]);
+						boid_color_top_right = convert(config["boid_color_top_right"]);
+						boid_color_bot_left = convert(config["boid_color_bot_left"]);
+						boid_color_bot_right = convert(config["boid_color_bot_right"]);
 					}
 					break;
 					case 2:
 					{
-						boid_density = json[FILE_NAME]["boid_density"];
-						boid_density_cycle_enabled = json[FILE_NAME]["boid_density_cycle_enabled"];
-						boid_density_cycle_speed = json[FILE_NAME]["boid_density_cycle_speed"];
+						boid_density = config["boid_density"];
+						boid_density_cycle_enabled = config["boid_density_cycle_enabled"];
+						boid_density_cycle_speed = config["boid_density_cycle_speed"];
 
-						std::vector<std::string> temp_colors = json[FILE_NAME]["boid_density_colors"];
+						std::vector<std::string> temp_colors = config["boid_density_colors"];
 						boid_density_colors = std::vector<sf::Vector3f>(temp_colors.size());
 
 						for (int i = 0; i < temp_colors.size(); ++i)
@@ -139,7 +158,7 @@ struct Config
 					break;
 					case 3:
 					{
-						std::vector<std::string> temp_processes = json[FILE_NAME]["audio_responsive_apps"];
+						std::vector<std::string> temp_processes = config["audio_responsive_apps"];
 						audio_responsive_apps = std::vector<std::wstring>(temp_processes.size());
 
 						for (int i = 0; i < audio_responsive_apps.size(); ++i)
@@ -148,11 +167,11 @@ struct Config
 							audio_responsive_apps[i] = std::wstring(process.begin(), process.end());
 						}
 
-						audio_responsive_strength = json[FILE_NAME]["audio_responsive_strength"];
-						audio_responsive_limit = json[FILE_NAME]["audio_responsive_limit"];
-						audio_responsive_density = json[FILE_NAME]["audio_responsive_density"];
+						audio_responsive_strength = config["audio_responsive_strength"];
+						audio_responsive_limit = config["audio_responsive_limit"];
+						audio_responsive_density = config["audio_responsive_density"];
 
-						std::vector<std::string> temp_colors = json[FILE_NAME]["audio_responsive_colors"];
+						std::vector<std::string> temp_colors = config["audio_responsive_colors"];
 						audio_responsive_colors = std::vector<sf::Vector3f>(temp_colors.size());
 
 						for (int i = 0; i < temp_colors.size(); ++i)
@@ -161,10 +180,10 @@ struct Config
 					break;
 					default:
 					{
-						boid_cycle_colors_random = json[FILE_NAME]["boid_cycle_colors_random"];
-						boid_cycle_colors_speed = json[FILE_NAME]["boid_cycle_colors_speed"];
+						boid_cycle_colors_random = config["boid_cycle_colors_random"];
+						boid_cycle_colors_speed = config["boid_cycle_colors_speed"];
 
-						std::vector<std::string> temp_colors = json[FILE_NAME]["boid_cycle_colors"];
+						std::vector<std::string> temp_colors = config["boid_cycle_colors"];
 						boid_cycle_colors = std::vector<sf::Vector3f>(temp_colors.size());
 
 						for (int i = 0; i < temp_colors.size(); ++i)
@@ -173,37 +192,40 @@ struct Config
 					break;
 					}
 
-					impulse_enabled = json[FILE_NAME]["impulse_enabled"];
-					impulse_size = json[FILE_NAME]["impulse_size"];
-					impulse_speed = json[FILE_NAME]["impulse_speed"];
-					impulse_fade_distance = json[FILE_NAME]["impulse_fade_distance"];
+					impulse_enabled = config["impulse_enabled"];
+					impulse_size = config["impulse_size"];
+					impulse_speed = config["impulse_speed"];
+					impulse_fade_distance = config["impulse_fade_distance"];
 
 					{
-						std::vector<std::string> temp_colors = json[FILE_NAME]["impulse_colors"];
+						std::vector<std::string> temp_colors = config["impulse_colors"];
 						impulse_colors = std::vector<sf::Vector3f>(temp_colors.size());
 
 						for (int i = 0; i < temp_colors.size(); ++i)
 							impulse_colors[i] = convert(temp_colors[i]);
 					}
 
-					steer_enabled = json[FILE_NAME]["steer_enabled"];
-					steer_towards_factor = json[FILE_NAME]["steer_towards_factor"];
-					steer_away_factor = json[FILE_NAME]["steer_away_factor"];
+					steer_enabled = config["steer_enabled"];
+					steer_towards_factor = config["steer_towards_factor"];
+					steer_away_factor = config["steer_away_factor"];
 
-					predator_enabled = json[FILE_NAME]["predator_enabled"];
-					predator_distance = json[FILE_NAME]["predator_distance"];
-					predator_factor = json[FILE_NAME]["predator_factor"];
+					predator_enabled = config["predator_enabled"];
+					predator_distance = config["predator_distance"];
+					predator_factor = config["predator_factor"];
 
-					turn_at_border = json[FILE_NAME]["turn_at_border"];
-					turn_margin_factor = json[FILE_NAME]["turn_margin_factor"];
-					turn_factor = json[FILE_NAME]["turn_factor"];
+					turn_at_border = config["turn_at_border"];
+					turn_margin_factor = config["turn_margin_factor"];
+					turn_factor = config["turn_factor"];
 
-					grid_extra_cells = json[FILE_NAME]["grid_extra_cells"];
-					camera_enabled = json[FILE_NAME]["camera_enabled"];
-					camera_zoom = json[FILE_NAME]["camera_zoom"];
-					vertical_sync = json[FILE_NAME]["vertical_sync"];
-					max_framerate = json[FILE_NAME]["max_framerate"];
-					physics_update_freq = json[FILE_NAME]["physics_update_freq"];
+					grid_extra_cells = config["grid_extra_cells"];
+					camera_enabled = config["camera_enabled"];
+					camera_zoom = config["camera_zoom"];
+					vertical_sync = config["vertical_sync"];
+					max_framerate = config["max_framerate"];
+					physics_update_freq = config["physics_update_freq"];
+
+					debug_enabled = config["debug_enabled"];
+					debug_key = config["debug_key"];
 				}
 				catch (std::exception e) {}
 			}

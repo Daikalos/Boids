@@ -1,6 +1,13 @@
 #include "Config.h"
 
-sf::Vector3f Config::background				= sf::Vector3f(0.0f, 0.0f, 0.0f);
+sf::Vector3f Config::background_color		= sf::Vector3f(0.0f, 0.0f, 0.0f);
+std::string	Config::background_texture		= "";
+int Config::background_position_x			= 0;
+int Config::background_position_y			= 0;
+bool Config::background_fit_screen			= true;
+bool Config::background_override_size		= false;
+int Config::background_width				= 0;
+int Config::background_height				= 0;
 
 int Config::boid_count						= 2000;
 
@@ -104,3 +111,6 @@ float Config::physics_update_freq			= 90.0f;
 std::vector<Impulse> Config::impulses = {};
 float Config::min_distance = 0.0f;
 float Config::volume = 0.0f;
+
+bool Config::debug_enabled					= false;
+int Config::debug_key						= 88;

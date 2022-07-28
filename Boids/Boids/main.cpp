@@ -12,21 +12,82 @@
 #include "Config.h"
 #include "State.h"
 #include "AudioMeter.h"
+#include "ResourceManager.h"
 
 int main()
 {
 	srand(time(NULL));
-	Config::load();
 
-	sf::Window window(sf::VideoMode::getDesktopMode(), "Boids", sf::Style::Fullscreen);
+	std::vector<sf::VideoMode> fullscreen_modes = sf::VideoMode::getFullscreenModes();
 
-	if (!Config::vertical_sync)
-		window.setFramerateLimit(Config::max_framerate);
-	else
-		window.setVerticalSyncEnabled(Config::vertical_sync);
+	if (fullscreen_modes.size() == 0)
+		return -1;
+
+	sf::VideoMode video_mode = fullscreen_modes.front();
+
+	if (!video_mode.isValid())
+		return -1;
+
+	sf::RenderWindow window(video_mode, "Boids", sf::Style::Fullscreen);
 	
 	if (!window.setActive(true))
 		return -1;
+
+	Config::load();
+
+	if (Config::vertical_sync)
+		window.setVerticalSyncEnabled(Config::vertical_sync);
+	else
+		window.setFramerateLimit(Config::max_framerate);
+
+	ResourceManager resourceManager;
+	resourceManager.load_textures();
+	resourceManager.load_fonts();
+
+	sf::Texture* background_texture = resourceManager.request_texture("background");
+	sf::Sprite background;
+
+	if (background_texture != nullptr)
+		background.setTexture(*background_texture);
+
+	// update background
+	{
+		sf::Vector2f desired_scale = sf::Vector2f(1.0f, 1.0f);
+
+		if (Config::background_fit_screen)
+			desired_scale = sf::Vector2f(
+				video_mode.size.x / background.getLocalBounds().width,
+				video_mode.size.y / background.getLocalBounds().height);
+		else if (Config::background_override_size)
+			desired_scale = sf::Vector2f(
+				Config::background_width / background.getLocalBounds().width,
+				Config::background_height / background.getLocalBounds().height);
+
+		background.setScale(desired_scale);
+		background.setPosition(sf::Vector2f(
+			Config::background_position_x,
+			Config::background_position_y));
+
+		if (Config::background_color.x > FLT_EPSILON || Config::background_color.y > FLT_EPSILON || Config::background_color.z > FLT_EPSILON)
+			background.setColor(sf::Color(
+				Config::background_color.x * 255,
+				Config::background_color.y * 255,
+				Config::background_color.z * 255));
+	}
+
+	sf::Text debugText;
+	bool debug_toggle = false;
+
+	float debug_freq_max = 0.5f;
+	float debug_freq = 0.0f;
+
+	sf::Font* font = resourceManager.request_font("8bit");
+
+	if (font != nullptr)
+		debugText.setFont(*font);
+
+	debugText.setPosition(sf::Vector2f(32, 32));
+	debugText.setCharacterSize(26);
 
 	AudioMeter audioMeter;
 	audioMeter.initialize();
@@ -65,9 +126,9 @@ int main()
 	state.update(boids, 1.0f);
 
 	glClearColor(
-		Config::background.x, 
-		Config::background.y, 
-		Config::background.z, 1.0f);
+		Config::background_color.x, 
+		Config::background_color.y,
+		Config::background_color.z, 1.0f);
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -87,6 +148,19 @@ int main()
 
 		inputHandler.update();
 		audioMeter.update(rDeltaTime);
+
+		if (debug_toggle)
+		{
+			debug_freq -= rDeltaTime;
+
+			if (debug_freq <= 0.0f)
+			{
+				std::string text = "FPS: " + std::to_string(1.0f / rDeltaTime);
+				debugText.setString(text);
+
+				debug_freq = debug_freq_max;
+			}
+		}
 
 		sf::Event event;
 		while (window.pollEvent(event))
@@ -121,6 +195,9 @@ int main()
 
 		camera.update(inputHandler);
 		mouse_pos = sf::Vector2f(camera.get_mouse_world_position());
+
+		if (Config::debug_enabled && inputHandler.get_key_pressed(static_cast<sf::Keyboard::Key>(Config::debug_key)))
+			debug_toggle = !debug_toggle;
 
 		if (inputHandler.get_left_pressed())
 			Config::impulses.push_back(Impulse(mouse_pos, Config::impulse_speed, Config::impulse_size, 0.0f));
@@ -193,6 +270,17 @@ int main()
 		state.update(boids, interp);
 
 		glClear(GL_COLOR_BUFFER_BIT);
+
+		window.pushGLStates();
+
+		window.draw(debugText);
+
+		window.draw(background);
+
+		if (debug_toggle)
+			window.draw(debugText);
+
+		window.popGLStates();
 
 		glPushMatrix();
 
