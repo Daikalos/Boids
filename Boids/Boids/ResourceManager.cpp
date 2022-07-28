@@ -9,20 +9,24 @@ ResourceManager::~ResourceManager()
 	clean_up();
 }
 
-sf::Texture* ResourceManager::request_texture(std::string name)
+sf::Texture* ResourceManager::request_texture(std::string name, sf::Texture* fallback) const
 {
-	if (!textures.contains(name))
-		return nullptr;
+	auto it = textures.find(name);
 
-	return textures[name].get();
+	if (it != textures.end())
+		return it->second.get();
+	
+	return fallback;
 }
 
-sf::Font* ResourceManager::request_font(std::string name)
+sf::Font* ResourceManager::request_font(std::string name, sf::Font* fallback) const
 {
-	if (!fonts.contains(name))
-		return nullptr;
+	auto it = fonts.find(name);
 
-	return fonts[name].get();
+	if (it != fonts.end())
+		return it->second.get();
+
+	return fallback;
 }
 
 void ResourceManager::load_textures()

@@ -105,12 +105,13 @@ int Config::grid_extra_cells				= 16;
 bool Config::camera_enabled					= false;
 float Config::camera_zoom					= 1.0f;
 bool Config::vertical_sync					= true;
-int Config::max_framerate					= 144;
+int Config::max_framerate					= 160;
 float Config::physics_update_freq			= 90.0f;
+
+bool Config::debug_enabled					= false;
+float Config::debug_update_freq				= 1.0f;
+int Config::debug_toggle_key				= 89;
 
 std::vector<Impulse> Config::impulses = {};
 float Config::min_distance = 0.0f;
 float Config::volume = 0.0f;
-
-bool Config::debug_enabled					= false;
-int Config::debug_key						= 88;

@@ -23,17 +23,21 @@
     <ClCompile Include="Boid.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Config.cpp" />
+    <ClCompile Include="Debug.cpp" />
     <ClCompile Include="InputHandler.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AudioMeter.h" />
+    <ClInclude Include="Background.h" />
     <ClInclude Include="Boid.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Config.h" />
+    <ClInclude Include="Debug.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="Impulse.h" />
+    <ClInclude Include="Include.h" />
     <ClInclude Include="InputHandler.h" />
     <ClInclude Include="Rectangle.h" />
     <ClInclude Include="ResourceManager.h" />

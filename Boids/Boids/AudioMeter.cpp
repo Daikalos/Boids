@@ -2,9 +2,6 @@
 
 void AudioMeter::initialize()
 {
-	if (Config::color_option != 3)
-		return;
-
 	IMMDeviceEnumerator* pEnumerator = NULL;
 	IMMDevice* pDevice = NULL;
 

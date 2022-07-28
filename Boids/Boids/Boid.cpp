@@ -287,8 +287,7 @@ void Boid::cycle_color(const float& deltaTime)
 }
 void Boid::density_color(const float& deltaTime)
 {
-	if (Config::boid_density_cycle_enabled)
-		density_time = std::fmodf(density_time + deltaTime * Config::boid_density_cycle_speed, 1.0f);
+	density_time = (Config::boid_density_cycle_enabled) ? std::fmodf(density_time + deltaTime * Config::boid_density_cycle_speed, 1.0f) : 0.0f;
 
 	float density_percentage = (density / (float)Config::boid_density);
 

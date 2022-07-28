@@ -14,10 +14,9 @@
 class AudioMeter
 {
 public:
-	AudioMeter() : refresh_freq_max(1.0f), refresh_freq(refresh_freq_max)
-	{
+	AudioMeter(float refresh_freq) 
+		: refresh_freq_max(refresh_freq), refresh_freq(refresh_freq_max) { }
 
-	}
 	~AudioMeter()
 	{
 		SAFE_RELEASE(pMeterInfo);
@@ -41,8 +40,8 @@ private:
 	void refresh(std::wstring* comp);
 
 private:
-	float refresh_freq_max{ 0.0f };
-	float refresh_freq{ 0.0f };
+	float refresh_freq_max{0.0f};
+	float refresh_freq{0.0f};
 
 	IAudioMeterInformation* pMeterInfo{NULL};
 	IAudioSessionManager2* pSessionManager{NULL};

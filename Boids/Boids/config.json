@@ -2,7 +2,7 @@
     "config" :
     {
         "background_color" : "0 0 0",
-        "background_texture" : "background.png",
+        "background_texture" : "",
         "background_position_x" : 0,
         "background_position_y" : 0,
         "background_fit_screen" : true,
@@ -109,6 +109,7 @@
         "physics_update_freq" : 90,
 
         "debug_enabled" : false,
-        "debug_key" : 89
+        "debug_update_freq" : 0.5,
+        "debug_toggle_key" : 85
     }
 }

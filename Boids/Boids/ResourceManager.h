@@ -1,8 +1,9 @@
 #pragma once
 
+#include <SFML/Graphics.hpp>
+
 #include <iostream>
 #include <unordered_map>
-#include <SFML/Graphics.hpp>
 
 #include "Config.h"
 
@@ -12,8 +13,8 @@ public:
 	ResourceManager();
 	~ResourceManager();
 
-	sf::Texture* request_texture(std::string name);
-	sf::Font* request_font(std::string name);
+	sf::Texture* request_texture(std::string name, sf::Texture* fallback = nullptr) const;
+	sf::Font* request_font(std::string name, sf::Font* fallback = nullptr) const;
 
 	void load_textures();
 	void load_fonts();
