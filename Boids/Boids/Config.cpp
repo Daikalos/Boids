@@ -277,7 +277,7 @@ void Config::load_var(nlohmann::json& json)
 std::vector<Reconstruct> Config::refresh(Config& prev)
 {
 	std::vector<Reconstruct> result;
-	result.reserve(7);
+	result.reserve(8);
 
 	std::ifstream project_file(FILE_NAME + ".json", std::ifstream::binary);
 	if (project_file.good())
@@ -313,6 +313,8 @@ std::vector<Reconstruct> Config::refresh(Config& prev)
 		result.push_back(Reconstruct::RCamera);
 	if (prev.physics_update_freq != physics_update_freq)
 		result.push_back(Reconstruct::RPhysics);
+	if (prev.debug_update_freq != debug_update_freq)
+		result.push_back(Reconstruct::RDebug);
 
 	if (prev.background_color != background_color ||
 		prev.background_position_x != background_position_x ||

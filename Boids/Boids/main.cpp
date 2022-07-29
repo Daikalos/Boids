@@ -141,6 +141,7 @@ int main()
 				case Reconstruct::RBackgroundTex:
 					resourceManager.load_texture("background", "content/" + config.background_texture);
 					background.load_texture(resourceManager);
+					background.load_prop(&config, video_mode);
 					break;
 				case Reconstruct::RBackgroundProp:
 					background.load_prop(&config, video_mode);
@@ -159,6 +160,9 @@ int main()
 					break;
 				case Reconstruct::RPhysics:
 					deltaTime = 1.0f / std::fmaxf(config.physics_update_freq, 1.0f);
+					break;
+				case Reconstruct::RDebug:
+					debug.set_update_freq(config.debug_update_freq);
 					break;
 				}
 			}
@@ -263,7 +267,6 @@ int main()
 		state.update(boids, interp);
 
 		glClear(GL_COLOR_BUFFER_BIT);
-		window.clear();
 
 		window.pushGLStates();
 

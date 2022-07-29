@@ -21,6 +21,11 @@ public:
 		debug_text_state.setString(get_state());
 	}
 
+	inline void set_update_freq(float value)
+	{
+		this->update_freq_max = value;
+	}
+
 private:
 	std::string get_state() const
 	{
