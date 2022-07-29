@@ -17,7 +17,8 @@ enum Reconstruct
 	RAudio,
 	RWindow,
 	RCamera,
-	RPhysics
+	RPhysics,
+	RDebug
 };
 
 struct Config
