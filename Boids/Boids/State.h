@@ -1,9 +1,10 @@
 #pragma once
 
-#include <execution>
-
 #include <SFML/OpenGL.hpp>
 #include <SFML/Graphics.hpp>
+
+#include <execution>
+#include <vector>
 
 struct Vertex
 {
@@ -18,36 +19,41 @@ struct Color
 class State
 {
 public:
-	State(GLsizei vertex_count) : 
-		vertex_count(vertex_count), 
-		vertices((Vertex*)::operator new(vertex_count * sizeof(Vertex))),
-		colors((Color*)::operator new(vertex_count * sizeof(Color)))
+	State(GLsizei vertex_count, Config* config) : 
+		vertex_count(vertex_count), config(config)
 	{
-
+		vertices.resize(vertex_count);
+		colors.resize(vertex_count);
 	}
 	~State()
 	{
 
 	}
 
-	Vertex* get_vertices() const
+	const Vertex* get_vertices() const
 	{
-		return vertices;
+		return vertices.data();
 	}
-	Color* get_colors() const
+	const Color* get_colors() const
 	{
-		return colors;
+		return colors.data();
 	}
 
-	void update(const Boid* boids, float interp)
+	void resize(GLsizei vertex_count)
+	{
+		this->vertex_count = vertex_count;
+
+		vertices.resize(vertex_count);
+		colors.resize(vertex_count);
+	}
+
+	void update(const std::vector<Boid>& boids, float interp)
 	{
 		std::for_each(
-			std::execution::par_unseq,
-			boids,
-			boids + Config::boid_count,
+			std::execution::par_unseq, boids.begin(), boids.end(),
 			[&](const Boid& boid)
 			{
-				int v = (&boid - boids) * 3;
+				int v = (&boid - boids.data()) * 3;
 
 				sf::Vector2f p0 = boid.get_pointA() * interp + boid.get_prev_pointA() * (1.0f - interp);
 				sf::Vector2f p1 = boid.get_pointB() * interp + boid.get_prev_pointB() * (1.0f - interp);
@@ -67,6 +73,8 @@ public:
 
 private:
 	GLsizei vertex_count;
-	Vertex* vertices;
-	Color* colors;
+	std::vector<Vertex> vertices;
+	std::vector<Color> colors;
+
+	Config* config;
 };

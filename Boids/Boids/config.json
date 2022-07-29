@@ -26,7 +26,7 @@
         "ali_weight" : 1.6,
         "coh_weight" : 1.8,
 
-        "color_option" : 2,
+        "color_option" : 3,
         
         "boid_color_top_left" : "255 20 255",
         "boid_color_top_right" : "150 0 255",
@@ -58,7 +58,7 @@
         ],
 
         "audio_responsive_apps" : [ ],
-        "audio_responsive_strength" : 0.75,
+        "audio_responsive_strength" : 4.75,
         "audio_responsive_limit" : 1.2,
         "audio_responsive_density" : 25,
         "audio_responsive_colors" : 
@@ -108,7 +108,7 @@
         "max_framerate" : 160,
         "physics_update_freq" : 90,
 
-        "debug_enabled" : false,
+        "debug_enabled" : true,
         "debug_update_freq" : 0.5,
         "debug_toggle_key" : 85
     }

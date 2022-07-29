@@ -10,34 +10,39 @@ public:
 	Background() { }
 	~Background() { }
 
-	void load(const ResourceManager& resourceManager, const sf::VideoMode& video_mode)
+	void load_texture(const ResourceManager& resourceManager)
 	{
 		sf::Texture* background_texture = resourceManager.request_texture("background");
-		if (background_texture != nullptr)
-			background.setTexture(*background_texture);
 
+		if (background_texture != nullptr)
+			background.setTexture(*background_texture, true);
+		else
+			background.setTexture(sf::Texture(), true);
+	}
+	void load_prop(Config* config, const sf::VideoMode& video_mode)
+	{
 		background.setPosition(sf::Vector2f(
-			Config::background_position_x,
-			Config::background_position_y));
+			config->background_position_x,
+			config->background_position_y));
 
 		sf::Vector2f desired_scale = sf::Vector2f(1.0f, 1.0f);
 
-		if (Config::background_fit_screen)
+		if (config->background_fit_screen)
 			desired_scale = sf::Vector2f(
 				video_mode.size.x / background.getLocalBounds().width,
 				video_mode.size.y / background.getLocalBounds().height);
-		else if (Config::background_override_size)
+		else if (config->background_override_size)
 			desired_scale = sf::Vector2f(
-				Config::background_width / background.getLocalBounds().width,
-				Config::background_height / background.getLocalBounds().height);
+				config->background_width / background.getLocalBounds().width,
+				config->background_height / background.getLocalBounds().height);
 
 		background.setScale(desired_scale);
 
-		if (Config::background_color.x > FLT_EPSILON || Config::background_color.y > FLT_EPSILON || Config::background_color.z > FLT_EPSILON)
+		if (config->background_color.x > FLT_EPSILON || config->background_color.y > FLT_EPSILON || config->background_color.z > FLT_EPSILON)
 			background.setColor(sf::Color(
-				Config::background_color.x * 255,
-				Config::background_color.y * 255,
-				Config::background_color.z * 255));
+				config->background_color.x * 255,
+				config->background_color.y * 255,
+				config->background_color.z * 255));
 	}
 
 	void draw(sf::RenderWindow& renderWindow)

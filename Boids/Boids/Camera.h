@@ -11,7 +11,7 @@ class Camera
 {
 public:
 	Camera() = delete;
-	Camera(const sf::Window* window);
+	Camera(const sf::Window* window, Config* config);
 
 	// call after poll event
 	//
@@ -55,6 +55,7 @@ public:
 
 private:
 	const sf::Window* window;
+	Config* config;
 
 	sf::Vector2f position;
 	sf::Vector2f scale;

@@ -11,12 +11,12 @@
 class Boid
 {
 public:
-	Boid(Grid* grid, Boid* boids, sf::Vector2f pos);
+	Boid(Grid* grid, Config* config, sf::Vector2f pos);
 
-	void update(float deltaTime, const Rect_i& border);
+	void update(const std::vector<Boid>& boids, const float& deltaTime, const Rect_i& border);
 	void steer_towards(sf::Vector2f point, float weight);
 
-	void update_grid_cells() const;
+	void update_grid_cells(const std::vector<Boid>& boids) const;
 
 	void set_cell_index()
 	{
@@ -28,7 +28,7 @@ public:
 	}
 
 private:
-	void flock();
+	void flock(const std::vector<Boid>& boids);
 
 	sf::Vector2f steer_at(const sf::Vector2f& steer_direction);
 
@@ -77,7 +77,7 @@ public: // Properties
 
 private:
 	Grid* grid;
-	Boid* boids;
+	Config* config;
 
 	int cell_index{0};
 	int index{0};
