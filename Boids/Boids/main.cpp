@@ -23,7 +23,10 @@ int main()
 	config.load();
 
 	if (config.vertical_sync)
+	{
 		window.setVerticalSyncEnabled(config.vertical_sync);
+		window.setFramerateLimit(0);
+	}
 	else
 		window.setFramerateLimit(config.max_framerate);
 
@@ -151,7 +154,10 @@ int main()
 					break;
 				case Reconstruct::RWindow:
 					if (config.vertical_sync)
+					{
 						window.setVerticalSyncEnabled(config.vertical_sync);
+						window.setFramerateLimit(0);
+					}
 					else
 						window.setFramerateLimit(config.max_framerate);
 					break;
