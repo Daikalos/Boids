@@ -7,13 +7,15 @@
 #include "Rectangle.h"
 #include "Config.h"
 #include "Grid.h"
+#include "AudioMeter.h"
+#include "Impulse.h"
 
 class Boid
 {
 public:
-	Boid(Grid* grid, Config* config, sf::Vector2f pos);
+	Boid(Grid* grid, Config* config, AudioMeter* audio_meter, Rect_i* border, const sf::Vector2f& pos);
 
-	void update(const std::vector<Boid>& boids, const float& deltaTime, const Rect_i& border);
+	void update(const std::vector<Boid>& boids, const std::vector<Impulse>& impulses, const float& physics_dt);
 	void steer_towards(sf::Vector2f point, float weight);
 
 	void update_grid_cells(const std::vector<Boid>& boids) const;
@@ -34,15 +36,15 @@ private:
 
 	void update_points();
 
-	bool outside_border(const float& deltaTime, const Rect_i& border);
-	bool turn_at_border(const float& deltaTime, const Rect_i& border);
-	bool teleport_at_border(const Rect_i& border);
+	sf::Vector2f outside_border(sf::Vector2f pos, const float& dt);
+	sf::Vector2f turn_at_border(const sf::Vector2f& pos, const float& dt);
+	sf::Vector2f teleport_at_border(sf::Vector2f pos);
 
-	void position_color(const Rect_i& border);
-	void cycle_color(const float& deltaTime);
-	void density_color(const float& deltaTime);
-	void audio_color(const float& deltaTime);
-	void impulse_color();
+	void position_color();
+	void cycle_color(const float& dt);
+	void density_color(const float& dt);
+	void audio_color(const float& dt);
+	void impulse_color(const std::vector<Impulse>& impulses);
 
 	int interpolate(int a, int b, int c, int d, double t, double s) const
 	{
@@ -78,14 +80,17 @@ public: // Properties
 private:
 	Grid* grid;
 	Config* config;
+	AudioMeter* audio_meter;
+	Rect_i* border;
 
 	int cell_index{0};
 	int index{0};
 
-	sf::Vector2f prev_pointA, prev_pointB, prev_pointC;
 	sf::Vector2f pointA, pointB, pointC;
-	sf::Vector3f prev_color;
+	sf::Vector2f prev_pointA, prev_pointB, prev_pointC;
+
 	sf::Vector3f color;
+	sf::Vector3f prev_color;
 
 	sf::Vector2f position;
 	sf::Vector2f velocity;

@@ -32,9 +32,9 @@ public:
 		return length;
 	}
 
-	void update(const float& deltaTime)
+	void update(const float& dt)
 	{
-		length += speed * deltaTime;
+		length += speed * dt;
 	}
 
 private:

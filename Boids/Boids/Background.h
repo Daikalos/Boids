@@ -10,9 +10,9 @@ public:
 	Background() { }
 	~Background() { }
 
-	void load_texture(const ResourceManager& resourceManager)
+	void load_texture(const ResourceManager& resource_manager)
 	{
-		sf::Texture* background_texture = resourceManager.request_texture("background");
+		sf::Texture* background_texture = resource_manager.request_texture("background");
 
 		if (background_texture != nullptr)
 			background.setTexture(*background_texture, true);

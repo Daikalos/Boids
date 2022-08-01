@@ -17,8 +17,13 @@ public:
 	AudioMeter(Config* config, float refresh_freq);
 	~AudioMeter();
 
+	float get_volume() const
+	{
+		return volume;
+	}
+
 	void initialize();
-	void update(const float& deltaTime);
+	void update(const float& dt);
 
 	void clear();
 
@@ -28,6 +33,7 @@ private:
 private:
 	Config* config;
 
+	float volume{0.0f};
 	float refresh_freq_max{0.0f};
 	float refresh_freq{0.0f};
 

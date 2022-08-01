@@ -11,9 +11,9 @@ public:
 	Debug(Config* config);
 	~Debug();
 
-	void load(const ResourceManager& resourceManager);
-	bool update(const InputHandler& inputHandler, const float& deltaTime);
-	void draw(sf::RenderWindow& renderWindow);
+	void load(const ResourceManager& resource_manager);
+	bool update(const InputHandler& input_handler, const float& dt);
+	void draw(sf::RenderWindow& window);
 
 	inline void toggle()
 	{

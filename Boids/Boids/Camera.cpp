@@ -6,18 +6,18 @@ Camera::Camera(const sf::Window* window, Config* config)
 
 }
 
-void Camera::update(const InputHandler& inputHandler)
+void Camera::update(const InputHandler& input_handler)
 {
 	if (!config->camera_enabled)
 		return;
 
-	if (inputHandler.get_key_pressed(sf::Keyboard::Key::Space))
+	if (input_handler.get_key_pressed(sf::Keyboard::Key::Space))
 	{
 		set_position(sf::Vector2f(window->getSize()) / 2.0f);
 	}
 
-	if (inputHandler.get_middle_pressed())
+	if (input_handler.get_middle_pressed())
 		dragPos = get_mouse_world_position();
-	if (inputHandler.get_middle_held())
+	if (input_handler.get_middle_held())
 		position += (sf::Vector2f)(dragPos - get_mouse_world_position());
 }

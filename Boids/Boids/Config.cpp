@@ -113,10 +113,6 @@ Config::Config()
 	debug_enabled = false;
 	debug_update_freq = 1.0f;
 	debug_toggle_key = 89;
-
-	impulses = {};
-	min_distance = 0.0f;
-	volume = 0.0f;
 }
 
 Config::~Config()
@@ -137,8 +133,6 @@ void Config::load()
 		catch (nlohmann::json::parse_error) {}
 		catch (nlohmann::detail::type_error e) {}
 	}
-
-	min_distance = std::fmaxf(std::fmaxf(sep_distance, ali_distance), coh_distance);
 
 	sep_distance *= sep_distance;
 	ali_distance *= ali_distance;
@@ -287,8 +281,6 @@ std::vector<Reconstruct> Config::refresh(Config& prev)
 			nlohmann::json json = nlohmann::json::parse(project_file);
 			load_var(json);
 
-			min_distance = std::fmaxf(std::fmaxf(sep_distance, ali_distance), coh_distance);
-
 			sep_distance *= sep_distance;
 			ali_distance *= ali_distance;
 			coh_distance *= coh_distance;
@@ -299,7 +291,7 @@ std::vector<Reconstruct> Config::refresh(Config& prev)
 		catch (nlohmann::detail::type_error e) {}
 	}
 
-	if (prev.min_distance != min_distance)
+	if (prev.sep_distance != sep_distance || prev.ali_distance != ali_distance || prev.coh_distance != coh_distance)
 		result.push_back(Reconstruct::RGrid);
 	if (prev.boid_count != boid_count || prev.boid_cycle_colors_random != boid_cycle_colors_random)
 		result.push_back(Reconstruct::RBoids);

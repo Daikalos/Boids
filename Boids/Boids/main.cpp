@@ -34,33 +34,35 @@ int main()
 	Rect_i border(0, 0, video_mode.size.x, video_mode.size.y);
 
 	sf::Clock clock;
-	float deltaTime = 1.0f / std::fmaxf(config.physics_update_freq, 1.0f);
-	float rDeltaTime = FLT_EPSILON;
+	float physics_dt = 1.0f / std::fmaxf(config.physics_update_freq, 1.0f);
+	float dt = FLT_EPSILON;
 	float accumulator = FLT_EPSILON;
 
-	ResourceManager resourceManager;
-	resourceManager.load_texture("background", "content/" + config.background_texture);
-	resourceManager.load_font("8bit", "content/font_8bit.ttf");
+	ResourceManager resource_manager;
+	resource_manager.load_texture("background", "content/" + config.background_texture);
+	resource_manager.load_font("8bit", "content/font_8bit.ttf");
 
 	Camera camera(&window, &config);
-	InputHandler inputHandler;
+	InputHandler input_handler;
 
 	Debug debug(&config);
-	debug.load(resourceManager);
+	debug.load(resource_manager);
 
 	Background background;
-	background.load_texture(resourceManager);
+	background.load_texture(resource_manager);
 	background.load_prop(&config, video_mode);
 
-	AudioMeter audioMeter(&config, 1.0f);
-	audioMeter.initialize();
+	AudioMeter audio_meter(&config, 1.0f);
+	audio_meter.initialize();
+
+	float min_distance = std::sqrtf(std::fmaxf(std::fmaxf(config.sep_distance, config.ali_distance), config.coh_distance));
 
 	Grid grid(
-		border.left	 - config.min_distance * (config.grid_extra_cells + 1),
-		border.top	 - config.min_distance * (config.grid_extra_cells + 1),
-		border.right + config.min_distance * (config.grid_extra_cells + 1),
-		border.bot   + config.min_distance * (config.grid_extra_cells + 1),
-		config.min_distance * 2.0f, config.min_distance * 2.0f);
+		border.left	 - min_distance * (config.grid_extra_cells + 1),
+		border.top	 - min_distance * (config.grid_extra_cells + 1),
+		border.right + min_distance * (config.grid_extra_cells + 1),
+		border.bot   + min_distance * (config.grid_extra_cells + 1),
+		min_distance * 2.0f, min_distance * 2.0f);
 
 	GLsizei vertex_count = config.boid_count * 3;
 	State state(vertex_count, &config);
@@ -74,8 +76,10 @@ int main()
 			util::random(0, border.width()) - border.left,
 			util::random(0, border.height()) - border.top);
 
-		boids.emplace_back(Boid(&grid, &config, pos));
+		boids.emplace_back(Boid(&grid, &config, &audio_meter, &border, pos));
 	}
+
+	std::vector<Impulse> impulses;
 
 	glClearColor(
 		config.background_color.x, 
@@ -95,12 +99,12 @@ int main()
 
 	while (window.isOpen())
 	{
-		rDeltaTime = std::fminf(clock.restart().asSeconds(), 0.075f);
-		accumulator += rDeltaTime;
+		dt = std::fminf(clock.restart().asSeconds(), 0.075f);
+		accumulator += dt;
 
-		inputHandler.update();
+		input_handler.update();
 
-		if (debug.update(inputHandler, rDeltaTime))
+		if (debug.update(input_handler, dt))
 		{
 			Config prev = config;
 
@@ -111,12 +115,14 @@ int main()
 				{
 				case Reconstruct::RGrid:
 					{
+						min_distance = std::sqrtf(std::fmaxf(std::fmaxf(config.sep_distance, config.ali_distance), config.coh_distance));
+
 						grid = Grid(
-							border.left  - config.min_distance * (config.grid_extra_cells + 1),
-							border.top   - config.min_distance * (config.grid_extra_cells + 1),
-							border.right + config.min_distance * (config.grid_extra_cells + 1),
-							border.bot   + config.min_distance * (config.grid_extra_cells + 1),
-							config.min_distance * 2.0f, config.min_distance * 2.0f);
+							border.left  - min_distance * (config.grid_extra_cells + 1),
+							border.top   - min_distance * (config.grid_extra_cells + 1),
+							border.right + min_distance * (config.grid_extra_cells + 1),
+							border.bot   + min_distance * (config.grid_extra_cells + 1),
+							min_distance * 2.0f, min_distance * 2.0f);
 					}
 					break;
 				case Reconstruct::RBoids:
@@ -134,7 +140,7 @@ int main()
 								util::random(0, border.width()) - border.left,
 								util::random(0, border.height()) - border.top);
 
-							boids.emplace_back(Boid(&grid, &config, pos));
+							boids.emplace_back(Boid(&grid, &config, &audio_meter, &border, pos));
 						}
 
 						glVertexPointer(2, GL_FLOAT, 0, state.get_vertices());
@@ -142,15 +148,15 @@ int main()
 					}
 					break;
 				case Reconstruct::RBackgroundTex:
-					resourceManager.load_texture("background", "content/" + config.background_texture);
-					background.load_texture(resourceManager);
+					resource_manager.load_texture("background", "content/" + config.background_texture);
+					background.load_texture(resource_manager);
 					background.load_prop(&config, video_mode);
 					break;
 				case Reconstruct::RBackgroundProp:
 					background.load_prop(&config, video_mode);
 					break;
 				case Reconstruct::RAudio:
-					audioMeter.clear();
+					audio_meter.clear();
 					break;
 				case Reconstruct::RWindow:
 					if (config.vertical_sync)
@@ -165,7 +171,7 @@ int main()
 					camera.set_scale(config.camera_zoom);
 					break;
 				case Reconstruct::RPhysics:
-					deltaTime = 1.0f / std::fmaxf(config.physics_update_freq, 1.0f);
+					physics_dt = 1.0f / std::fmaxf(config.physics_update_freq, 1.0f);
 					break;
 				case Reconstruct::RDebug:
 					debug.set_update_freq(config.debug_update_freq);
@@ -195,35 +201,35 @@ int main()
 						camera.set_position((sf::Vector2f)window.getSize() / 2.0f);
 
 						grid = Grid(
-							border.left  - config.min_distance * (config.grid_extra_cells + 1),
-							border.top   - config.min_distance * (config.grid_extra_cells + 1),
-							border.right + config.min_distance * (config.grid_extra_cells + 1),
-							border.bot   + config.min_distance * (config.grid_extra_cells + 1),
-							config.min_distance * 2.0f, config.min_distance * 2.0f);
+							border.left  - min_distance * (config.grid_extra_cells + 1),
+							border.top   - min_distance * (config.grid_extra_cells + 1),
+							border.right + min_distance * (config.grid_extra_cells + 1),
+							border.bot   + min_distance * (config.grid_extra_cells + 1),
+							min_distance * 2.0f, min_distance * 2.0f);
 					}
 					break;
 			}
 		}
 
-		camera.update(inputHandler);
-		audioMeter.update(rDeltaTime);
+		camera.update(input_handler);
+		audio_meter.update(dt);
 
 		mouse_pos = sf::Vector2f(camera.get_mouse_world_position());
 
-		if (inputHandler.get_left_pressed())
-			config.impulses.push_back(Impulse(mouse_pos, config.impulse_speed, config.impulse_size, 0.0f));
+		if (config.impulse_enabled && input_handler.get_left_pressed())
+			impulses.push_back(Impulse(mouse_pos, config.impulse_speed, config.impulse_size, 0.0f));
 
-		for (int i = config.impulses.size() - 1; i >= 0; --i)
+		for (int i = impulses.size() - 1; i >= 0; --i)
 		{
-			Impulse& impulse = config.impulses[i];
+			Impulse& impulse = impulses[i];
 
-			impulse.update(rDeltaTime);
+			impulse.update(dt);
 
 			if (impulse.get_length() > config.impulse_fade_distance)
-				config.impulses.erase(config.impulses.begin() + i);
+				impulses.erase(impulses.begin() + i);
 		}
 
-		while (accumulator >= deltaTime)
+		while (accumulator >= physics_dt)
 		{
 			grid.reset_buffers();
 
@@ -249,10 +255,10 @@ int main()
 				std::execution::par_unseq, boids.begin(), boids.end(),
 				[&](Boid& boid)
 				{
-					boid.steer_towards(mouse_pos, config.steer_towards_factor * config.steer_enabled * inputHandler.get_left_held());
-					boid.steer_towards(mouse_pos, -config.steer_away_factor * config.steer_enabled * inputHandler.get_right_held());
+					boid.steer_towards(mouse_pos, config.steer_towards_factor * config.steer_enabled * input_handler.get_left_held());
+					boid.steer_towards(mouse_pos, -config.steer_away_factor * config.steer_enabled * input_handler.get_right_held());
 
-					if (config.predator_enabled && !(config.steer_enabled && (inputHandler.get_left_held() || inputHandler.get_right_held())))
+					if (config.predator_enabled && !(config.steer_enabled && (input_handler.get_left_held() || input_handler.get_right_held())))
 					{
 						float dist = v2f::distance_squared(boid.get_origin(), mouse_pos);
 
@@ -263,13 +269,13 @@ int main()
 						}
 					}
 
-					boid.update(boids, deltaTime, border);
+					boid.update(boids, impulses, physics_dt);
 				});
 
-			accumulator -= deltaTime;
+			accumulator -= physics_dt;
 		}
 
-		float interp = accumulator / deltaTime;
+		float interp = accumulator / physics_dt;
 		state.update(boids, interp);
 
 		glClear(GL_COLOR_BUFFER_BIT);

@@ -55,19 +55,19 @@ void AudioMeter::initialize()
 	SAFE_RELEASE(pDevice);
 }
 
-void AudioMeter::update(const float& deltaTime)
+void AudioMeter::update(const float& dt)
 {
 	if (config->color_option != 3)
 		return;
 
-	config->volume = 0.0f;
+	volume = 0.0f;
 
 	if (config->audio_responsive_apps.size() == 0)
 	{
 		if (pMeterInfo)
 		{
-			if (SUCCEEDED(pMeterInfo->GetPeakValue(&config->volume)))
-				config->volume = -20 * std::log10f(1.0f - config->volume);
+			if (SUCCEEDED(pMeterInfo->GetPeakValue(&volume)))
+				volume = -20 * std::log10f(1.0f - volume);
 		}
 		else
 		{
@@ -95,12 +95,12 @@ void AudioMeter::update(const float& deltaTime)
 			}
 
 			float temp = 0.0f;
-			if (SUCCEEDED(meterInformation->GetPeakValue(&temp)) && temp > config->volume)
-				config->volume = -20 * std::log10f(1.0f - temp);
+			if (SUCCEEDED(meterInformation->GetPeakValue(&temp)) && temp > volume)
+				volume = -20 * std::log10f(1.0f - temp);
 		}
 		else
 		{
-			refresh_freq -= deltaTime;
+			refresh_freq -= dt;
 
 			if (refresh_freq <= 0.0f)
 			{

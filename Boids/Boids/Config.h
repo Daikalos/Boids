@@ -99,10 +99,6 @@ struct Config
 	float debug_update_freq;
 	int debug_toggle_key;
 
-	std::vector<Impulse> impulses;
-	float min_distance;
-	float volume;
-
 public:
 	Config();
 	~Config();

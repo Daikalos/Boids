@@ -11,9 +11,9 @@ Debug::~Debug()
 
 }
 
-void Debug::load(const ResourceManager& resourceManager)
+void Debug::load(const ResourceManager& resource_manager)
 {
-	sf::Font* font = resourceManager.request_font("8bit");
+	sf::Font* font = resource_manager.request_font("8bit");
 
 	if (font != nullptr)
 	{
@@ -31,20 +31,20 @@ void Debug::load(const ResourceManager& resourceManager)
 	debug_text_info.setString("\nFPS: 0\nBOIDS: " + std::to_string(config->boid_count));
 }
 
-bool Debug::update(const InputHandler& inputHandler, const float& deltaTime)
+bool Debug::update(const InputHandler& input_handler, const float& dt)
 {
 	if (!config->debug_enabled)
 		return false;
 
-	if (inputHandler.get_key_pressed(static_cast<sf::Keyboard::Key>(config->debug_toggle_key)))
+	if (input_handler.get_key_pressed(static_cast<sf::Keyboard::Key>(config->debug_toggle_key)))
 		toggle();
 
-	update_freq -= deltaTime;
+	update_freq -= dt;
 
 	if (update_freq <= 0.0f)
 	{
 		debug_text_info.setString(
-			"\nFPS: " + std::to_string((int)(1.0f / deltaTime)) +
+			"\nFPS: " + std::to_string((int)(1.0f / dt)) +
 			"\nBOIDS: " + std::to_string(config->boid_count));
 
 		update_freq = update_freq_max;

@@ -1,7 +1,7 @@
 #include "Boid.h"
 
-Boid::Boid(Grid* grid, Config* config, sf::Vector2f pos)
-	: grid(grid), config(config), position(pos)
+Boid::Boid(Grid* grid, Config* config, AudioMeter* audio_meter, Rect_i* border, const sf::Vector2f& pos)
+	: grid(grid), config(config), audio_meter(audio_meter), border(border), position(pos)
 {
 	velocity = v2f::normalize(sf::Vector2f(
 		util::random(-config->boid_max_speed, config->boid_max_speed),
@@ -13,23 +13,22 @@ Boid::Boid(Grid* grid, Config* config, sf::Vector2f pos)
 	update_points();
 }
 
-void Boid::update(const std::vector<Boid>& boids, const float& deltaTime, const Rect_i& border)
+void Boid::update(const std::vector<Boid>& boids, const std::vector<Impulse>& impulses, const float& dt)
 {
-	prev_color = color;
-
 	prev_pointA = pointA;
 	prev_pointB = pointB;
 	prev_pointC = pointC;
 
+	prev_color = color;
+
 	flock(boids);
 
-	position += velocity * deltaTime;
-
-	bool outside = outside_border(deltaTime, border);
+	sf::Vector2f new_pos = position + velocity * dt;
+	position = outside_border(new_pos, dt);
 
 	update_points();
 
-	if (outside)
+	if (position != new_pos)
 	{
 		prev_pointA = pointA;
 		prev_pointB = pointB;
@@ -41,21 +40,20 @@ void Boid::update(const std::vector<Boid>& boids, const float& deltaTime, const 
 		switch (config->color_option)
 		{
 		case 0:
-			position_color(border);
+			position_color();
 			break;
 		case 2:
-			density_color(deltaTime);
+			density_color(dt);
 			break;
 		case 3:
-			audio_color(deltaTime);
+			audio_color(dt);
 			break;
 		default:
-			cycle_color(deltaTime);
+			cycle_color(dt);
 			break;
 		}
 
-		if (config->impulse_enabled)
-			impulse_color();
+		impulse_color(impulses);
 	}
 }
 
@@ -196,82 +194,70 @@ void Boid::steer_towards(sf::Vector2f point, float weight)
 	apply_force(steer_at(steer) * weight);
 }
 
-bool Boid::outside_border(const float& deltaTime, const Rect_i& border)
+sf::Vector2f Boid::outside_border(sf::Vector2f pos, const float& dt)
 {
 	switch (config->turn_at_border)
 	{
 	case true:
-		return turn_at_border(deltaTime, border);
+		return turn_at_border(pos, dt);
 	default:
-		return teleport_at_border(border);
+		return teleport_at_border(pos);
 	}
 }
-bool Boid::turn_at_border(const float& deltaTime, const Rect_i& border)
+sf::Vector2f Boid::turn_at_border(const sf::Vector2f& pos, const float& dt)
 {
-	float width_margin = border.width() - border.width() * config->turn_margin_factor;
-	float height_margin = border.height() - border.height() * config->turn_margin_factor;
+	float width_margin = border->width() - border->width() * config->turn_margin_factor;
+	float height_margin = border->height() - border->height() * config->turn_margin_factor;
 
-	float left_margin = border.left + width_margin;
-	float top_margin = border.top + height_margin;
-	float right_margin = border.right - width_margin;
-	float bot_margin = border.bot - height_margin;
+	float left_margin = border->left + width_margin;
+	float top_margin = border->top + height_margin;
+	float right_margin = border->right - width_margin;
+	float bot_margin = border->bot - height_margin;
 
-	if (position.x + config->boid_size_width < left_margin)
-		velocity.x += config->turn_factor * deltaTime * (1.0f + std::powf(std::abs(position.x - left_margin) / width_margin, 2.0f)) * (1.0f / (density + 1.0f));
+	if (pos.x + config->boid_size_width < left_margin)
+		velocity.x += config->turn_factor * dt * (1.0f + std::powf(std::abs(pos.x - left_margin) / width_margin, 2.0f)) * (1.0f / (density + 1.0f));
 
-	if (position.x > right_margin)
-		velocity.x -= config->turn_factor * deltaTime * (1.0f + std::powf(std::abs(position.x - right_margin) / width_margin, 2.0f)) * (1.0f / (density + 1.0f));
+	if (pos.x > right_margin)
+		velocity.x -= config->turn_factor * dt * (1.0f + std::powf(std::abs(pos.x - right_margin) / width_margin, 2.0f)) * (1.0f / (density + 1.0f));
 
-	if (position.y + config->boid_size_height < top_margin)
-		velocity.y += config->turn_factor * deltaTime * (1.0f + std::powf(std::abs(position.y - top_margin) / height_margin, 2.0f)) * (1.0f / (density + 1.0f));
+	if (pos.y + config->boid_size_height < top_margin)
+		velocity.y += config->turn_factor * dt * (1.0f + std::powf(std::abs(pos.y - top_margin) / height_margin, 2.0f)) * (1.0f / (density + 1.0f));
 
-	if (position.y > bot_margin)
-		velocity.y -= config->turn_factor * deltaTime * (1.0f + std::powf(std::abs(position.y - bot_margin) / height_margin, 2.0f)) * (1.0f / (density + 1.0f));
+	if (pos.y > bot_margin)
+		velocity.y -= config->turn_factor * dt * (1.0f + std::powf(std::abs(pos.y - bot_margin) / height_margin, 2.0f)) * (1.0f / (density + 1.0f));
 
-	return false;
+	return pos;
 }
-bool Boid::teleport_at_border(const Rect_i& border)
+sf::Vector2f Boid::teleport_at_border(sf::Vector2f pos)
 {
-	if (position.x + config->boid_size_width * 1.25f < border.left)
-	{
-		position.x = (float)border.right;
-		return true;
-	}
+	if (pos.x + config->boid_size_width * 1.25f < border->left)
+		pos.x = (float)border->right;
 
-	if (position.x > border.right)
-	{
-		position.x = border.left - config->boid_size_width * 1.25f;
-		return true;
-	}
+	if (pos.x > border->right)
+		pos.x = border->left - config->boid_size_width * 1.25f;
 
-	if (position.y + config->boid_size_height * 1.25f < border.top)
-	{
-		position.y = (float)border.bot;
-		return true;
-	}
+	if (pos.y + config->boid_size_height * 1.25f < border->top)
+		pos.y = (float)border->bot;
 
-	if (position.y > border.bot)
-	{
-		position.y = border.top - config->boid_size_height * 1.25f;
-		return true;
-	}
+	if (pos.y > border->bot)
+		pos.y = border->top - config->boid_size_height * 1.25f;
 
-	return false;
+	return pos;
 }
 
-void Boid::position_color(const Rect_i& border)
+void Boid::position_color()
 {
-	float t = position.x / border.width();
-	float s = position.y / border.height();
+	float t = position.x / border->width();
+	float s = position.y / border->height();
 
 	color = sf::Vector3f(
 		(float)interpolate(config->boid_color_top_left.x * 255, config->boid_color_top_right.x * 255, config->boid_color_bot_left.x * 255, config->boid_color_bot_right.x * 255, t, s) / 255.0f,
 		(float)interpolate(config->boid_color_top_left.y * 255, config->boid_color_top_right.y * 255, config->boid_color_bot_left.y * 255, config->boid_color_bot_right.y * 255, t, s) / 255.0f,
 		(float)interpolate(config->boid_color_top_left.z * 255, config->boid_color_top_right.z * 255, config->boid_color_bot_left.z * 255, config->boid_color_bot_right.z * 255, t, s) / 255.0f);
 }
-void Boid::cycle_color(const float& deltaTime)
+void Boid::cycle_color(const float& dt)
 {
-	cycle_time = std::fmodf(cycle_time + deltaTime * config->boid_cycle_colors_speed, 1.0f);
+	cycle_time = std::fmodf(cycle_time + dt * config->boid_cycle_colors_speed, 1.0f);
 
 	float scaled_time = cycle_time * (float)(config->boid_cycle_colors.size() - 1);
 
@@ -285,9 +271,9 @@ void Boid::cycle_color(const float& deltaTime)
 
 	color = v2f::lerp(color1, color2, newT);
 }
-void Boid::density_color(const float& deltaTime)
+void Boid::density_color(const float& dt)
 {
-	density_time = (config->boid_density_cycle_enabled) ? std::fmodf(density_time + deltaTime * config->boid_density_cycle_speed, 1.0f) : 0.0f;
+	density_time = (config->boid_density_cycle_enabled) ? std::fmodf(density_time + dt * config->boid_density_cycle_speed, 1.0f) : 0.0f;
 
 	float density_percentage = (density / (float)config->boid_density);
 
@@ -303,10 +289,10 @@ void Boid::density_color(const float& deltaTime)
 
 	color = v2f::lerp(color1, color2, newT);
 }
-void Boid::audio_color(const float& deltaTime)
+void Boid::audio_color(const float& dt)
 {
 	float density_percentage = (density / (float)config->audio_responsive_density);
-	float max_volume = std::fminf(config->volume * config->audio_responsive_strength, config->audio_responsive_limit);
+	float max_volume = std::fminf(audio_meter->get_volume() * config->audio_responsive_strength, config->audio_responsive_limit);
 
 	float scaled_volume = std::fminf(max_volume * density_percentage, 1.0f) * (float)(config->audio_responsive_colors.size() - 1);
 
@@ -320,9 +306,9 @@ void Boid::audio_color(const float& deltaTime)
 
 	color = v2f::lerp(color1, color2, newT);
 }
-void Boid::impulse_color()
+void Boid::impulse_color(const std::vector<Impulse>& impulses)
 {
-	for (const Impulse& impulse : config->impulses)
+	for (const Impulse& impulse : impulses)
 	{
 		sf::Vector2f impulse_pos = impulse.get_position();
 		float impulse_length = impulse.get_length();

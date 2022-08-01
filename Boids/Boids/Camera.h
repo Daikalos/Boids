@@ -15,7 +15,7 @@ public:
 
 	// call after poll event
 	//
-	void update(const InputHandler& inputHandler);
+	void update(const InputHandler& input_handler);
 
 	template<typename T> sf::Vector2<T> view_to_world(const sf::Vector2<T>& position) const
 	{
