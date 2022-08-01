@@ -90,6 +90,7 @@ int main()
 	glLoadIdentity();
 	glScalef(1.0f, -1.0f, 1.0f);
 	glOrtho(0, window.getSize().x, 0, window.getSize().y, -1.0, 1.0);
+	glMatrixMode(GL_MODELVIEW);
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
@@ -289,7 +290,6 @@ int main()
 
 		glPushMatrix();
 
-		glMatrixMode(GL_MODELVIEW);
 		glLoadMatrixf(camera.get_world_matrix());
 
 		glDrawArrays(GL_TRIANGLES, 0, vertex_count);

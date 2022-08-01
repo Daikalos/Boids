@@ -228,7 +228,7 @@ sf::Vector2f Boid::turn_at_border(const sf::Vector2f& pos, const float& dt)
 
 	return pos;
 }
-sf::Vector2f Boid::teleport_at_border(sf::Vector2f pos)
+sf::Vector2f Boid::teleport_at_border(sf::Vector2f& pos)
 {
 	if (pos.x + config->boid_size_width * 1.25f < border->left)
 		pos.x = (float)border->right;

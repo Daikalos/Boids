@@ -38,7 +38,7 @@ private:
 
 	sf::Vector2f outside_border(sf::Vector2f pos, const float& dt);
 	sf::Vector2f turn_at_border(const sf::Vector2f& pos, const float& dt);
-	sf::Vector2f teleport_at_border(sf::Vector2f pos);
+	sf::Vector2f teleport_at_border(sf::Vector2f& pos);
 
 	void position_color();
 	void cycle_color(const float& dt);
