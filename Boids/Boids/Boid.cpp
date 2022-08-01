@@ -1,6 +1,6 @@
 #include "Boid.h"
 
-Boid::Boid(Grid* grid, Config* config, AudioMeter* audio_meter, Rect_i* border, const sf::Vector2f& pos)
+Boid::Boid(Grid* grid, Config* config, const AudioMeter* audio_meter, const Rect_i* border, const sf::Vector2f& pos)
 	: grid(grid), config(config), audio_meter(audio_meter), border(border), position(pos)
 {
 	velocity = v2f::normalize(sf::Vector2f(
@@ -68,7 +68,7 @@ void Boid::flock(const std::vector<Boid>& boids)
 	int cohCount = 0;
 
 	int neighbours = 0;
-	int neighbourIndices[4];
+	int neighbourIndices[4] {-1,-1,-1,-1};
 
 	sf::Vector2f gridCellIndicesRaw = grid->relative_pos(position);
 	sf::Vector2i gridCellIndices = sf::Vector2i(gridCellIndicesRaw);
@@ -161,7 +161,7 @@ void Boid::flock(const std::vector<Boid>& boids)
 	else if (length < config->boid_min_speed)
 		velocity = v2f::normalize(velocity, config->boid_min_speed);
 
-	density = std::max(std::max(cohCount, aliCount), sepCount);
+	density = std::fmaxf(std::fmaxf(cohCount, aliCount), sepCount);
 }
 
 sf::Vector2f Boid::steer_at(const sf::Vector2f& steer_direction)

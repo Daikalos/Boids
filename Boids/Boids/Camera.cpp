@@ -1,6 +1,6 @@
 #include "Camera.h"
 
-Camera::Camera(const sf::Window* window, Config* config) 
+Camera::Camera(const sf::RenderWindow* window, Config* config)
 	: window(window), config(config), position(sf::Vector2f(window->getSize()) / 2.0f), scale({ config->camera_zoom, config->camera_zoom })
 {
 

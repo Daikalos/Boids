@@ -13,7 +13,7 @@
 class Boid
 {
 public:
-	Boid(Grid* grid, Config* config, AudioMeter* audio_meter, Rect_i* border, const sf::Vector2f& pos);
+	Boid(Grid* grid, Config* config, const AudioMeter* audio_meter, const Rect_i* border, const sf::Vector2f& pos);
 
 	void update(const std::vector<Boid>& boids, const std::vector<Impulse>& impulses, const float& physics_dt);
 	void steer_towards(sf::Vector2f point, float weight);
@@ -80,8 +80,8 @@ public: // Properties
 private:
 	Grid* grid;
 	Config* config;
-	AudioMeter* audio_meter;
-	Rect_i* border;
+	const AudioMeter* audio_meter;
+	const Rect_i* border;
 
 	int cell_index{0};
 	int index{0};

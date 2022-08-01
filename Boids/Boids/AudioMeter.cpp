@@ -1,6 +1,6 @@
 #include "AudioMeter.h"
 
-AudioMeter::AudioMeter(Config* config, float refresh_freq)
+AudioMeter::AudioMeter(Config& config, float refresh_freq)
 	: config(config), refresh_freq_max(refresh_freq), refresh_freq(refresh_freq_max) 
 {
 
@@ -11,9 +11,9 @@ AudioMeter::~AudioMeter()
 	SAFE_RELEASE(pMeterInfo);
 	SAFE_RELEASE(pSessionManager);
 
-	for (int i = 0; i < config->audio_responsive_apps.size(); ++i)
+	for (int i = 0; i < config.audio_responsive_apps.size(); ++i)
 	{
-		std::wstring process_name = config->audio_responsive_apps[i];
+		std::wstring process_name = config.audio_responsive_apps[i];
 
 		SAFE_RELEASE(processes_session_control[process_name].first);
 		SAFE_RELEASE(processes_session_control[process_name].second);
@@ -42,7 +42,7 @@ void AudioMeter::initialize()
 	if (FAILED(pDevice->Activate(__uuidof(IAudioSessionManager), CLSCTX_ALL, NULL, (void**)&pSessionManager)))
 		return;
 
-	if (config->audio_responsive_apps.size() > 0)
+	if (config.audio_responsive_apps.size() > 0)
 	{
 		refresh(nullptr);
 	}
@@ -57,12 +57,12 @@ void AudioMeter::initialize()
 
 void AudioMeter::update(const float& dt)
 {
-	if (config->color_option != 3)
+	if (config.color_option != 3)
 		return;
 
 	volume = 0.0f;
 
-	if (config->audio_responsive_apps.size() == 0)
+	if (config.audio_responsive_apps.size() == 0)
 	{
 		if (pMeterInfo)
 		{
@@ -76,10 +76,8 @@ void AudioMeter::update(const float& dt)
 		}
 	}
 
-	for (int i = 0; i < config->audio_responsive_apps.size(); ++i)
+	for (std::wstring process_name : config.audio_responsive_apps)
 	{
-		std::wstring process_name = config->audio_responsive_apps[i];
-
 		if (processes_session_control.contains(process_name))
 		{
 			IAudioSessionControl* sessionControl = processes_session_control[process_name].first;
@@ -150,10 +148,8 @@ void AudioMeter::refresh(std::wstring* comp)
 					LPWSTR sessionID;
 					if (SUCCEEDED(sessionControl2->GetSessionInstanceIdentifier(&sessionID)))
 					{
-						for (int j = 0; j < config->audio_responsive_apps.size(); ++j)
+						for (std::wstring process_name : config.audio_responsive_apps)
 						{
-							process_name = config->audio_responsive_apps[j];
-
 							if (process_name.size() == 0)
 								continue;
 

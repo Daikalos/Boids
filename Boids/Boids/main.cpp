@@ -45,14 +45,14 @@ int main()
 	Camera camera(&window, &config);
 	InputHandler input_handler;
 
-	Debug debug(&config);
+	Debug debug(config);
 	debug.load(resource_manager);
 
 	Background background;
 	background.load_texture(resource_manager);
-	background.load_prop(&config, video_mode);
+	background.load_prop(config, video_mode);
 
-	AudioMeter audio_meter(&config, 1.0f);
+	AudioMeter audio_meter(config, 1.0f);
 	audio_meter.initialize();
 
 	float min_distance = std::sqrtf(std::fmaxf(std::fmaxf(config.sep_distance, config.ali_distance), config.coh_distance));
@@ -65,7 +65,7 @@ int main()
 		min_distance * 2.0f, min_distance * 2.0f);
 
 	GLsizei vertex_count = config.boid_count * 3;
-	State state(vertex_count, &config);
+	State state(vertex_count);
 
 	std::vector<Boid> boids;
 	boids.reserve(config.boid_count);
@@ -150,10 +150,10 @@ int main()
 				case Reconstruct::RBackgroundTex:
 					resource_manager.load_texture("background", "content/" + config.background_texture);
 					background.load_texture(resource_manager);
-					background.load_prop(&config, video_mode);
+					background.load_prop(config, video_mode);
 					break;
 				case Reconstruct::RBackgroundProp:
-					background.load_prop(&config, video_mode);
+					background.load_prop(config, video_mode);
 					break;
 				case Reconstruct::RAudio:
 					audio_meter.clear();

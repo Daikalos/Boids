@@ -19,8 +19,7 @@ struct Color
 class State
 {
 public:
-	State(GLsizei vertex_count, Config* config) : 
-		vertex_count(vertex_count), config(config)
+	State(GLsizei vertex_count) : vertex_count(vertex_count)
 	{
 		vertices.resize(vertex_count);
 		colors.resize(vertex_count);
@@ -73,8 +72,7 @@ public:
 
 private:
 	GLsizei vertex_count;
+
 	std::vector<Vertex> vertices;
 	std::vector<Color> colors;
-
-	Config* config;
 };

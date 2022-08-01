@@ -14,7 +14,7 @@
 class AudioMeter
 {
 public:
-	AudioMeter(Config* config, float refresh_freq);
+	AudioMeter(Config& config, float refresh_freq);
 	~AudioMeter();
 
 	float get_volume() const
@@ -31,7 +31,7 @@ private:
 	void refresh(std::wstring* comp);
 
 private:
-	Config* config;
+	Config& config;
 
 	float volume{0.0f};
 	float refresh_freq_max{0.0f};

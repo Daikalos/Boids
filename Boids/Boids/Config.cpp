@@ -143,7 +143,7 @@ void Config::load()
 
 void Config::load_var(nlohmann::json& json)
 {
-	auto config = json[FILE_NAME];
+	nlohmann::basic_json<>::value_type config = json[FILE_NAME];
 
 	background_color = convert(config["background_color"]);
 	background_texture = config["background_texture"];

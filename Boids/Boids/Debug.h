@@ -8,7 +8,7 @@
 class Debug
 {
 public:
-	Debug(Config* config);
+	Debug(Config& config);
 	~Debug();
 
 	void load(const ResourceManager& resource_manager);
@@ -33,7 +33,7 @@ private:
 	}
 
 private:
-	Config* config;
+	Config& config;
 
 	float update_freq_max;
 	float update_freq;

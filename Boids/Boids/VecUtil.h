@@ -84,7 +84,7 @@ public:
 	}
 	static constexpr float lerp(float a, float b, float f)
 	{
-		return (a * (1.0 - f)) + (b * f);
+		return (a * (1.0f - f)) + (b * f);
 	}
 	static constexpr sf::Vector2<T> lerp(sf::Vector2<T> lhs, sf::Vector2<T> rhs, float a)
 	{
