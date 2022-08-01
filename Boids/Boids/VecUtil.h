@@ -126,11 +126,10 @@ static constexpr sf::Vector2<T> operator /(float lhs, const sf::Vector2<T>& rhs)
 }
 
 template <typename T>
-static constexpr sf::Vector2<T> operator /(const sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs)
+static constexpr sf::Vector2<T> operator /(sf::Vector2<T> lhs, const sf::Vector2<T>& rhs)
 {
-	sf::Vector2<T> result = lhs;
-	result.x /= rhs.x;
-	result.y /= rhs.y;
-	return result;
+	lhs.x /= rhs.x;
+	lhs.y /= rhs.y;
+	return lhs;
 }
 
