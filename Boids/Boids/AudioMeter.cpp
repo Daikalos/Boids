@@ -148,18 +148,19 @@ void AudioMeter::refresh(std::wstring* comp)
 					LPWSTR sessionID;
 					if (SUCCEEDED(sessionControl2->GetSessionInstanceIdentifier(&sessionID)))
 					{
-						for (std::wstring process_name : config.audio_responsive_apps)
+						for (std::wstring pn : config.audio_responsive_apps)
 						{
-							if (process_name.size() == 0)
+							if (pn.size() == 0)
 								continue;
 
-							if (comp != nullptr && *comp != process_name)
+							if (comp != nullptr && *comp != pn)
 								continue;
 
-							if (wcsstr(sessionID, process_name.c_str()) != 0)
+							if (wcsstr(sessionID, pn.c_str()) != 0)
 							{
 								if (SUCCEEDED(sessionControl->QueryInterface(__uuidof(IAudioMeterInformation), (void**)&meterInformation)))
 								{
+									process_name = pn;
 									break;
 								}
 							}
