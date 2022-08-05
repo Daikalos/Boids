@@ -144,7 +144,7 @@ int main()
 							boids.emplace_back(Boid(&grid, &config, &audio_meter, &border, pos));
 						}
 
-						glVertexPointer(2, GL_FLOAT, 0, state.get_vertices());
+						glVertexPointer(2, GL_FLOAT, 0, state.get_vertices()); // reset pointers in case of dynamic reallocation
 						glColorPointer(3, GL_FLOAT, 0, state.get_colors());
 					}
 					break;

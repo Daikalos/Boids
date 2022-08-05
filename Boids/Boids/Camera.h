@@ -19,7 +19,7 @@ public:
 
 	template<typename T> sf::Vector2<T> view_to_world(const sf::Vector2<T>& position) const
 	{
-		return (sf::Vector2<T>)(get_view_matrix() * (sf::Vector2f)position);
+		return sf::Vector2<T>(get_view_matrix() * sf::Vector2f(position));
 	}
 
 public:
