@@ -287,13 +287,13 @@ void Boid::density_color(const float& dt)
 
 	float newT = scaled_density - std::floorf(scaled_density);
 
-	float r = util::map_to_range(velocity.x, -config->boid_max_speed, config->boid_max_speed, 0.0f, 1.0f);
-	float g = util::map_to_range(v2f::length(velocity), config->boid_min_speed, config->boid_max_speed, 0.0f, 1.0f);
-	float b = util::map_to_range(velocity.y, -config->boid_max_speed, config->boid_max_speed, 0.0f, 1.0f);
+	color = v2f::lerp(color1, color2, newT);
 
-	sf::Vector3f col = sf::Vector3f(r, b, b);
+	//float r = util::map_to_range(velocity.x, -config->boid_max_speed, config->boid_max_speed, 0.0f, 1.0f);
+	//float g = util::map_to_range(v2f::length(velocity), config->boid_min_speed, config->boid_max_speed, 0.0f, 1.0f);
+	//float b = util::map_to_range(velocity.y, -config->boid_max_speed, config->boid_max_speed, 0.0f, 1.0f);
 
-	color = v2f::lerp(color1, color2, newT) * col;
+	//sf::Vector3f col = sf::Vector3f(r, b, b);
 }
 void Boid::audio_color(const float& dt)
 {
