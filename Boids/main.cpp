@@ -14,7 +14,7 @@ int main()
 	if (!video_mode.isValid())
 		return -1;
 
-	sf::RenderWindow window(video_mode, "Boids", sf::Style::None);
+	sf::RenderWindow window(video_mode, "Boids", sf::Style::Close);
 	
 	if (!window.setActive(true))
 		return -1;

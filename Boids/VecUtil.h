@@ -115,7 +115,6 @@ static constexpr sf::Vector2<T> operator /=(sf::Vector2<T>& lhs, const sf::Vecto
 	lhs.y /= rhs.y;
 	return lhs;
 }
-
 template <typename T>
 static constexpr sf::Vector2<T> operator /(float lhs, const sf::Vector2<T>& rhs)
 {
@@ -124,12 +123,28 @@ static constexpr sf::Vector2<T> operator /(float lhs, const sf::Vector2<T>& rhs)
 	result.y /= rhs.y;
 	return result;
 }
-
 template <typename T>
 static constexpr sf::Vector2<T> operator /(sf::Vector2<T> lhs, const sf::Vector2<T>& rhs)
 {
 	lhs.x /= rhs.x;
 	lhs.y /= rhs.y;
+	return lhs;
+}
+
+template <typename T>
+static constexpr sf::Vector2<T> operator *(sf::Vector2<T> lhs, const sf::Vector2<T>& rhs)
+{
+	lhs.x *= rhs.x;
+	lhs.y *= rhs.y;
+	return lhs;
+}
+
+template <typename T>
+static constexpr sf::Vector3<T> operator *(sf::Vector3<T> lhs, const sf::Vector3<T>& rhs)
+{
+	lhs.x *= rhs.x;
+	lhs.y *= rhs.y;
+	lhs.z *= rhs.z;
 	return lhs;
 }
 
