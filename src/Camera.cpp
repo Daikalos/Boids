@@ -1,7 +1,7 @@
 #include "Camera.h"
 
-Camera::Camera(const sf::RenderWindow* window, Config* config)
-	: window(window), config(config), position(sf::Vector2f(window->getSize()) / 2.0f), scale({ config->camera_zoom, config->camera_zoom })
+Camera::Camera(const sf::RenderWindow& window, Config& config)
+	: window(&window), config(&config), position(sf::Vector2f(this->window->getSize()) / 2.0f), scale({ this->config->camera_zoom, this->config->camera_zoom })
 {
 
 }

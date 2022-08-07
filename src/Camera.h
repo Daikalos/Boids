@@ -11,7 +11,7 @@ class Camera
 {
 public:
 	Camera() = delete;
-	Camera(const sf::RenderWindow* window, Config* config);
+	Camera(const sf::RenderWindow& window, Config& config);
 
 	// call after poll event
 	//

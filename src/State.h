@@ -23,19 +23,13 @@ public:
 	{
 		vertices.resize(vertex_count);
 		colors.resize(vertex_count);
+
+		glVertexPointer(2, GL_FLOAT, 0, vertices.data());
+		glColorPointer(3, GL_FLOAT, 0, colors.data());
 	}
 	~State()
 	{
 
-	}
-
-	const Vertex* get_vertices() const
-	{
-		return vertices.data();
-	}
-	const Color* get_colors() const
-	{
-		return colors.data();
 	}
 
 	void resize(GLsizei vertex_count)
@@ -44,6 +38,9 @@ public:
 
 		vertices.resize(vertex_count);
 		colors.resize(vertex_count);
+
+		glVertexPointer(2, GL_FLOAT, 0, vertices.data());
+		glColorPointer(3, GL_FLOAT, 0, colors.data());
 	}
 
 	void update(const std::vector<Boid>& boids, float interp)

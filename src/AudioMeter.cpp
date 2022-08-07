@@ -1,7 +1,7 @@
 #include "AudioMeter.h"
 
 AudioMeter::AudioMeter(Config& config, float refresh_freq)
-	: config(config), refresh_freq_max(refresh_freq), refresh_freq(refresh_freq_max) 
+	: config(&config), refresh_freq_max(refresh_freq), refresh_freq(refresh_freq_max) 
 {
 
 }
@@ -11,9 +11,9 @@ AudioMeter::~AudioMeter()
 	SAFE_RELEASE(pMeterInfo);
 	SAFE_RELEASE(pSessionManager);
 
-	for (int i = 0; i < config.audio_responsive_apps.size(); ++i)
+	for (int i = 0; i < config->audio_responsive_apps.size(); ++i)
 	{
-		std::wstring process_name = config.audio_responsive_apps[i];
+		std::wstring process_name = config->audio_responsive_apps[i];
 
 		SAFE_RELEASE(processes_session_control[process_name].first);
 		SAFE_RELEASE(processes_session_control[process_name].second);
@@ -42,7 +42,7 @@ void AudioMeter::initialize()
 	if (FAILED(pDevice->Activate(__uuidof(IAudioSessionManager), CLSCTX_ALL, NULL, (void**)&pSessionManager)))
 		return;
 
-	if (config.audio_responsive_apps.size() > 0)
+	if (config->audio_responsive_apps.size() > 0)
 	{
 		refresh(nullptr);
 	}
@@ -57,12 +57,12 @@ void AudioMeter::initialize()
 
 void AudioMeter::update(const float& dt)
 {
-	if (config.color_option != 3)
+	if (config->color_option != 3)
 		return;
 
 	volume = 0.0f;
 
-	if (config.audio_responsive_apps.size() == 0)
+	if (config->audio_responsive_apps.size() == 0)
 	{
 		if (pMeterInfo)
 		{
@@ -76,7 +76,7 @@ void AudioMeter::update(const float& dt)
 		}
 	}
 
-	for (std::wstring process_name : config.audio_responsive_apps)
+	for (std::wstring process_name : config->audio_responsive_apps)
 	{
 		if (processes_session_control.contains(process_name))
 		{
@@ -148,7 +148,7 @@ void AudioMeter::refresh(std::wstring* comp)
 					LPWSTR sessionID;
 					if (SUCCEEDED(sessionControl2->GetSessionInstanceIdentifier(&sessionID)))
 					{
-						for (std::wstring pn : config.audio_responsive_apps)
+						for (std::wstring pn : config->audio_responsive_apps)
 						{
 							if (pn.size() == 0)
 								continue;

@@ -33,7 +33,7 @@ private:
 	}
 
 private:
-	Config& config;
+	Config* config;
 
 	float update_freq_max;
 	float update_freq;

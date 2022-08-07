@@ -1,13 +1,13 @@
 #include "Boid.h"
 
-Boid::Boid(Grid* grid, Config* config, const AudioMeter* audio_meter, const Rect_i* border, const sf::Vector2f& pos)
-	: grid(grid), config(config), audio_meter(audio_meter), border(border), position(pos)
+Boid::Boid(Grid& grid, Config& config, const AudioMeter& audio_meter, const Rect_i& border, const sf::Vector2f& pos)
+	: grid(&grid), config(&config), audio_meter(&audio_meter), border(&border), position(pos)
 {
 	velocity = v2f::normalize(sf::Vector2f(
-		util::random(-config->boid_max_speed, config->boid_max_speed),
-		util::random(-config->boid_max_speed, config->boid_max_speed)), config->boid_max_speed);
+		util::random(-this->config->boid_max_speed, this->config->boid_max_speed),
+		util::random(-this->config->boid_max_speed, this->config->boid_max_speed)), this->config->boid_max_speed);
 
-	if (config->boid_cycle_colors_random)
+	if (this->config->boid_cycle_colors_random)
 		cycle_time = util::random(0.0f, 1.0f);
 
 	update_points();

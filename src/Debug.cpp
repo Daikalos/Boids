@@ -1,7 +1,7 @@
 #include "Debug.h"
 
 Debug::Debug(Config& config)
-	: config(config), update_freq_max(config.debug_update_freq), update_freq(0.0f)
+	: config(&config), update_freq_max(this->config->debug_update_freq), update_freq(0.0f)
 {
 
 }
@@ -28,15 +28,15 @@ void Debug::load(const ResourceManager& resource_manager)
 	debug_text_info.setCharacterSize(24);
 
 	debug_text_state.setString(get_state());
-	debug_text_info.setString("\nFPS: 0\nBOIDS: " + std::to_string(config.boid_count));
+	debug_text_info.setString("\nFPS: 0\nBOIDS: " + std::to_string(config->boid_count));
 }
 
 bool Debug::update(const InputHandler& input_handler, const float& dt)
 {
-	if (!config.debug_enabled)
+	if (!config->debug_enabled)
 		return false;
 
-	if (input_handler.get_key_pressed(static_cast<sf::Keyboard::Key>(config.debug_toggle_key)))
+	if (input_handler.get_key_pressed(static_cast<sf::Keyboard::Key>(config->debug_toggle_key)))
 		toggle();
 
 	update_freq -= dt;
@@ -45,7 +45,7 @@ bool Debug::update(const InputHandler& input_handler, const float& dt)
 	{
 		debug_text_info.setString(
 			"\nFPS: " + std::to_string((int)(1.0f / dt)) +
-			"\nBOIDS: " + std::to_string(config.boid_count));
+			"\nBOIDS: " + std::to_string(config->boid_count));
 
 		update_freq = update_freq_max;
 
@@ -58,7 +58,7 @@ bool Debug::update(const InputHandler& input_handler, const float& dt)
 
 void Debug::draw(sf::RenderWindow& renderWindow)
 {
-	if (!config.debug_enabled)
+	if (!config->debug_enabled)
 		return;
 
 	renderWindow.draw(debug_text_state);

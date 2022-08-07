@@ -42,7 +42,7 @@ int main()
 	resource_manager.load_texture("background", "content/" + config.background_texture);
 	resource_manager.load_font("8bit", "content/font_8bit.ttf");
 
-	Camera camera(&window, &config);
+	Camera camera(window, config);
 	InputHandler input_handler;
 
 	Debug debug(config);
@@ -76,7 +76,7 @@ int main()
 			util::random(0, border.width()) - border.left,
 			util::random(0, border.height()) - border.top);
 
-		boids.emplace_back(Boid(&grid, &config, &audio_meter, &border, pos));
+		boids.emplace_back(Boid(grid, config, audio_meter, border, pos));
 	}
 
 	std::vector<Impulse> impulses;
@@ -95,9 +95,6 @@ int main()
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
 
-	glVertexPointer(2, GL_FLOAT, 0, state.get_vertices());
-	glColorPointer(3, GL_FLOAT, 0, state.get_colors());
-
 	while (window.isOpen())
 	{
 		dt = std::fminf(clock.restart().asSeconds(), 0.075f);
@@ -109,10 +106,9 @@ int main()
 		{
 			Config prev = config;
 
-			std::vector<Reconstruct> reconstruct = config.refresh(prev);
-			for (const Reconstruct& r : reconstruct)
+			for (const Reconstruct& reconstruct : config.refresh(prev))
 			{
-				switch (r)
+				switch (reconstruct)
 				{
 				case Reconstruct::RGrid:
 					{
@@ -129,23 +125,21 @@ int main()
 				case Reconstruct::RBoids:
 					{
 						vertex_count = config.boid_count * 3;
-
 						state.resize(vertex_count);
 
-						boids.clear();
-						boids.reserve(config.boid_count);
-
-						for (int i = 0; i < config.boid_count; ++i)
+						if (config.boid_count > prev.boid_count) // new is larger
 						{
-							sf::Vector2f pos = sf::Vector2f(
-								util::random(0, border.width()) - border.left,
-								util::random(0, border.height()) - border.top);
+							for (int i = prev.boid_count; i < config.boid_count; ++i)
+							{
+								sf::Vector2f pos = sf::Vector2f(
+									util::random(0, border.width()) - border.left,
+									util::random(0, border.height()) - border.top);
 
-							boids.emplace_back(Boid(&grid, &config, &audio_meter, &border, pos));
+								boids.emplace_back(Boid(grid, config, audio_meter, border, pos));
+							}
 						}
-
-						glVertexPointer(2, GL_FLOAT, 0, state.get_vertices()); // reset pointers in case of dynamic reallocation
-						glColorPointer(3, GL_FLOAT, 0, state.get_colors());
+						else
+							boids.erase(boids.begin() + config.boid_count, boids.end());
 					}
 					break;
 				case Reconstruct::RBackgroundTex:
