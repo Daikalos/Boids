@@ -17,3 +17,4 @@
 #include "ResourceManager.h"
 #include "Debug.h"
 #include "Background.h"
+#include "PolicySelect.h"

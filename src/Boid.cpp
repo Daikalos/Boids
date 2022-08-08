@@ -343,7 +343,7 @@ void Boid::impulse_color(const std::vector<Impulse>& impulses)
 
 void Boid::update_grid_cells(const std::vector<Boid>& boids) const
 {
-	int index = static_cast<int>(this - boids.data());
+	int index = std::distance(boids.data(), this);
 
 	if (index == 0)
 	{

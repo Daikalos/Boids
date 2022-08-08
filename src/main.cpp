@@ -34,9 +34,13 @@ int main()
 	Rect_i border(0, 0, video_mode.size.x, video_mode.size.y);
 
 	sf::Clock clock;
-	float physics_dt = 1.0f / std::fmaxf(config.physics_update_freq, 1.0f);
 	float dt = FLT_EPSILON;
+
+	float physics_dt = 1.0f / std::fmaxf(config.physics_update_freq, 1.0f);
 	float accumulator = FLT_EPSILON;
+
+	int ticks = 0;
+	int death_spiral = 10;
 
 	ResourceManager resource_manager;
 	resource_manager.load_texture("background", "content/" + config.background_texture);
@@ -81,6 +85,8 @@ int main()
 
 	std::vector<Impulse> impulses;
 
+	Policy policy = config.boid_count <= 2500 ? Policy::unseq : Policy::par_unseq;
+
 	glClearColor(
 		config.background_color.x, 
 		config.background_color.y,
@@ -124,6 +130,8 @@ int main()
 					break;
 				case Reconstruct::RBoids:
 					{
+						policy = config.boid_count <= 2500 ? Policy::unseq : Policy::par_unseq;
+
 						vertex_count = config.boid_count * 3;
 						state.resize(vertex_count);
 
@@ -224,50 +232,61 @@ int main()
 				impulses.erase(impulses.begin() + i);
 		}
 
-		while (accumulator >= physics_dt)
+		ticks = 0;
+		while (accumulator >= physics_dt && ++ticks < death_spiral)
 		{
+			accumulator -= physics_dt;
+
 			grid.reset_buffers();
 
-			std::for_each(std::execution::par_unseq, boids.begin(), boids.end(),
-				[](Boid& boid)
+			maybe_parallel(
+				[&boids](auto& pol)
 				{
-					boid.set_cell_index();
-				});
+					std::for_each(pol, boids.begin(), boids.end(),
+						[](Boid& boid) { boid.set_cell_index(); });
 
-			std::sort(std::execution::par_unseq, boids.begin(), boids.end(),
-				[](const Boid& b0, const Boid& b1)
+				}, policy);
+
+			maybe_parallel(
+				[&boids](auto& pol)
 				{
-					return b0.get_cell_index() < b1.get_cell_index();
-				});
+					std::sort(pol, boids.begin(), boids.end(),
+						[](const Boid& b0, const Boid& b1) { return b0.get_cell_index() < b1.get_cell_index(); });
 
-			std::for_each(std::execution::par_unseq, boids.begin(), boids.end(),
-				[&boids](const Boid& boid)
+				}, policy);
+
+			maybe_parallel(
+				[&boids](auto& pol)
 				{
-					boid.update_grid_cells(boids);
-				});
+					std::for_each(pol, boids.begin(), boids.end(),
+						[&boids](const Boid& boid) { boid.update_grid_cells(boids); });
 
-			std::for_each(
-				std::execution::par_unseq, boids.begin(), boids.end(),
-				[&](Boid& boid)
+				}, policy);
+
+			maybe_parallel(
+				[&](auto& pol)
 				{
-					boid.steer_towards(mouse_pos, config.steer_towards_factor * config.steer_enabled * input_handler.get_left_held());
-					boid.steer_towards(mouse_pos, -config.steer_away_factor * config.steer_enabled * input_handler.get_right_held());
-
-					if (config.predator_enabled && !(config.steer_enabled && (input_handler.get_left_held() || input_handler.get_right_held())))
-					{
-						float dist = v2f::distance_squared(boid.get_origin(), mouse_pos);
-
-						if (dist <= config.predator_distance)
+					std::for_each(pol, boids.begin(), boids.end(),
+						[&](Boid& boid)
 						{
-							float factor = (dist > FLT_EPSILON) ? std::sqrtf(dist / config.predator_distance) : FLT_EPSILON;
-							boid.steer_towards(mouse_pos, -config.predator_factor / factor);
-						}
-					}
+							boid.steer_towards(mouse_pos, config.steer_towards_factor * config.steer_enabled * input_handler.get_left_held());
+							boid.steer_towards(mouse_pos, -config.steer_away_factor * config.steer_enabled * input_handler.get_right_held());
 
-					boid.update(boids, impulses, physics_dt);
-				});
+							if (config.predator_enabled && !(config.steer_enabled && (input_handler.get_left_held() || input_handler.get_right_held())))
+							{
+								float dist = v2f::distance_squared(boid.get_origin(), mouse_pos);
 
-			accumulator -= physics_dt;
+								if (dist <= config.predator_distance)
+								{
+									float factor = (dist > FLT_EPSILON) ? std::sqrtf(dist / config.predator_distance) : FLT_EPSILON;
+									boid.steer_towards(mouse_pos, -config.predator_factor / factor);
+								}
+							}
+
+							boid.update(boids, impulses, physics_dt);
+						});
+
+				}, policy);
 		}
 
 		float interp = accumulator / physics_dt;

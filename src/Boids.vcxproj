@@ -39,6 +39,7 @@
     <ClInclude Include="Impulse.h" />
     <ClInclude Include="Include.h" />
     <ClInclude Include="InputHandler.h" />
+    <ClInclude Include="PolicySelect.h" />
     <ClInclude Include="Rectangle.h" />
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="State.h" />
