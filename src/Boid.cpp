@@ -19,8 +19,6 @@ void Boid::update(const std::vector<Boid>& boids, const std::vector<Impulse>& im
 	prev_pointB = pointB;
 	prev_pointC = pointC;
 
-	prev_color = color;
-
 	flock(boids);
 
 	sf::Vector2f new_pos = position + velocity * dt;
@@ -161,7 +159,7 @@ void Boid::flock(const std::vector<Boid>& boids)
 	else if (length < config->boid_min_speed)
 		velocity = v2f::normalize(velocity, config->boid_min_speed);
 
-	density = std::fmaxf(std::fmaxf(cohCount, aliCount), sepCount);
+	density = std::max(std::max(cohCount, aliCount), sepCount);
 }
 
 sf::Vector2f Boid::steer_at(const sf::Vector2f& steer_direction)

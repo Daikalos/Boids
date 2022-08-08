@@ -59,7 +59,7 @@ public:
 				vertices[v + 1] = *(Vertex*)(&p1);
 				vertices[v + 2] = *(Vertex*)(&p2);
 
-				sf::Vector3f color = boid.get_color() * interp + boid.get_prev_color() * (1.0f - interp);
+				sf::Vector3f color = boid.get_color();
 
 				colors[v	] = *(Color*)(&color);
 				colors[v + 1] = *(Color*)(&color);

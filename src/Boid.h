@@ -65,7 +65,6 @@ public: // Properties
 	inline sf::Vector2f get_pointB() const { return pointB; }
 	inline sf::Vector2f get_pointC() const { return pointC; }
 
-	inline sf::Vector3f get_prev_color() const { return prev_color; }
 	inline sf::Vector3f get_color() const { return color; }
 
 	inline sf::Vector2f get_position() const { return position; }
@@ -84,21 +83,19 @@ private:
 	const Rect_i* border;
 
 	int cell_index{0};
-	int index{0};
 
 	sf::Vector2f pointA, pointB, pointC;
 	sf::Vector2f prev_pointA, prev_pointB, prev_pointC;
-
-	sf::Vector3f color;
-	sf::Vector3f prev_color;
 
 	sf::Vector2f position;
 	sf::Vector2f velocity;
 	sf::Vector2f origin;
 	float rotation{0.0f};
 
+	sf::Vector3f color;
+
 	float cycle_time{0.0f};
 	float density_time{0.0f};
-	float density{0.0f};
+	int density{0};
 };
 
