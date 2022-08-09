@@ -22,13 +22,8 @@ int main()
 	Config config;
 	config.load();
 
-	if (config.vertical_sync)
-	{
-		window.setVerticalSyncEnabled(config.vertical_sync);
-		window.setFramerateLimit(0);
-	}
-	else
-		window.setFramerateLimit(config.max_framerate);
+	window.setVerticalSyncEnabled(config.vertical_sync);
+	window.setFramerateLimit(config.vertical_sync ? 0 : config.max_framerate);
 
 	sf::Vector2f mouse_pos;
 	Rect_i border(0, 0, video_mode.size.x, video_mode.size.y);
@@ -168,13 +163,8 @@ int main()
 					audio_meter.clear();
 					break;
 				case Reconstruct::RWindow:
-					if (config.vertical_sync)
-					{
-						window.setVerticalSyncEnabled(config.vertical_sync);
-						window.setFramerateLimit(0);
-					}
-					else
-						window.setFramerateLimit(config.max_framerate);
+					window.setVerticalSyncEnabled(config.vertical_sync);
+					window.setFramerateLimit(config.vertical_sync ? 0 : config.max_framerate);
 					break;
 				case Reconstruct::RCamera:
 					camera.set_scale(config.camera_zoom);
@@ -296,7 +286,7 @@ int main()
 		}
 
 		float interp = accumulator / physics_dt;
-		state.update(boids, interp);
+		state.update(boids, config, interp);
 
 		glClear(GL_COLOR_BUFFER_BIT);
 

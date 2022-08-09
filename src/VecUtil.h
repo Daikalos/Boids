@@ -19,8 +19,13 @@ public:
 	}
 	static constexpr float angle(const sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs)
 	{
-		return acosf(util::clamp(dot(lhs, rhs) / (length(lhs) * length(rhs)), -1.0f, 1.0f));
+		return acosf(dot(lhs, rhs) / (length(lhs) * length(rhs)));
 	}
+	static constexpr float angle(const sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs, const float& lhs_length, const float& rhs_length)
+	{
+		return acosf(dot(lhs, rhs) / (lhs_length * rhs_length));
+	}
+
 	static constexpr float dot(const sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs)
 	{
 		return lhs.x * rhs.x + lhs.y * rhs.y;

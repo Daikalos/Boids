@@ -38,6 +38,12 @@ namespace util
 		return minOut + (maxOut - minOut) * x;
 	}
 
+	template<typename T>
+	static inline T interpolate(const T& a, const T& b, const T& c, const T& d, const T& t, const T& s)
+	{
+		return T(a * (1 - t) * (1 - s) + b * t * (1 - s) + c * (1 - t) * s + d * t * s);
+	}
+
 	static thread_local std::mt19937_64 dre(std::chrono::steady_clock::now().time_since_epoch().count());
 
 	template<typename T, typename std::enable_if_t<std::is_floating_point_v<T>>* = nullptr>

@@ -9,29 +9,20 @@ Boid::Boid(Grid& grid, Config& config, const AudioMeter& audio_meter, const Rect
 
 	if (this->config->boid_cycle_colors_random)
 		cycle_time = util::random(0.0f, 1.0f);
-
-	update_points();
 }
 
 void Boid::update(const std::vector<Boid>& boids, const std::vector<Impulse>& impulses, const float& dt)
 {
-	prev_pointA = pointA;
-	prev_pointB = pointB;
-	prev_pointC = pointC;
+	prev_position = position;
+	prev_velocity = velocity;
 
 	flock(boids);
 
 	sf::Vector2f new_pos = position + velocity * dt;
 	position = outside_border(new_pos, dt);
 
-	update_points();
-
 	if (position != new_pos)
-	{
-		prev_pointA = pointA;
-		prev_pointB = pointB;
-		prev_pointC = pointC;
-	}
+		prev_position = position;
 
 	// draw-info
 	{
@@ -89,6 +80,10 @@ void Boid::flock(const std::vector<Boid>& boids)
 	if (xNeighbor != -1 && yNeighbor != -1)
 		neighbourIndices[neighbours++] = grid->at_pos(xNeighbor, yNeighbor);
 
+	float min_distance = std::fminf(config->coh_distance, config->ali_distance);
+	float length = v2f::length(velocity);
+	sf::Vector2f origin = get_origin();
+
 	for (int i = 0; i < neighbours; ++i)
 	{
 		int gridCellIndex = neighbourIndices[i];
@@ -99,24 +94,23 @@ void Boid::flock(const std::vector<Boid>& boids)
 			if (b == this && b != nullptr)
 				continue;
 
-			sf::Vector2f otherOrigin = b->get_origin();
-			float distance = v2f::distance_squared(origin, otherOrigin);
+			sf::Vector2f other_origin = b->get_origin();
+			float distance = v2f::distance_squared(origin, other_origin);
 
 			if (distance <= FLT_EPSILON)
 				continue;
 
-			sf::Vector2f dir = v2f::direction(origin, otherOrigin);
-			bool use_angle = distance <= std::fminf(config->coh_distance, config->ali_distance);
+			sf::Vector2f dir = v2f::direction(origin, other_origin);
 
-			if (use_angle)
+			if (distance <= min_distance)
 			{
-				float angle = v2f::angle(velocity, dir);
+				float angle = util::to_degrees(v2f::angle(velocity, dir, length, v2f::length(dir)));
 
-				if (util::to_degrees(angle) <= (config->boid_view_angle / 2.0f))
+				if (angle <= (config->boid_view_angle / 2.0f))
 				{
 					if (distance <= config->coh_distance)
 					{
-						coh += otherOrigin;		  // Head towards center of boids
+						coh += other_origin;	  // Head towards center of boids
 						++cohCount;
 					}
 					if (distance <= config->ali_distance)
@@ -146,18 +140,20 @@ void Boid::flock(const std::vector<Boid>& boids)
 	}
 	if (cohCount > 0) // cohesion
 	{
-		coh = v2f::direction(origin, coh / (float)cohCount);
+		coh = v2f::direction(get_origin(), coh / (float)cohCount);
 		coh = v2f::normalize(coh, config->boid_max_speed);
 
 		apply_force(steer_at(coh) * config->coh_weight);
 	}
 
-	float length = v2f::length(velocity);
+	{
+		float length = v2f::length(velocity);
 
-	if (length > config->boid_max_speed)
-		velocity = v2f::normalize(velocity, config->boid_max_speed);
-	else if (length < config->boid_min_speed)
-		velocity = v2f::normalize(velocity, config->boid_min_speed);
+		if (length > config->boid_max_speed)
+			velocity = v2f::normalize(velocity, config->boid_max_speed);
+		else if (length < config->boid_min_speed)
+			velocity = v2f::normalize(velocity, config->boid_min_speed);
+	}
 
 	density = std::max(std::max(cohCount, aliCount), sepCount);
 }
@@ -168,19 +164,6 @@ sf::Vector2f Boid::steer_at(const sf::Vector2f& steer_direction)
 	steer = v2f::limit(steer, config->boid_max_steer);
 
 	return steer;
-}
-
-void Boid::update_points()
-{
-	rotation = v2f::angle(velocity);
-
-	origin = sf::Vector2f(
-		position.x + (config->boid_size_width / 2.0f),
-		position.y + (config->boid_size_height / 2.0f));
-
-	pointA = v2f::rotate_point({ position.x + config->boid_size_width, position.y + (config->boid_size_height / 2) }, origin, rotation); // middle right tip
-	pointB = v2f::rotate_point({ position.x							 , position.y								   }, origin, rotation); // top left corner
-	pointC = v2f::rotate_point({ position.x							 , position.y + config->boid_size_height	   }, origin, rotation); // bot left corner
 }
 
 void Boid::steer_towards(sf::Vector2f point, float weight)
@@ -249,9 +232,9 @@ void Boid::position_color()
 	float s = position.y / border->height();
 
 	color = sf::Vector3f(
-		(float)interpolate(config->boid_color_top_left.x * 255, config->boid_color_top_right.x * 255, config->boid_color_bot_left.x * 255, config->boid_color_bot_right.x * 255, t, s) / 255.0f,
-		(float)interpolate(config->boid_color_top_left.y * 255, config->boid_color_top_right.y * 255, config->boid_color_bot_left.y * 255, config->boid_color_bot_right.y * 255, t, s) / 255.0f,
-		(float)interpolate(config->boid_color_top_left.z * 255, config->boid_color_top_right.z * 255, config->boid_color_bot_left.z * 255, config->boid_color_bot_right.z * 255, t, s) / 255.0f);
+		util::interpolate(config->boid_color_top_left.x * 255, config->boid_color_top_right.x * 255, config->boid_color_bot_left.x * 255, config->boid_color_bot_right.x * 255, t, s) / 255.0f,
+		util::interpolate(config->boid_color_top_left.y * 255, config->boid_color_top_right.y * 255, config->boid_color_bot_left.y * 255, config->boid_color_bot_right.y * 255, t, s) / 255.0f,
+		util::interpolate(config->boid_color_top_left.z * 255, config->boid_color_top_right.z * 255, config->boid_color_bot_left.z * 255, config->boid_color_bot_right.z * 255, t, s) / 255.0f);
 }
 void Boid::cycle_color(const float& dt)
 {

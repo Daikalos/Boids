@@ -104,8 +104,8 @@
         "grid_extra_cells" : 16,
         "camera_enabled" : false,
         "camera_zoom" : 1.0,
-        "vertical_sync" : true,
-        "max_framerate" : 160,
+        "vertical_sync" : false,
+        "max_framerate" : 200,
         "physics_update_freq" : 90,
 
         "debug_enabled" : true,
