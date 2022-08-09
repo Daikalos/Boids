@@ -133,8 +133,12 @@ void Config::load()
 	{
 		try
 		{
+			Config temp = *this;
+
 			nlohmann::json json = nlohmann::json::parse(project_file);
-			load_var(json);
+			temp.load_var(json);
+
+			*this = temp;
 
 			sep_distance *= sep_distance;
 			ali_distance *= ali_distance;
@@ -142,8 +146,8 @@ void Config::load()
 
 			predator_distance *= predator_distance;
 		}
-		catch (nlohmann::json::parse_error) {}
-		catch (nlohmann::detail::type_error e) {}
+		catch (nlohmann::json::parse_error) { }
+		catch (nlohmann::detail::type_error e) { }
 	}
 }
 
