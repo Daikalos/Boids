@@ -91,22 +91,19 @@ void Boid::flock(const std::vector<Boid>& boids)
 		{
 			const Boid* b = &boids[j];
 
-			if (b == this && b != nullptr)
+			if (b == this)
 				continue;
 
 			sf::Vector2f other_origin = b->get_origin();
 			float distance = v2f::distance_squared(origin, other_origin);
 
-			if (distance <= FLT_EPSILON)
-				continue;
-
 			sf::Vector2f dir = v2f::direction(origin, other_origin);
 
 			if (distance <= min_distance)
 			{
-				float angle = util::to_degrees(v2f::angle(velocity, dir, length, v2f::length(dir)));
+				float angle = v2f::angle(velocity, dir, length, v2f::length(dir));
 
-				if (angle <= (config->boid_view_angle / 2.0f))
+				if (angle <= config->boid_view_angle)
 				{
 					if (distance <= config->coh_distance)
 					{

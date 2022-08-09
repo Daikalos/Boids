@@ -30,6 +30,11 @@ public:
 	{
 		return lhs.x * rhs.x + lhs.y * rhs.y;
 	}
+	static inline float cross(const sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs)
+	{
+		return lhs.x * rhs.y - lhs.y * rhs.x;
+	}
+
 	static inline float distance(const sf::Vector2<T>& from, const sf::Vector2<T>& to)
 	{
 		T dx = std::abs(to.x - from.x);

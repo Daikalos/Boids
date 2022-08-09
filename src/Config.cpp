@@ -114,6 +114,8 @@ Config::Config()
 	debug_update_freq = 1.0f;
 	debug_toggle_key = 89;
 
+	boid_view_angle = util::to_radians(boid_view_angle) / 2.0f;
+
 	sep_distance *= sep_distance;
 	ali_distance *= ali_distance;
 	coh_distance *= coh_distance;
@@ -139,6 +141,8 @@ void Config::load()
 			temp.load_var(json);
 
 			*this = temp;
+
+			boid_view_angle = util::to_radians(boid_view_angle) / 2.0f;
 
 			sep_distance *= sep_distance;
 			ali_distance *= ali_distance;

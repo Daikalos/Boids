@@ -5,6 +5,7 @@
 #include <fstream>
 
 #include "Impulse.h"
+#include "Utilities.h"
 
 static const std::string FILE_NAME = "config";
 

@@ -11,13 +11,13 @@ namespace util
 	template<typename T>
 	static inline T to_radians(const T& degrees)
 	{
-		return (T)(degrees * ((double)M_PI / 180.0));
+		return T(degrees * (float(M_PI) / 180.0f));
 	}
 
 	template<typename T>
 	static inline T to_degrees(const T& radians)
 	{
-		return (T)(radians * (180.0 / (double)M_PI));
+		return T(radians * (180.0f / float(M_PI)));
 	}
 
 	template<typename T>
