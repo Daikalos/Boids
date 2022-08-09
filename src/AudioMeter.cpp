@@ -170,7 +170,7 @@ void AudioMeter::refresh(std::wstring* comp)
 			}
 		}
 
-		if (sessionControl && meterInformation)
+		if (process_name.size())
 			processes_session_control[process_name] = std::make_pair(sessionControl, meterInformation);
 
 		SAFE_RELEASE(sessionControl);

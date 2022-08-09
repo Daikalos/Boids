@@ -12,22 +12,27 @@ public:
 	~Debug();
 
 	void load(const ResourceManager& resource_manager);
-	bool update(const InputHandler& input_handler, const float& dt);
+	void update(const InputHandler& input_handler, const float& dt);
 	void draw(sf::RenderWindow& window);
 
-	inline void toggle()
+	void set_update_freq(float value)
+	{
+		this->update_freq_max = value;
+	}
+
+	inline bool get_refresh() const
+	{
+		return refresh;
+	}
+
+private:
+	void toggle()
 	{
 		enabled = !enabled;
 		debug_text_state.setString(get_state());
 	}
 
-	inline void set_update_freq(float value)
-	{
-		this->update_freq_max = value;
-	}
-
-private:
-	std::string get_state() const
+	inline std::string get_state() const
 	{
 		return enabled ? "DEBUG ENABLED" : "DEBUG DISABLED";
 	}
@@ -39,6 +44,7 @@ private:
 	float update_freq;
 
 	bool enabled{false};
+	bool refresh{false};
 
 	sf::Text debug_text_state;
 	sf::Text debug_text_info;

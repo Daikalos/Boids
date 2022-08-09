@@ -113,6 +113,12 @@ Config::Config()
 	debug_enabled = false;
 	debug_update_freq = 1.0f;
 	debug_toggle_key = 89;
+
+	sep_distance *= sep_distance;
+	ali_distance *= ali_distance;
+	coh_distance *= coh_distance;
+
+	predator_distance *= predator_distance;
 }
 
 Config::~Config()
@@ -129,16 +135,56 @@ void Config::load()
 		{
 			nlohmann::json json = nlohmann::json::parse(project_file);
 			load_var(json);
+
+			sep_distance *= sep_distance;
+			ali_distance *= ali_distance;
+			coh_distance *= coh_distance;
+
+			predator_distance *= predator_distance;
 		}
 		catch (nlohmann::json::parse_error) {}
 		catch (nlohmann::detail::type_error e) {}
 	}
+}
 
-	sep_distance *= sep_distance;
-	ali_distance *= ali_distance;
-	coh_distance *= coh_distance;
+std::vector<Reconstruct> Config::refresh(Config& prev)
+{
+	std::vector<Reconstruct> result;
+	result.reserve(8);
 
-	predator_distance *= predator_distance;
+	load();
+
+	if (prev.sep_distance != sep_distance || prev.ali_distance != ali_distance || prev.coh_distance != coh_distance)
+		result.push_back(Reconstruct::RGrid);
+	if (prev.boid_count != boid_count)
+		result.push_back(Reconstruct::RBoids);
+	if (prev.boid_cycle_colors_random != boid_cycle_colors_random)
+		result.push_back(Reconstruct::RBoidsCycle);
+	if (prev.background_texture != background_texture)
+		result.push_back(Reconstruct::RBackgroundTex);
+	if (prev.vertical_sync != vertical_sync || prev.max_framerate != max_framerate)
+		result.push_back(Reconstruct::RWindow);
+	if (!std::ranges::equal(prev.audio_responsive_apps, audio_responsive_apps))
+		result.push_back(Reconstruct::RAudio);
+	if (prev.camera_zoom != camera_zoom)
+		result.push_back(Reconstruct::RCamera);
+	if (prev.physics_update_freq != physics_update_freq)
+		result.push_back(Reconstruct::RPhysics);
+	if (prev.debug_update_freq != debug_update_freq)
+		result.push_back(Reconstruct::RDebug);
+
+	if (prev.background_color != background_color ||
+		prev.background_position_x != background_position_x ||
+		prev.background_position_y != background_position_y ||
+		prev.background_fit_screen != background_fit_screen ||
+		prev.background_override_size != background_override_size ||
+		prev.background_width != background_width ||
+		prev.background_height != background_height)
+	{
+		result.push_back(Reconstruct::RBackgroundProp);
+	}
+
+	return result;
 }
 
 void Config::load_var(nlohmann::json& json)
@@ -268,56 +314,24 @@ void Config::load_var(nlohmann::json& json)
 	debug_toggle_key = config["debug_toggle_key"];
 }
 
-std::vector<Reconstruct> Config::refresh(Config& prev)
+sf::Vector3f Config::convert(std::string str) const
 {
-	std::vector<Reconstruct> result;
-	result.reserve(8);
+	std::stringstream stream(str);
+	std::string segment;
+	std::vector<std::string> values;
 
-	std::ifstream project_file(FILE_NAME + ".json", std::ifstream::binary);
-	if (project_file.good())
+	while (std::getline(stream, segment, ' '))
+		values.push_back(segment);
+
+	sf::Vector3f result(1.0f, 1.0f, 1.0f);
+
+	try
 	{
-		try
-		{
-			nlohmann::json json = nlohmann::json::parse(project_file);
-			load_var(json);
-
-			sep_distance *= sep_distance;
-			ali_distance *= ali_distance;
-			coh_distance *= coh_distance;
-
-			predator_distance *= predator_distance;
-		}
-		catch (nlohmann::json::parse_error e) {}
-		catch (nlohmann::detail::type_error e) {}
+		result.x = std::stof(values[0]) / 255.0f;
+		result.y = std::stof(values[1]) / 255.0f;
+		result.z = std::stof(values[2]) / 255.0f;
 	}
-
-	if (prev.sep_distance != sep_distance || prev.ali_distance != ali_distance || prev.coh_distance != coh_distance)
-		result.push_back(Reconstruct::RGrid);
-	if (prev.boid_count != boid_count || prev.boid_cycle_colors_random != boid_cycle_colors_random)
-		result.push_back(Reconstruct::RBoids);
-	if (prev.background_texture != background_texture)
-		result.push_back(Reconstruct::RBackgroundTex);
-	if (prev.vertical_sync != vertical_sync || prev.max_framerate != max_framerate)
-		result.push_back(Reconstruct::RWindow);
-	if (!std::ranges::equal(prev.audio_responsive_apps, audio_responsive_apps))
-		result.push_back(Reconstruct::RAudio);
-	if (prev.camera_zoom != camera_zoom)
-		result.push_back(Reconstruct::RCamera);
-	if (prev.physics_update_freq != physics_update_freq)
-		result.push_back(Reconstruct::RPhysics);
-	if (prev.debug_update_freq != debug_update_freq)
-		result.push_back(Reconstruct::RDebug);
-
-	if (prev.background_color != background_color ||
-		prev.background_position_x != background_position_x ||
-		prev.background_position_y != background_position_y ||
-		prev.background_fit_screen != background_fit_screen ||
-		prev.background_override_size != background_override_size ||
-		prev.background_width != background_width ||
-		prev.background_height != background_height)
-	{
-		result.push_back(Reconstruct::RBackgroundProp);
-	}
+	catch (std::exception e) {}
 
 	return result;
 }

@@ -107,12 +107,12 @@ int main()
 		accumulator += dt;
 
 		input_handler.update();
+		debug.update(input_handler, dt);
 
-		if (debug.update(input_handler, dt))
+		if (debug.get_refresh())
 		{
 			Config prev = config;
-
-			for (const Reconstruct& reconstruct : config.refresh(prev))
+			for (const Reconstruct& reconstruct : config.refresh(prev)) // not clean, but it does not matter much for small project
 			{
 				switch (reconstruct)
 				{
@@ -148,6 +148,12 @@ int main()
 						}
 						else
 							boids.erase(boids.begin() + config.boid_count, boids.end());
+					}
+					break;
+				case Reconstruct::RBoidsCycle:
+					{
+						for (int i = 0; i < config.boid_count; ++i)
+							boids[i].set_cycle_time(config.boid_cycle_colors_random ? util::random(0.0f, 1.0f) : 0.0f);
 					}
 					break;
 				case Reconstruct::RBackgroundTex:

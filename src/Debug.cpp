@@ -31,10 +31,12 @@ void Debug::load(const ResourceManager& resource_manager)
 	debug_text_info.setString("\nFPS: 0\nBOIDS: " + std::to_string(config->boid_count));
 }
 
-bool Debug::update(const InputHandler& input_handler, const float& dt)
+void Debug::update(const InputHandler& input_handler, const float& dt)
 {
+	refresh = false;
+
 	if (!config->debug_enabled)
-		return false;
+		return;
 
 	if (input_handler.get_key_pressed(static_cast<sf::Keyboard::Key>(config->debug_toggle_key)))
 		toggle();
@@ -50,10 +52,8 @@ bool Debug::update(const InputHandler& input_handler, const float& dt)
 		update_freq = update_freq_max;
 
 		if (enabled)
-			return true;
+			refresh = true;
 	}
-
-	return false;
 }
 
 void Debug::draw(sf::RenderWindow& renderWindow)
