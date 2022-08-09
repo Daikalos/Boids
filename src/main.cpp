@@ -85,7 +85,7 @@ int main()
 
 	std::vector<Impulse> impulses;
 
-	Policy policy = config.boid_count <= 2500 ? Policy::unseq : Policy::par_unseq;
+	Policy policy = config.boid_count <= 3000 ? Policy::unseq : Policy::par_unseq;
 
 	glClearColor(
 		config.background_color.x, 
@@ -130,7 +130,7 @@ int main()
 					break;
 				case Reconstruct::RBoids:
 					{
-						policy = config.boid_count <= 2500 ? Policy::unseq : Policy::par_unseq;
+						policy = config.boid_count <= 3000 ? Policy::unseq : Policy::par_unseq;
 
 						vertex_count = config.boid_count * 3;
 						state.resize(vertex_count);
