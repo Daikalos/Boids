@@ -28,7 +28,7 @@ Config::Config()
 	ali_weight = 1.6f;
 	coh_weight = 1.9f;
 
-	color_option = 2;
+	color_option = ColorOption::Cycle;
 
 	boid_color_top_left = sf::Vector3f(0.73f, 0.33f, 0.82f);
 	boid_color_top_right = sf::Vector3f(1.0f, 0.0f, 1.0f);
@@ -199,7 +199,7 @@ void Config::load_var(nlohmann::json& json)
 {
 	nlohmann::basic_json<>::value_type config = json[FILE_NAME];
 
-	background_color = convert(config["background_color"]);
+	background_color = str_to_color(config["background_color"]);
 	background_texture = config["background_texture"];
 	background_position_x = config["background_position_x"];
 	background_position_y = config["background_position_y"];
@@ -224,65 +224,65 @@ void Config::load_var(nlohmann::json& json)
 	ali_weight = config["ali_weight"];
 	coh_weight = config["coh_weight"];
 
-	color_option = config["color_option"];
+	color_option = static_cast<ColorOption>(config["color_option"]);
 
 	switch (color_option)
 	{
-	case 0:
-	{
-		boid_color_top_left = convert(config["boid_color_top_left"]);
-		boid_color_top_right = convert(config["boid_color_top_right"]);
-		boid_color_bot_left = convert(config["boid_color_bot_left"]);
-		boid_color_bot_right = convert(config["boid_color_bot_right"]);
-	}
-	break;
-	case 2:
-	{
-		boid_density = config["boid_density"];
-		boid_density_cycle_enabled = config["boid_density_cycle_enabled"];
-		boid_density_cycle_speed = config["boid_density_cycle_speed"];
-
-		std::vector<std::string> temp_colors = config["boid_density_colors"];
-		boid_density_colors = std::vector<sf::Vector3f>(temp_colors.size());
-
-		for (int i = 0; i < temp_colors.size(); ++i)
-			boid_density_colors[i] = convert(temp_colors[i]);
-	}
-	break;
-	case 3:
-	{
-		std::vector<std::string> temp_processes = config["audio_responsive_apps"];
-		audio_responsive_apps = std::vector<std::wstring>(temp_processes.size());
-
-		for (int i = 0; i < audio_responsive_apps.size(); ++i)
+		case ColorOption::Positional:
 		{
-			std::string process = temp_processes[i];
-			audio_responsive_apps[i] = std::wstring(process.begin(), process.end());
+			boid_color_top_left = str_to_color(config["boid_color_top_left"]);
+			boid_color_top_right = str_to_color(config["boid_color_top_right"]);
+			boid_color_bot_left = str_to_color(config["boid_color_bot_left"]);
+			boid_color_bot_right = str_to_color(config["boid_color_bot_right"]);
 		}
+		break;
+	case ColorOption::Density:
+		{
+			boid_density = config["boid_density"];
+			boid_density_cycle_enabled = config["boid_density_cycle_enabled"];
+			boid_density_cycle_speed = config["boid_density_cycle_speed"];
 
-		audio_responsive_strength = config["audio_responsive_strength"];
-		audio_responsive_limit = config["audio_responsive_limit"];
-		audio_responsive_density = config["audio_responsive_density"];
+			std::vector<std::string> temp_colors = config["boid_density_colors"];
+			boid_density_colors = std::vector<sf::Vector3f>(temp_colors.size());
 
-		std::vector<std::string> temp_colors = config["audio_responsive_colors"];
-		audio_responsive_colors = std::vector<sf::Vector3f>(temp_colors.size());
+			for (int i = 0; i < temp_colors.size(); ++i)
+				boid_density_colors[i] = str_to_color(temp_colors[i]);
+		}
+		break;
+	case ColorOption::Audio:
+		{
+			std::vector<std::string> temp_processes = config["audio_responsive_apps"];
+			audio_responsive_apps = std::vector<std::wstring>(temp_processes.size());
 
-		for (int i = 0; i < temp_colors.size(); ++i)
-			audio_responsive_colors[i] = convert(temp_colors[i]);
-	}
-	break;
+			for (int i = 0; i < audio_responsive_apps.size(); ++i)
+			{
+				std::string process = temp_processes[i];
+				audio_responsive_apps[i] = std::wstring(process.begin(), process.end());
+			}
+
+			audio_responsive_strength = config["audio_responsive_strength"];
+			audio_responsive_limit = config["audio_responsive_limit"];
+			audio_responsive_density = config["audio_responsive_density"];
+
+			std::vector<std::string> temp_colors = config["audio_responsive_colors"];
+			audio_responsive_colors = std::vector<sf::Vector3f>(temp_colors.size());
+
+			for (int i = 0; i < temp_colors.size(); ++i)
+				audio_responsive_colors[i] = str_to_color(temp_colors[i]);
+		}
+		break;
 	default:
-	{
-		boid_cycle_colors_random = config["boid_cycle_colors_random"];
-		boid_cycle_colors_speed = config["boid_cycle_colors_speed"];
+		{
+			boid_cycle_colors_random = config["boid_cycle_colors_random"];
+			boid_cycle_colors_speed = config["boid_cycle_colors_speed"];
 
-		std::vector<std::string> temp_colors = config["boid_cycle_colors"];
-		boid_cycle_colors = std::vector<sf::Vector3f>(temp_colors.size());
+			std::vector<std::string> temp_colors = config["boid_cycle_colors"];
+			boid_cycle_colors = std::vector<sf::Vector3f>(temp_colors.size());
 
-		for (int i = 0; i < temp_colors.size(); ++i)
-			boid_cycle_colors[i] = convert(temp_colors[i]);
-	}
-	break;
+			for (int i = 0; i < temp_colors.size(); ++i)
+				boid_cycle_colors[i] = str_to_color(temp_colors[i]);
+		}
+		break;
 	}
 
 	impulse_enabled = config["impulse_enabled"];
@@ -295,7 +295,7 @@ void Config::load_var(nlohmann::json& json)
 		impulse_colors = std::vector<sf::Vector3f>(temp_colors.size());
 
 		for (int i = 0; i < temp_colors.size(); ++i)
-			impulse_colors[i] = convert(temp_colors[i]);
+			impulse_colors[i] = str_to_color(temp_colors[i]);
 	}
 
 	steer_enabled = config["steer_enabled"];
@@ -322,7 +322,7 @@ void Config::load_var(nlohmann::json& json)
 	debug_toggle_key = config["debug_toggle_key"];
 }
 
-sf::Vector3f Config::convert(std::string str) const
+sf::Vector3f Config::str_to_color(std::string str) const
 {
 	std::stringstream stream(str);
 	std::string segment;

@@ -18,23 +18,22 @@ void Boid::update(const std::vector<Boid>& boids, const std::vector<Impulse>& im
 
 	flock(boids);
 
-	sf::Vector2f new_pos = position + velocity * dt;
-	position = outside_border(new_pos, dt);
+	position += velocity * dt;
 
-	if (position != new_pos)
+	if (outside_border(dt))
 		prev_position = position;
 
 	// draw-info
 	{
 		switch (config->color_option)
 		{
-		case 0:
+		case ColorOption::Positional:
 			position_color();
 			break;
-		case 2:
+		case ColorOption::Density:
 			density_color(dt);
 			break;
-		case 3:
+		case ColorOption::Audio:
 			audio_color(dt);
 			break;
 		default:
@@ -172,17 +171,17 @@ void Boid::steer_towards(sf::Vector2f point, float weight)
 	apply_force(steer_at(steer) * weight);
 }
 
-sf::Vector2f Boid::outside_border(sf::Vector2f pos, const float& dt)
+bool Boid::outside_border(const float& dt)
 {
 	switch (config->turn_at_border)
 	{
 	case true:
-		return turn_at_border(pos, dt);
+		return turn_at_border(dt);
 	default:
-		return teleport_at_border(pos);
+		return teleport_at_border();
 	}
 }
-sf::Vector2f Boid::turn_at_border(const sf::Vector2f& pos, const float& dt)
+bool Boid::turn_at_border(const float& dt)
 {
 	float width_margin = border->width() - border->width() * config->turn_margin_factor;
 	float height_margin = border->height() - border->height() * config->turn_margin_factor;
@@ -192,35 +191,40 @@ sf::Vector2f Boid::turn_at_border(const sf::Vector2f& pos, const float& dt)
 	float right_margin = border->right - width_margin;
 	float bot_margin = border->bot - height_margin;
 
-	if (pos.x + config->boid_size_width < left_margin)
-		velocity.x += config->turn_factor * dt * (1.0f + std::powf(std::abs(pos.x - left_margin) / width_margin, 2.0f)) * (1.0f / (density + 1.0f));
+	if (position.x + config->boid_size_width < left_margin)
+		velocity.x += config->turn_factor * dt * (1.0f + std::powf(std::abs(position.x - left_margin) / width_margin, 2.0f)) * (1.0f / (density + 1.0f));
 
-	if (pos.x > right_margin)
-		velocity.x -= config->turn_factor * dt * (1.0f + std::powf(std::abs(pos.x - right_margin) / width_margin, 2.0f)) * (1.0f / (density + 1.0f));
+	if (position.x > right_margin)
+		velocity.x -= config->turn_factor * dt * (1.0f + std::powf(std::abs(position.x - right_margin) / width_margin, 2.0f)) * (1.0f / (density + 1.0f));
 
-	if (pos.y + config->boid_size_height < top_margin)
-		velocity.y += config->turn_factor * dt * (1.0f + std::powf(std::abs(pos.y - top_margin) / height_margin, 2.0f)) * (1.0f / (density + 1.0f));
+	if (position.y + config->boid_size_height < top_margin)
+		velocity.y += config->turn_factor * dt * (1.0f + std::powf(std::abs(position.y - top_margin) / height_margin, 2.0f)) * (1.0f / (density + 1.0f));
 
-	if (pos.y > bot_margin)
-		velocity.y -= config->turn_factor * dt * (1.0f + std::powf(std::abs(pos.y - bot_margin) / height_margin, 2.0f)) * (1.0f / (density + 1.0f));
+	if (position.y > bot_margin)
+		velocity.y -= config->turn_factor * dt * (1.0f + std::powf(std::abs(position.y - bot_margin) / height_margin, 2.0f)) * (1.0f / (density + 1.0f));
 
-	return pos;
+	return false;
 }
-sf::Vector2f Boid::teleport_at_border(sf::Vector2f& pos)
+bool Boid::teleport_at_border()
 {
-	if (pos.x + config->boid_size_width * 1.25f < border->left)
-		pos.x = (float)border->right;
+	sf::Vector2f current = position;
 
-	if (pos.x > border->right)
-		pos.x = border->left - config->boid_size_width * 1.25f;
+	if (position.x + config->boid_size_width * 1.25f < border->left)
+		position.x = (float)border->right;
 
-	if (pos.y + config->boid_size_height * 1.25f < border->top)
-		pos.y = (float)border->bot;
+	if (position.x > border->right)
+		position.x = border->left - config->boid_size_width * 1.25f;
 
-	if (pos.y > border->bot)
-		pos.y = border->top - config->boid_size_height * 1.25f;
+	if (position.y + config->boid_size_height * 1.25f < border->top)
+		position.y = (float)border->bot;
 
-	return pos;
+	if (position.y > border->bot)
+		position.y = border->top - config->boid_size_height * 1.25f;
+
+	if (current != position)
+		return true;
+
+	return false;
 }
 
 void Boid::position_color()

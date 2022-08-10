@@ -9,6 +9,14 @@
 
 static const std::string FILE_NAME = "config";
 
+enum class ColorOption
+{
+	Positional	= 0,
+	Cycle		= 1 << 0,
+	Density		= 1 << 1,
+	Audio		= 1 << 2
+};
+
 enum class Reconstruct
 {
 	RGrid,
@@ -50,7 +58,7 @@ struct Config
 	float ali_weight;
 	float coh_weight;
 
-	int color_option;
+	ColorOption color_option;
 
 	sf::Vector3f boid_color_top_left;
 	sf::Vector3f boid_color_top_right;
@@ -110,5 +118,5 @@ public:
 
 private:
 	void load_var(nlohmann::json& json);
-	sf::Vector3f convert(std::string str) const;
+	sf::Vector3f str_to_color(std::string str) const;
 };

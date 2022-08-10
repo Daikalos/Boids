@@ -43,9 +43,9 @@ private:
 
 	sf::Vector2f steer_at(const sf::Vector2f& steer_direction);
 
-	sf::Vector2f outside_border(sf::Vector2f pos, const float& dt);
-	sf::Vector2f turn_at_border(const sf::Vector2f& pos, const float& dt);
-	sf::Vector2f teleport_at_border(sf::Vector2f& pos);
+	bool outside_border(const float& dt);
+	bool turn_at_border(const float& dt);
+	bool teleport_at_border();
 
 	void position_color();
 	void cycle_color(const float& dt);

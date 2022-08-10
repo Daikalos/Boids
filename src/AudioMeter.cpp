@@ -57,10 +57,10 @@ void AudioMeter::initialize()
 
 void AudioMeter::update(const float& dt)
 {
-	if (config->color_option != 3)
-		return;
-
 	volume = 0.0f;
+
+	if (config->color_option != ColorOption::Audio)
+		return;
 
 	if (config->audio_responsive_apps.size() == 0)
 	{
