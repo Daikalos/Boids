@@ -14,7 +14,7 @@ void Camera::update(const InputHandler& input_handler)
 	if (input_handler.get_key_pressed(sf::Keyboard::Key::Space))
 		set_position(sf::Vector2f(window->getSize()) / 2.0f);
 
-	if (input_handler.get_button_held(sf::Mouse::Middle))
+	if (input_handler.get_button_pressed(sf::Mouse::Middle))
 		dragPos = get_mouse_world_position();
 	if (input_handler.get_button_held(sf::Mouse::Middle))
 		position += (sf::Vector2f)(dragPos - get_mouse_world_position());
