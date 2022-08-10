@@ -54,14 +54,14 @@ int main()
 	AudioMeter audio_meter(config, 1.0f);
 	audio_meter.initialize();
 
-	float min_distance = std::sqrtf(std::fmaxf(std::fmaxf(config.sep_distance, config.ali_distance), config.coh_distance));
+	int min_distance = std::ceilf(std::sqrtf(std::fmaxf(std::fmaxf(config.sep_distance, config.ali_distance), config.coh_distance)));
 
 	Grid grid(
 		border.left	 - min_distance * (config.grid_extra_cells + 1),
 		border.top	 - min_distance * (config.grid_extra_cells + 1),
 		border.right + min_distance * (config.grid_extra_cells + 1),
 		border.bot   + min_distance * (config.grid_extra_cells + 1),
-		min_distance * 2.0f, min_distance * 2.0f);
+		min_distance * 2, min_distance * 2);
 
 	GLsizei vertex_count = config.boid_count * 3;
 	State state(vertex_count);
@@ -101,7 +101,7 @@ int main()
 		dt = std::fminf(clock.restart().asSeconds(), 0.075f);
 		accumulator += dt;
 
-		input_handler.update();
+		input_handler.update(dt);
 		debug.update(input_handler, dt);
 
 		if (debug.get_refresh())
@@ -184,6 +184,8 @@ int main()
 		{
 			switch (event.type)
 			{
+				input_handler.handle_event(event);
+
 				case sf::Event::Closed:
 					window.close();
 					break;
@@ -215,7 +217,7 @@ int main()
 
 		mouse_pos = sf::Vector2f(camera.get_mouse_world_position());
 
-		if (config.impulse_enabled && input_handler.get_left_pressed())
+		if (config.impulse_enabled && input_handler.get_button_pressed(sf::Mouse::Button::Left))
 			impulses.push_back(Impulse(mouse_pos, config.impulse_speed, config.impulse_size, 0.0f));
 
 		for (int i = impulses.size() - 1; i >= 0; --i)
@@ -265,10 +267,10 @@ int main()
 					std::for_each(pol, boids.begin(), boids.end(),
 						[&](Boid& boid)
 						{
-							boid.steer_towards(mouse_pos, config.steer_towards_factor * config.steer_enabled * input_handler.get_left_held());
-							boid.steer_towards(mouse_pos, -config.steer_away_factor * config.steer_enabled * input_handler.get_right_held());
+							boid.steer_towards(mouse_pos, config.steer_towards_factor * config.steer_enabled * input_handler.get_button_held(sf::Mouse::Button::Left));
+							boid.steer_towards(mouse_pos, -config.steer_away_factor * config.steer_enabled * input_handler.get_button_held(sf::Mouse::Button::Right));
 
-							if (config.predator_enabled && !(config.steer_enabled && (input_handler.get_left_held() || input_handler.get_right_held())))
+							if (config.predator_enabled && !(config.steer_enabled && (input_handler.get_button_held(sf::Mouse::Button::Left) || input_handler.get_button_held(sf::Mouse::Button::Right))))
 							{
 								float dist = v2f::distance_squared(boid.get_origin(), mouse_pos);
 
