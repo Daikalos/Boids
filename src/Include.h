@@ -18,3 +18,4 @@
 #include "Debug.h"
 #include "Background.h"
 #include "PolicySelect.h"
+#include "HideTaskbarIcon.h"

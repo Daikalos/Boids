@@ -22,6 +22,8 @@ int main()
 	Config config;
 	config.load();
 
+	hide_taskbar_icon(window);
+
 	window.setVerticalSyncEnabled(config.vertical_sync);
 	window.setFramerateLimit(config.vertical_sync ? 0 : config.max_framerate);
 

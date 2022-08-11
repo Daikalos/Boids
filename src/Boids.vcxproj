@@ -36,6 +36,7 @@
     <ClInclude Include="Config.h" />
     <ClInclude Include="Debug.h" />
     <ClInclude Include="Grid.h" />
+    <ClInclude Include="HideTaskbarIcon.h" />
     <ClInclude Include="Impulse.h" />
     <ClInclude Include="Include.h" />
     <ClInclude Include="InputHandler.h" />

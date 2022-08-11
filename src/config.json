@@ -26,7 +26,7 @@
         "ali_weight" : 1.6,
         "coh_weight" : 1.8,
 
-        "color_option" : 2,
+        "color_option" : 3,
         
         "boid_color_top_left" : "255 20 255",
         "boid_color_top_right" : "150 0 255",
