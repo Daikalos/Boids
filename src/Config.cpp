@@ -224,7 +224,7 @@ void Config::load_var(nlohmann::json& json)
 	ali_weight = config["ali_weight"];
 	coh_weight = config["coh_weight"];
 
-	color_option = static_cast<ColorOption>(config["color_option"]);
+	color_option = static_cast<ColorOption>(int(std::powf(2, config["color_option"])));
 
 	switch (color_option)
 	{

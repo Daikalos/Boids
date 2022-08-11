@@ -11,10 +11,10 @@ static const std::string FILE_NAME = "config";
 
 enum class ColorOption
 {
-	Positional	= 0,
-	Cycle		= 1 << 0,
-	Density		= 1 << 1,
-	Audio		= 1 << 2
+	Positional	= 1 << 0,
+	Cycle		= 1 << 1,
+	Density		= 1 << 2,
+	Audio		= 1 << 3
 };
 
 enum class Reconstruct
