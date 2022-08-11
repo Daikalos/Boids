@@ -4,10 +4,10 @@ Boid::Boid(Grid& grid, Config& config, const AudioMeter& audio_meter, const Rect
 	: grid(&grid), config(&config), audio_meter(&audio_meter), border(&border), position(pos)
 {
 	velocity = v2f::normalize(sf::Vector2f(
-		util::random(-this->config->boid_max_speed, this->config->boid_max_speed),
-		util::random(-this->config->boid_max_speed, this->config->boid_max_speed)), this->config->boid_max_speed);
+		util::random(-1.0f, 1.0f),
+		util::random(-1.0f, 1.0f)), config.boid_max_speed);
 
-	if (this->config->boid_cycle_colors_random)
+	if (config.boid_cycle_colors_random)
 		cycle_time = util::random(0.0f, 1.0f);
 }
 
@@ -25,23 +25,22 @@ void Boid::update(const std::vector<Boid>& boids, const std::vector<Impulse>& im
 
 	// draw-info
 	{
-		switch (config->color_option)
-		{
-		case ColorOption::Positional:
-			position_color();
-			break;
-		case ColorOption::Density:
-			density_color(dt);
-			break;
-		case ColorOption::Audio:
-			audio_color(dt);
-			break;
-		default:
-			cycle_color(dt);
-			break;
-		}
+		color = sf::Vector3f();
 
-		impulse_color(impulses);
+		if (config->color_flags & ColorFlags::Positional)
+			color += position_color() * config->color_positional_weight;
+		if (config->color_flags & ColorFlags::Cycle)
+			color += cycle_color(dt) * config->color_cycle_weight;
+		if (config->color_flags & ColorFlags::Density)
+			color += density_color(dt) * config->color_density_weight;
+		if (config->color_flags & ColorFlags::Velocity)
+			color += velocity_color() * config->color_velocity_weight;
+		if (config->color_flags & ColorFlags::Rotation)
+			color += rotation_color() * config->color_rotation_weight;
+		if (config->color_flags & ColorFlags::Audio)
+			color += audio_color(dt) * config->color_audio_weight;
+
+		color = impulse_color(impulses);
 	}
 }
 
@@ -95,6 +94,9 @@ void Boid::flock(const std::vector<Boid>& boids)
 
 			sf::Vector2f other_origin = b->get_origin();
 			float distance = v2f::distance_squared(origin, other_origin);
+
+			if (distance <= FLT_EPSILON)
+				continue;
 
 			sf::Vector2f dir = v2f::direction(origin, other_origin);
 
@@ -227,18 +229,21 @@ bool Boid::teleport_at_border()
 	return false;
 }
 
-void Boid::position_color()
+sf::Vector3f Boid::position_color() const
 {
 	float t = position.x / border->width();
 	float s = position.y / border->height();
 
-	color = sf::Vector3f(
+	return sf::Vector3f(
 		util::interpolate(config->boid_color_top_left.x * 255, config->boid_color_top_right.x * 255, config->boid_color_bot_left.x * 255, config->boid_color_bot_right.x * 255, t, s) / 255.0f,
 		util::interpolate(config->boid_color_top_left.y * 255, config->boid_color_top_right.y * 255, config->boid_color_bot_left.y * 255, config->boid_color_bot_right.y * 255, t, s) / 255.0f,
 		util::interpolate(config->boid_color_top_left.z * 255, config->boid_color_top_right.z * 255, config->boid_color_bot_left.z * 255, config->boid_color_bot_right.z * 255, t, s) / 255.0f);
 }
-void Boid::cycle_color(const float& dt)
+sf::Vector3f Boid::cycle_color(const float& dt)
 {
+	if (!config->boid_cycle_colors.size())
+		return sf::Vector3f();
+
 	cycle_time = std::fmodf(cycle_time + dt * config->boid_cycle_colors_speed, 1.0f);
 
 	float scaled_time = cycle_time * (float)(config->boid_cycle_colors.size() - 1);
@@ -251,10 +256,13 @@ void Boid::cycle_color(const float& dt)
 
 	float newT = scaled_time - std::floorf(scaled_time);
 
-	color = v2f::lerp(color1, color2, newT);
+	return v2f::lerp(color1, color2, newT);
 }
-void Boid::density_color(const float& dt)
+sf::Vector3f Boid::density_color(const float& dt)
 {
+	if (!config->boid_density_colors.size())
+		return sf::Vector3f();
+
 	density_time = (config->boid_density_cycle_enabled) ? std::fmodf(density_time + dt * config->boid_density_cycle_speed, 1.0f) : 0.0f;
 
 	float density_percentage = (density / (float)config->boid_density);
@@ -269,16 +277,51 @@ void Boid::density_color(const float& dt)
 
 	float newT = scaled_density - std::floorf(scaled_density);
 
-	color = v2f::lerp(color1, color2, newT);
-
-	//float r = util::map_to_range(velocity.x, -config->boid_max_speed, config->boid_max_speed, 0.0f, 1.0f);
-	//float g = util::map_to_range(v2f::length(velocity), config->boid_min_speed, config->boid_max_speed, 0.0f, 1.0f);
-	//float b = util::map_to_range(velocity.y, -config->boid_max_speed, config->boid_max_speed, 0.0f, 1.0f);
-
-	//sf::Vector3f col = sf::Vector3f(r, b, b);
+	return v2f::lerp(color1, color2, newT);
 }
-void Boid::audio_color(const float& dt)
+sf::Vector3f Boid::velocity_color() const
 {
+	if (!config->boid_velocity_colors.size())
+		return sf::Vector3f();
+
+	float velocity_percentage = v2f::length(velocity) / config->boid_max_speed;
+
+	float scaled_velocity = velocity_percentage * (float)(config->boid_velocity_colors.size() - 1);
+
+	int index1 = (int)scaled_velocity;
+	int index2 = ((int)scaled_velocity + 1) % config->boid_velocity_colors.size();
+
+	sf::Vector3f color1 = config->boid_velocity_colors[index1];
+	sf::Vector3f color2 = config->boid_velocity_colors[index2];
+
+	float newT = scaled_velocity - std::floorf(scaled_velocity);
+
+	return v2f::lerp(color1, color2, newT);
+}
+sf::Vector3f Boid::rotation_color() const
+{
+	if (!config->boid_rotation_colors.size())
+		return sf::Vector3f();
+
+	float rotation_percentage = (v2f::angle(velocity) + M_PI) / (2.0f * M_PI);
+
+	float scaled_rotation = rotation_percentage * (float)(config->boid_rotation_colors.size() - 1);
+
+	int index1 = (int)scaled_rotation;
+	int index2 = ((int)scaled_rotation + 1) % config->boid_rotation_colors.size();
+
+	sf::Vector3f color1 = config->boid_rotation_colors[index1];
+	sf::Vector3f color2 = config->boid_rotation_colors[index2];
+
+	float newT = scaled_rotation - std::floorf(scaled_rotation);
+
+	return v2f::lerp(color1, color2, newT);
+}
+sf::Vector3f Boid::audio_color(const float& dt)
+{
+	if (!config->audio_responsive_colors.size())
+		return sf::Vector3f();
+
 	float density_percentage = (density / (float)config->audio_responsive_density);
 	float max_volume = std::fminf(audio_meter->get_volume() * config->audio_responsive_strength, config->audio_responsive_limit);
 
@@ -292,10 +335,13 @@ void Boid::audio_color(const float& dt)
 
 	float newT = scaled_volume - std::floorf(scaled_volume);
 
-	color = v2f::lerp(color1, color2, newT);
+	return v2f::lerp(color1, color2, newT);
 }
-void Boid::impulse_color(const std::vector<Impulse>& impulses)
+sf::Vector3f Boid::impulse_color(const std::vector<Impulse>& impulses)
 {
+	if (!config->impulse_colors.size())
+		return sf::Vector3f();
+
 	for (const Impulse& impulse : impulses)
 	{
 		sf::Vector2f impulse_pos = impulse.get_position();
@@ -318,11 +364,10 @@ void Boid::impulse_color(const std::vector<Impulse>& impulses)
 		float newT = scaled_length - std::floorf(scaled_length);
 
 		if (diff <= size)
-		{
-			color = v2f::lerp(color1, color2, newT);
-			return;
-		}
+			return v2f::lerp(color1, color2, newT);;
 	}
+
+	return color;
 }
 
 void Boid::update_grid_cells(const std::vector<Boid>& boids) const

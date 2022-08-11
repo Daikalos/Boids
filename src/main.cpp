@@ -295,19 +295,17 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		window.pushGLStates();
-
 		background.draw(window);
-		debug.draw(window);
-
 		window.popGLStates();
 
 		glPushMatrix();
-
 		glLoadMatrixf(camera.get_world_matrix());
-
 		glDrawArrays(GL_TRIANGLES, 0, vertex_count);
-
 		glPopMatrix();
+
+		window.pushGLStates();
+		debug.draw(window);
+		window.popGLStates();
 
 		window.display();
 	}

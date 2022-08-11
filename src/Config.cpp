@@ -28,7 +28,7 @@ Config::Config()
 	ali_weight = 1.6f;
 	coh_weight = 1.9f;
 
-	color_option = ColorOption::Cycle;
+	color_flags = ColorFlags::Cycle;
 
 	boid_color_top_left = sf::Vector3f(0.73f, 0.33f, 0.82f);
 	boid_color_top_right = sf::Vector3f(1.0f, 0.0f, 1.0f);
@@ -135,12 +135,14 @@ void Config::load()
 	{
 		try
 		{
+			load_status = false;
 			Config temp = *this;
 
 			nlohmann::json json = nlohmann::json::parse(project_file);
 			temp.load_var(json);
 
 			*this = temp;
+			load_status = true;
 
 			boid_view_angle = util::to_radians(boid_view_angle) / 2.0f;
 
@@ -197,129 +199,128 @@ std::vector<Reconstruct> Config::refresh(Config& prev)
 
 void Config::load_var(nlohmann::json& json)
 {
-	nlohmann::basic_json<>::value_type config = json[FILE_NAME];
+	auto config = json[FILE_NAME];
 
-	background_color = str_to_color(config["background_color"]);
-	background_texture = config["background_texture"];
-	background_position_x = config["background_position_x"];
-	background_position_y = config["background_position_y"];
-	background_fit_screen = config["background_fit_screen"];
-	background_override_size = config["background_override_size"];
-	background_width = config["background_width"];
-	background_height = config["background_height"];
+	auto background = config[BACKGROUND];
+	auto boid = config[BOID];
+	auto rules = config[RULES];
+	auto color = config[COLOR];
+	auto misc = config[MISC];
 
-	boid_count = config["boid_count"];
-	boid_size_width = config["boid_size_width"];
-	boid_size_height = config["boid_size_height"];
-	boid_max_speed = config["boid_max_speed"];
-	boid_min_speed = config["boid_min_speed"];
-	boid_max_steer = config["boid_max_steer"];
-	boid_view_angle = config["boid_view_angle"];
+	background_color			= str_to_color(background["background_color"]);
+	background_texture			= background["background_texture"];
+	background_position_x		= background["background_position_x"];
+	background_position_y		= background["background_position_y"];
+	background_fit_screen		= background["background_fit_screen"];
+	background_override_size	= background["background_override_size"];
+	background_width			= background["background_width"];
+	background_height			= background["background_height"];
 
-	sep_distance = config["sep_distance"];
-	ali_distance = config["ali_distance"];
-	coh_distance = config["coh_distance"];
+	boid_count					= boid["boid_count"];
+	boid_size_width				= boid["boid_size_width"];
+	boid_size_height			= boid["boid_size_height"];
+	boid_max_speed				= boid["boid_max_speed"];
+	boid_min_speed				= boid["boid_min_speed"];
+	boid_max_steer				= boid["boid_max_steer"];
+	boid_view_angle				= boid["boid_view_angle"];
 
-	sep_weight = config["sep_weight"];
-	ali_weight = config["ali_weight"];
-	coh_weight = config["coh_weight"];
+	sep_distance				= rules["sep_distance"];
+	ali_distance				= rules["ali_distance"];
+	coh_distance				= rules["coh_distance"];
 
-	color_option = static_cast<ColorOption>(int(std::powf(2, config["color_option"])));
+	sep_weight					= rules["sep_weight"];
+	ali_weight					= rules["ali_weight"];
+	coh_weight					= rules["coh_weight"];
 
-	switch (color_option)
+	std::vector<int> temp_color_options = color["color_options"];
+	color_flags = (temp_color_options.size()) ? ColorFlags::None : ColorFlags::Cycle;
+	for (int i = 0; i < temp_color_options.size(); ++i)
+		color_flags |= static_cast<ColorFlags>((int)std::powf(2, temp_color_options[i] - 1));
+
+	color_positional_weight		= color["color_positional_weight"];
+	color_cycle_weight			= color["color_cycle_weight"];
+	color_density_weight		= color["color_density_weight"];
+	color_velocity_weight		= color["color_velocity_weight"];
+	color_rotation_weight		= color["color_rotation_weight"];
+	color_audio_weight			= color["color_audio_weight"];
+
+	if (color_flags & ColorFlags::Positional)
 	{
-		case ColorOption::Positional:
+		boid_color_top_left		= str_to_color(color["boid_color_top_left"]);
+		boid_color_top_right	= str_to_color(color["boid_color_top_right"]);
+		boid_color_bot_left		= str_to_color(color["boid_color_bot_left"]);
+		boid_color_bot_right	= str_to_color(color["boid_color_bot_right"]);
+	}
+	if (color_flags & ColorFlags::Cycle)
+	{
+		boid_cycle_colors_random	= color["boid_cycle_colors_random"];
+		boid_cycle_colors_speed		= color["boid_cycle_colors_speed"];
+
+		convert_to_color(boid_cycle_colors, color["boid_cycle_colors"]);
+	}
+	if (color_flags & ColorFlags::Density)
+	{
+		boid_density				= color["boid_density"];
+		boid_density_cycle_enabled	= color["boid_density_cycle_enabled"];
+		boid_density_cycle_speed	= color["boid_density_cycle_speed"];
+
+		convert_to_color(boid_density_colors, color["boid_density_colors"]);
+	}
+	if (color_flags & ColorFlags::Velocity)
+	{
+		convert_to_color(boid_velocity_colors, color["boid_velocity_colors"]);
+	}
+	if (color_flags & ColorFlags::Rotation)
+	{
+		convert_to_color(boid_rotation_colors, color["boid_rotation_colors"]);
+	}
+	if (color_flags & ColorFlags::Audio)
+	{
+		std::vector<std::string> temp_processes = color["audio_responsive_apps"];
+		audio_responsive_apps = std::vector<std::wstring>(temp_processes.size());
+
+		for (int i = 0; i < audio_responsive_apps.size(); ++i)
 		{
-			boid_color_top_left = str_to_color(config["boid_color_top_left"]);
-			boid_color_top_right = str_to_color(config["boid_color_top_right"]);
-			boid_color_bot_left = str_to_color(config["boid_color_bot_left"]);
-			boid_color_bot_right = str_to_color(config["boid_color_bot_right"]);
+			std::string process = temp_processes[i];
+			audio_responsive_apps[i] = std::wstring(process.begin(), process.end());
 		}
-		break;
-	case ColorOption::Density:
-		{
-			boid_density = config["boid_density"];
-			boid_density_cycle_enabled = config["boid_density_cycle_enabled"];
-			boid_density_cycle_speed = config["boid_density_cycle_speed"];
 
-			std::vector<std::string> temp_colors = config["boid_density_colors"];
-			boid_density_colors = std::vector<sf::Vector3f>(temp_colors.size());
+		audio_responsive_strength	= color["audio_responsive_strength"];
+		audio_responsive_limit		= color["audio_responsive_limit"];
+		audio_responsive_density	= color["audio_responsive_density"];
 
-			for (int i = 0; i < temp_colors.size(); ++i)
-				boid_density_colors[i] = str_to_color(temp_colors[i]);
-		}
-		break;
-	case ColorOption::Audio:
-		{
-			std::vector<std::string> temp_processes = config["audio_responsive_apps"];
-			audio_responsive_apps = std::vector<std::wstring>(temp_processes.size());
-
-			for (int i = 0; i < audio_responsive_apps.size(); ++i)
-			{
-				std::string process = temp_processes[i];
-				audio_responsive_apps[i] = std::wstring(process.begin(), process.end());
-			}
-
-			audio_responsive_strength = config["audio_responsive_strength"];
-			audio_responsive_limit = config["audio_responsive_limit"];
-			audio_responsive_density = config["audio_responsive_density"];
-
-			std::vector<std::string> temp_colors = config["audio_responsive_colors"];
-			audio_responsive_colors = std::vector<sf::Vector3f>(temp_colors.size());
-
-			for (int i = 0; i < temp_colors.size(); ++i)
-				audio_responsive_colors[i] = str_to_color(temp_colors[i]);
-		}
-		break;
-	default:
-		{
-			boid_cycle_colors_random = config["boid_cycle_colors_random"];
-			boid_cycle_colors_speed = config["boid_cycle_colors_speed"];
-
-			std::vector<std::string> temp_colors = config["boid_cycle_colors"];
-			boid_cycle_colors = std::vector<sf::Vector3f>(temp_colors.size());
-
-			for (int i = 0; i < temp_colors.size(); ++i)
-				boid_cycle_colors[i] = str_to_color(temp_colors[i]);
-		}
-		break;
+		convert_to_color(audio_responsive_colors, color["audio_responsive_colors"]);
 	}
 
-	impulse_enabled = config["impulse_enabled"];
-	impulse_size = config["impulse_size"];
-	impulse_speed = config["impulse_speed"];
-	impulse_fade_distance = config["impulse_fade_distance"];
+	impulse_enabled				= color["impulse_enabled"];
+	impulse_size				= color["impulse_size"];
+	impulse_speed				= color["impulse_speed"];
+	impulse_fade_distance		= color["impulse_fade_distance"];
 
-	{
-		std::vector<std::string> temp_colors = config["impulse_colors"];
-		impulse_colors = std::vector<sf::Vector3f>(temp_colors.size());
+	convert_to_color(impulse_colors, color["impulse_colors"]);
 
-		for (int i = 0; i < temp_colors.size(); ++i)
-			impulse_colors[i] = str_to_color(temp_colors[i]);
-	}
+	steer_enabled				= misc["steer_enabled"];
+	steer_towards_factor		= misc["steer_towards_factor"];
+	steer_away_factor			= misc["steer_away_factor"];
 
-	steer_enabled = config["steer_enabled"];
-	steer_towards_factor = config["steer_towards_factor"];
-	steer_away_factor = config["steer_away_factor"];
+	predator_enabled			= misc["predator_enabled"];
+	predator_distance			= misc["predator_distance"];
+	predator_factor				= misc["predator_factor"];
 
-	predator_enabled = config["predator_enabled"];
-	predator_distance = config["predator_distance"];
-	predator_factor = config["predator_factor"];
+	turn_at_border				= misc["turn_at_border"];
+	turn_margin_factor			= misc["turn_margin_factor"];
+	turn_factor					= misc["turn_factor"];
 
-	turn_at_border = config["turn_at_border"];
-	turn_margin_factor = config["turn_margin_factor"];
-	turn_factor = config["turn_factor"];
+	grid_extra_cells			= misc["grid_extra_cells"];
+	camera_enabled				= misc["camera_enabled"];
+	camera_zoom					= misc["camera_zoom"];
+	vertical_sync				= misc["vertical_sync"];
+	max_framerate				= misc["max_framerate"];
+	physics_update_freq			= misc["physics_update_freq"];
 
-	grid_extra_cells = config["grid_extra_cells"];
-	camera_enabled = config["camera_enabled"];
-	camera_zoom = config["camera_zoom"];
-	vertical_sync = config["vertical_sync"];
-	max_framerate = config["max_framerate"];
-	physics_update_freq = config["physics_update_freq"];
-
-	debug_enabled = config["debug_enabled"];
-	debug_update_freq = config["debug_update_freq"];
-	debug_toggle_key = config["debug_toggle_key"];
+	debug_enabled				= misc["debug_enabled"];
+	debug_update_freq			= misc["debug_update_freq"];
+	debug_toggle_key			= misc["debug_toggle_key"];
 }
 
 sf::Vector3f Config::str_to_color(std::string str) const
@@ -342,4 +343,12 @@ sf::Vector3f Config::str_to_color(std::string str) const
 	catch (std::exception e) {}
 
 	return result;
+}
+
+void Config::convert_to_color(std::vector<sf::Vector3f>& dest, const std::vector<std::string>& src)
+{
+	dest = std::vector<sf::Vector3f>(src.size());
+
+	for (int i = 0; i < src.size(); ++i)
+		dest[i] = std::move(str_to_color(src[i]));
 }

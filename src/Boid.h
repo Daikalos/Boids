@@ -47,11 +47,13 @@ private:
 	bool turn_at_border(const float& dt);
 	bool teleport_at_border();
 
-	void position_color();
-	void cycle_color(const float& dt);
-	void density_color(const float& dt);
-	void audio_color(const float& dt);
-	void impulse_color(const std::vector<Impulse>& impulses);
+	sf::Vector3f position_color() const;
+	sf::Vector3f cycle_color(const float& dt);
+	sf::Vector3f density_color(const float& dt);
+	sf::Vector3f velocity_color() const;
+	sf::Vector3f rotation_color() const;
+	sf::Vector3f audio_color(const float& dt);
+	sf::Vector3f impulse_color(const std::vector<Impulse>& impulses);
 
 	inline void apply_force(const sf::Vector2f& force)
 	{

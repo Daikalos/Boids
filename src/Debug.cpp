@@ -46,8 +46,9 @@ void Debug::update(const InputHandler& input_handler, const float& dt)
 	if (update_freq <= 0.0f)
 	{
 		debug_text_info.setString(
-			"\nFPS: " + std::to_string((int)(1.0f / dt)) +
-			"\nBOIDS: " + std::to_string(config->boid_count));
+			"\nCONFIG STATUS: " + std::string(config->load_status ? "SUCCESS" : "FAILED TO LOAD") +
+			"\nBOIDS: " + std::to_string(config->boid_count) +
+			"\nFPS: " + std::to_string((int)(1.0f / dt)));
 
 		update_freq = update_freq_max;
 

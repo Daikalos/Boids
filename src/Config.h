@@ -9,13 +9,31 @@
 
 static const std::string FILE_NAME = "config";
 
-enum class ColorOption
+static const std::string BACKGROUND = "background";
+static const std::string BOID = "boid";
+static const std::string RULES = "rules";
+static const std::string COLOR = "color";
+static const std::string MISC = "misc";
+
+enum ColorFlags
 {
+	None		= 0,
 	Positional	= 1 << 0,
 	Cycle		= 1 << 1,
 	Density		= 1 << 2,
-	Audio		= 1 << 3
+	Velocity	= 1 << 3,
+	Rotation	= 1 << 4,
+	Audio		= 1 << 5
 };
+
+inline ColorFlags operator|(ColorFlags a, ColorFlags b)
+{
+	return static_cast<ColorFlags>(static_cast<int>(a) | static_cast<int>(b));
+}
+inline ColorFlags operator|=(ColorFlags& a, ColorFlags b)
+{
+	return a = a | b;
+}
 
 enum class Reconstruct
 {
@@ -58,7 +76,14 @@ struct Config
 	float ali_weight;
 	float coh_weight;
 
-	ColorOption color_option;
+	ColorFlags color_flags;
+
+	float color_positional_weight;
+	float color_cycle_weight;
+	float color_density_weight;
+	float color_velocity_weight;
+	float color_rotation_weight;
+	float color_audio_weight;
 
 	sf::Vector3f boid_color_top_left;
 	sf::Vector3f boid_color_top_right;
@@ -73,6 +98,10 @@ struct Config
 	bool boid_density_cycle_enabled;
 	float boid_density_cycle_speed;
 	std::vector<sf::Vector3f> boid_density_colors;
+
+	std::vector<sf::Vector3f> boid_velocity_colors;
+
+	std::vector<sf::Vector3f> boid_rotation_colors;
 
 	std::vector<std::wstring> audio_responsive_apps;
 	float audio_responsive_strength;
@@ -109,6 +138,10 @@ struct Config
 	float debug_update_freq;
 	int debug_toggle_key;
 
+	// misc
+
+	bool load_status{false};
+
 public:
 	Config();
 	~Config();
@@ -118,5 +151,7 @@ public:
 
 private:
 	void load_var(nlohmann::json& json);
+
 	sf::Vector3f str_to_color(std::string str) const;
+	void convert_to_color(std::vector<sf::Vector3f>& dest, const std::vector<std::string>& src);
 };
