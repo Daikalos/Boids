@@ -11,14 +11,12 @@ Debug::~Debug()
 
 }
 
-void Debug::load(const ResourceManager& resource_manager)
+void Debug::load(const FontHolder& font_holder)
 {
-	sf::Font* font = resource_manager.request_font("8bit");
-
-	if (font != nullptr)
+	if (font_holder.exists(FontID::F8Bit))
 	{
-		debug_text_state.setFont(*font);
-		debug_text_info.setFont(*font);
+		debug_text_state.setFont(font_holder.get(FontID::F8Bit));
+		debug_text_info.setFont(font_holder.get(FontID::F8Bit));
 	}
 
 	debug_text_state.setPosition(sf::Vector2f(32, 32));

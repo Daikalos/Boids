@@ -26,7 +26,6 @@
     <ClCompile Include="Debug.cpp" />
     <ClCompile Include="InputHandler.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="ResourceManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AudioMeter.h" />
@@ -43,7 +42,7 @@
     <ClInclude Include="NonCopyable.h" />
     <ClInclude Include="PolicySelect.h" />
     <ClInclude Include="Rectangle.h" />
-    <ClInclude Include="ResourceManager.h" />
+    <ClInclude Include="ResourceHolder.hpp" />
     <ClInclude Include="State.h" />
     <ClInclude Include="Utilities.h" />
     <ClInclude Include="VecUtil.h" />

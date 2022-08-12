@@ -14,7 +14,7 @@
 #include "Config.h"
 #include "State.h"
 #include "AudioMeter.h"
-#include "ResourceManager.h"
+#include "ResourceHolder.hpp"
 #include "Debug.h"
 #include "Background.h"
 #include "PolicySelect.h"

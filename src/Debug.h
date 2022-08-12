@@ -2,8 +2,9 @@
 
 #include <SFML/Graphics.hpp>
 
-#include "ResourceManager.h"
+#include "ResourceHolder.hpp"
 #include "InputHandler.h"
+#include "Config.h"
 
 class Debug
 {
@@ -11,7 +12,7 @@ public:
 	Debug(Config& config);
 	~Debug();
 
-	void load(const ResourceManager& resource_manager);
+	void load(const FontHolder& font_holder);
 	void update(const InputHandler& input_handler, const float& dt);
 	void draw(sf::RenderWindow& window) const;
 

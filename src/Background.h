@@ -2,7 +2,7 @@
 
 #include <SFML/Graphics.hpp>
 
-#include "ResourceManager.h"
+#include "ResourceHolder.hpp"
 
 class Background
 {
@@ -10,12 +10,10 @@ public:
 	Background() { }
 	~Background() { }
 
-	void load_texture(const ResourceManager& resource_manager)
+	void load_texture(const TextureHolder& texture_holder)
 	{
-		sf::Texture* background_texture = resource_manager.request_texture("background");
-
-		if (background_texture != nullptr)
-			background.setTexture(*background_texture, true);
+		if (texture_holder.exists(TextureID::Background))
+			background.setTexture(texture_holder.get(TextureID::Background), true);
 		else
 			background.setTexture(sf::Texture(), true);
 	}

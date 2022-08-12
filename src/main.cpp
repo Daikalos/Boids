@@ -39,18 +39,20 @@ int main()
 	int ticks = 0;
 	int death_spiral = 10;
 
-	ResourceManager resource_manager;
-	resource_manager.load_texture("background", "content/" + config.background_texture);
-	resource_manager.load_font("8bit", "content/font_8bit.ttf");
+	TextureHolder texture_holder;
+	FontHolder font_holder;
+
+	texture_holder.load(TextureID::Background, "content/" + config.background_texture);
+	font_holder.load(FontID::F8Bit, "content/font_8bit.ttf");
 
 	Camera camera(window, config);
 	InputHandler input_handler;
 
 	Debug debug(config);
-	debug.load(resource_manager);
+	debug.load(font_holder);
 
 	Background background;
-	background.load_texture(resource_manager);
+	background.load_texture(texture_holder);
 	background.load_prop(config, video_mode);
 
 	AudioMeter audio_meter(config, 1.0f);
@@ -154,8 +156,8 @@ int main()
 					}
 					break;
 				case Reconstruct::RBackgroundTex:
-					resource_manager.load_texture("background", "content/" + config.background_texture);
-					background.load_texture(resource_manager);
+					texture_holder.load(TextureID::Background, "content/" + config.background_texture);
+					background.load_texture(texture_holder);
 					background.load_prop(config, video_mode);
 					break;
 				case Reconstruct::RBackgroundProp:

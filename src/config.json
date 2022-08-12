@@ -163,7 +163,7 @@
             "max_framerate" : 200,
             "physics_update_freq" : 90,
 
-            "debug_enabled" : false,
+            "debug_enabled" : true,
             "debug_update_freq" : 0.5,
             "debug_toggle_key" : 85
         }
