@@ -30,6 +30,7 @@ private:
 	{
 		enabled = !enabled;
 		debug_text_state.setString(get_state());
+		debug_text_info.setString(enabled ? debug_text_info.getString() : "");
 	}
 
 	inline std::string get_state() const
@@ -48,5 +49,6 @@ private:
 
 	sf::Text debug_text_state;
 	sf::Text debug_text_info;
+	std::string debug_info;
 };
 

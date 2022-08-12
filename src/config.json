@@ -37,13 +37,13 @@
 
         "color" : 
         {
-            "color_options" : [ 2, 4, 5 ],
+            "color_options" : [ 2, 3, 4, 5 ],
 
             "color_positional_weight" : 1.0,
-            "color_cycle_weight" : 1.0,
-            "color_density_weight" : 1.0,
-            "color_velocity_weight" : 0.5,
-            "color_rotation_weight" : -1.3,
+            "color_cycle_weight" : 0.2,
+            "color_density_weight" : 0.8,
+            "color_velocity_weight" : 0.4,
+            "color_rotation_weight" : -1.7,
             "color_audio_weight" : 1.0,
 
             "boid_color_top_left" : "255 20 255",
@@ -61,17 +61,18 @@
                 "90 0 90"
             ],
 
-            "boid_density" : 25,
+            "boid_density" : 70,
             "boid_density_cycle_enabled" : true,
-            "boid_density_cycle_speed" : 1.0,
+            "boid_density_cycle_speed" : 0.75,
             "boid_density_colors" : 
             [
+                "90 0 90",
+                "90 0 90",
+                "90 0 90",
+                "90 0 90",
+                "90 0 90",
                 "255 20 255",
                 "150 0 255",
-                "90 0 90",
-                "90 0 90",
-                "90 0 90",
-                "90 0 90",
                 "90 0 90"
             ],
 
@@ -92,13 +93,13 @@
 
             "boid_rotation_colors" :
             [
-                "0 0 0",
-                "0 0 0",
+                "45 0 45",
+                "45 0 45",
                 "90 0 90",
                 "90 0 90",
                 "90 0 90",
-                "0 0 0",
-                "0 0 0"
+                "75 0 75",
+                "75 0 75"
             ],
 
             "audio_responsive_apps" : [ ],
@@ -157,7 +158,7 @@
             "camera_enabled" : false,
             "camera_zoom" : 1.0,
             "vertical_sync" : false,
-            "max_framerate" : 200,
+            "max_framerate" : 180,
             "physics_update_freq" : 90,
 
             "debug_enabled" : true,

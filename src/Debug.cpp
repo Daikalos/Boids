@@ -24,11 +24,11 @@ void Debug::load(const ResourceManager& resource_manager)
 	debug_text_state.setPosition(sf::Vector2f(32, 32));
 	debug_text_state.setCharacterSize(26);
 
-	debug_text_info.setPosition(sf::Vector2f(32, 64));
+	debug_text_info.setPosition(sf::Vector2f(48, 48));
 	debug_text_info.setCharacterSize(24);
 
-	debug_text_state.setString(get_state());
-	debug_text_info.setString("\nFPS: 0\nBOIDS: " + std::to_string(config->boid_count));
+	debug_text_state.setString(get_state() + " (PRESS THE TOGGLE KEY TO ENABLE)");
+	debug_text_info.setString("");
 }
 
 void Debug::update(const InputHandler& input_handler, const float& dt)
@@ -41,27 +41,30 @@ void Debug::update(const InputHandler& input_handler, const float& dt)
 	if (input_handler.get_key_pressed(static_cast<sf::Keyboard::Key>(config->debug_toggle_key)))
 		toggle();
 
-	update_freq -= dt;
+	if (!enabled)
+		return;
 
+	update_freq -= dt;
 	if (update_freq <= 0.0f)
 	{
-		debug_text_info.setString(
+		debug_info = 
 			"\nCONFIG STATUS: " + std::string(config->load_status ? "SUCCESS" : "FAILED TO LOAD") +
-			"\nBOIDS: " + std::to_string(config->boid_count) +
-			"\nFPS: " + std::to_string((int)(1.0f / dt)));
+			"\n\nBOIDS: " + std::to_string(config->boid_count) +
+			"\nFPS: " + std::to_string((int)(1.0f / dt));
 
+		refresh = true;
 		update_freq = update_freq_max;
-
-		if (enabled)
-			refresh = true;
 	}
+
+	debug_text_info.setString(
+		"\nCONFIG REFRESH: " + util::remove_trailing_zeroes(std::to_string(util::set_precision(update_freq, 2))) + debug_info);
 }
 
-void Debug::draw(sf::RenderWindow& renderWindow)
+void Debug::draw(sf::RenderWindow& window)
 {
 	if (!config->debug_enabled)
 		return;
 
-	renderWindow.draw(debug_text_state);
-	renderWindow.draw(debug_text_info);
+	window.draw(debug_text_state);
+	window.draw(debug_text_info);
 }

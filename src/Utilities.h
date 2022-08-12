@@ -44,6 +44,28 @@ namespace util
 		return T(a * (1 - t) * (1 - s) + b * t * (1 - s) + c * (1 - t) * s + d * t * s);
 	}
 
+	template<typename T>
+	static inline T set_precision(const T& val, const int& places)
+	{
+		float n = std::powf(10.0f, places);
+		return std::roundf(val * n) / n;
+	}
+
+	static inline std::string remove_trailing_zeroes(const std::string& str)
+	{
+		std::string result = str;
+
+		if (result.find('.') != std::string::npos)
+		{
+			result = result.substr(0, result.find_last_not_of('0') + 1);
+
+			if (result.find('.') == result.size() - 1)
+				result = result.substr(0, result.size() - 1);
+		}
+
+		return result;
+	}
+
 	static thread_local std::mt19937_64 dre(std::chrono::steady_clock::now().time_since_epoch().count());
 
 	template<typename T, typename std::enable_if_t<std::is_floating_point_v<T>>* = nullptr>

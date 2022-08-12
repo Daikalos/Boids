@@ -303,7 +303,7 @@ sf::Vector3f Boid::rotation_color() const
 	if (!config->boid_rotation_colors.size())
 		return sf::Vector3f();
 
-	float rotation_percentage = (v2f::angle(velocity) + M_PI) / (2.0f * M_PI);
+	float rotation_percentage = (v2f::angle(velocity) + float(M_PI)) / (2.0f * float(M_PI));
 
 	float scaled_rotation = rotation_percentage * (float)(config->boid_rotation_colors.size() - 1);
 
@@ -383,11 +383,11 @@ void Boid::update_grid_cells(const std::vector<Boid>& boids) const
 	if (index == config->boid_count - 1)
 		grid->cellsEndIndices[cell_index] = index;
 
-	int otherIndex = boids[index - 1].get_cell_index();
+	int other_index = boids[index - 1].get_cell_index();
 
-	if (otherIndex != cell_index)
+	if (other_index != cell_index)
 	{
 		grid->cellsStartIndices[cell_index] = index;
-		grid->cellsEndIndices[otherIndex] = index - 1;
+		grid->cellsEndIndices[other_index] = index - 1;
 	}
 }
