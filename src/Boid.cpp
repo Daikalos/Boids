@@ -284,7 +284,7 @@ sf::Vector3f Boid::velocity_color() const
 	if (!config->boid_velocity_colors.size())
 		return sf::Vector3f();
 
-	float velocity_percentage = v2f::length(velocity) / config->boid_max_speed;
+	float velocity_percentage = (v2f::length(velocity) - config->boid_min_speed) / (config->boid_max_speed - config->boid_min_speed);
 
 	float scaled_velocity = velocity_percentage * (float)(config->boid_velocity_colors.size() - 1);
 
