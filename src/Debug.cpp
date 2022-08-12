@@ -60,11 +60,15 @@ void Debug::update(const InputHandler& input_handler, const float& dt)
 		"\nCONFIG REFRESH: " + util::remove_trailing_zeroes(std::to_string(util::set_precision(update_freq, 2))) + debug_info);
 }
 
-void Debug::draw(sf::RenderWindow& window)
+void Debug::draw(sf::RenderWindow& window) const
 {
 	if (!config->debug_enabled)
 		return;
 
+	window.pushGLStates();
+
 	window.draw(debug_text_state);
 	window.draw(debug_text_info);
+
+	window.popGLStates();
 }

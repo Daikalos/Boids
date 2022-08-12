@@ -13,7 +13,7 @@ public:
 
 	void load(const ResourceManager& resource_manager);
 	void update(const InputHandler& input_handler, const float& dt);
-	void draw(sf::RenderWindow& window);
+	void draw(sf::RenderWindow& window) const;
 
 	void set_update_freq(float value)
 	{

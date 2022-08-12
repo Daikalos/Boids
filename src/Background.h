@@ -45,9 +45,14 @@ public:
 				config.background_color.z * 255));
 	}
 
-	void draw(sf::RenderWindow& renderWindow)
+	void draw(sf::RenderWindow& window) const
 	{
-		renderWindow.draw(background);
+		if (!background.getTexture()->getMaximumSize())
+			return;
+
+		window.pushGLStates();
+		window.draw(background);
+		window.popGLStates();
 	}
 
 private:
