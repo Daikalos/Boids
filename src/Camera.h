@@ -17,7 +17,7 @@ public:
 	//
 	void update(const InputHandler& input_handler);
 
-	template<typename T> sf::Vector2<T> view_to_world(const sf::Vector2<T>& position) const
+	template<typename T> sf::Vector2<T> view_to_world(sf::Vector2<T> position) const
 	{
 		return sf::Vector2<T>(get_view_matrix() * sf::Vector2f(position));
 	}

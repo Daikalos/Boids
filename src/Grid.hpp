@@ -4,7 +4,7 @@
 #include <execution>
 
 #include "VecUtil.h"
-#include "Rectangle.h"
+#include "Rectangle.hpp"
 
 class Grid
 {
@@ -32,16 +32,16 @@ public:
 		memset(cellsEndIndices, -1, sizeof(int) * count);
 	}
 
-	sf::Vector2f relative_pos(const sf::Vector2f& position) const
+	sf::Vector2f relative_pos(sf::Vector2f position) const
 	{
 		return (position - sf::Vector2f(gridRect.top_left)) / sf::Vector2f(contDims);
 	}
 
-	int at_pos(const sf::Vector2f& position) const
+	int at_pos(sf::Vector2f position) const
 	{
 		return at_pos(sf::Vector2i(relative_pos(position)));
 	}
-	int at_pos(const sf::Vector2i& position) const
+	int at_pos(sf::Vector2i position) const
 	{
 		return at_pos(position.x, position.y);
 	}
@@ -80,7 +80,7 @@ public:
 
 private:
 	sf::Vector2i contDims;
-	Rect_i gridRect;
+	RectI gridRect;
 
 private:
 	Grid() = delete;

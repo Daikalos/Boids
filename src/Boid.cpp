@@ -1,6 +1,6 @@
 #include "Boid.h"
 
-Boid::Boid(Grid& grid, Config& config, const AudioMeter& audio_meter, const Rect_i& border, const sf::Vector2f& pos)
+Boid::Boid(Grid& grid, Config& config, const AudioMeter& audio_meter, const RectI& border, const sf::Vector2f& pos)
 	: grid(&grid), config(&config), audio_meter(&audio_meter), border(&border), position(pos)
 {
 	velocity = v2f::normalize(sf::Vector2f(

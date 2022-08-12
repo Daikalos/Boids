@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "Config.h"
+#include "Boid.h"
 
 struct Vertex
 {

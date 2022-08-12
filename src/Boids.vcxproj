@@ -34,16 +34,16 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="Debug.h" />
-    <ClInclude Include="Grid.h" />
+    <ClInclude Include="Grid.hpp" />
     <ClInclude Include="HideTaskbarIcon.h" />
-    <ClInclude Include="Impulse.h" />
+    <ClInclude Include="Impulse.hpp" />
     <ClInclude Include="Include.h" />
     <ClInclude Include="InputHandler.h" />
     <ClInclude Include="NonCopyable.h" />
     <ClInclude Include="PolicySelect.h" />
-    <ClInclude Include="Rectangle.h" />
+    <ClInclude Include="Rectangle.hpp" />
     <ClInclude Include="ResourceHolder.hpp" />
-    <ClInclude Include="State.h" />
+    <ClInclude Include="State.hpp" />
     <ClInclude Include="Utilities.h" />
     <ClInclude Include="VecUtil.h" />
   </ItemGroup>

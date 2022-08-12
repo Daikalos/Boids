@@ -2,7 +2,8 @@
 
 #include <SFML/Graphics.hpp>
 
-template<typename T> struct Rect
+template<typename T> 
+struct Rect
 {
 	Rect()
 	{
@@ -40,4 +41,5 @@ template<typename T> struct Rect
 		bot_left;
 };
 
-typedef Rect<int> Rect_i;
+using RectI = Rect<int>;
+using RectF = Rect<float>;

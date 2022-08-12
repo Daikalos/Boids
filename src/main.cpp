@@ -28,7 +28,7 @@ int main()
 	window.setFramerateLimit(config.vertical_sync ? 0 : config.max_framerate);
 
 	sf::Vector2f mouse_pos;
-	Rect_i border(0, 0, video_mode.size.x, video_mode.size.y);
+	RectI border(0, 0, video_mode.size.x, video_mode.size.y);
 
 	sf::Clock clock;
 	float dt = FLT_EPSILON;
@@ -202,7 +202,7 @@ int main()
 						glOrtho(0, window.getSize().x, 0, window.getSize().y, -1.0, 1.0);
 						glMatrixMode(GL_MODELVIEW);
 
-						border = Rect_i(0, 0, window.getSize().x, window.getSize().y);
+						border = RectI(0, 0, window.getSize().x, window.getSize().y);
 						camera.set_position((sf::Vector2f)window.getSize() / 2.0f);
 
 						grid = Grid(

@@ -4,16 +4,16 @@
 
 #include "Utilities.h"
 #include "VecUtil.h"
-#include "Rectangle.h"
+#include "Rectangle.hpp"
 #include "Config.h"
-#include "Grid.h"
+#include "Grid.hpp"
 #include "AudioMeter.h"
-#include "Impulse.h"
+#include "Impulse.hpp"
 
 class Boid
 {
 public:
-	Boid(Grid& grid, Config& config, const AudioMeter& audio_meter, const Rect_i& border, const sf::Vector2f& pos);
+	Boid(Grid& grid, Config& config, const AudioMeter& audio_meter, const RectI& border, const sf::Vector2f& pos);
 
 	void update(const std::vector<Boid>& boids, const std::vector<Impulse>& impulses, const float& physics_dt);
 	void steer_towards(sf::Vector2f point, float weight);
@@ -64,7 +64,7 @@ private:
 	Grid* grid;
 	Config* config;
 	const AudioMeter* audio_meter;
-	const Rect_i* border;
+	const RectI* border;
 
 	sf::Vector2f position, prev_position;
 	sf::Vector2f velocity, prev_velocity;
