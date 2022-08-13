@@ -29,7 +29,7 @@ void Debug::load(const FontHolder& font_holder)
 	debug_text_info.setString("");
 }
 
-void Debug::update(const InputHandler& input_handler, const float& dt)
+void Debug::update(const InputHandler& input_handler, float dt)
 {
 	refresh = false;
 

@@ -41,5 +41,5 @@ struct Rect
 		bot_left;
 };
 
-using RectI = Rect<int>;
-using RectF = Rect<float>;
+using RectInt = Rect<int>;
+using RectFloat = Rect<float>;

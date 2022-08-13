@@ -1,6 +1,6 @@
 #include "Boid.h"
 
-Boid::Boid(Grid& grid, Config& config, const AudioMeter& audio_meter, const RectI& border, const sf::Vector2f& pos)
+Boid::Boid(Grid& grid, Config& config, const AudioMeter& audio_meter, const RectInt& border, const sf::Vector2f& pos)
 	: grid(&grid), config(&config), audio_meter(&audio_meter), border(&border), position(pos)
 {
 	velocity = v2f::normalize(sf::Vector2f(
@@ -11,7 +11,7 @@ Boid::Boid(Grid& grid, Config& config, const AudioMeter& audio_meter, const Rect
 		cycle_time = util::random(0.0f, 1.0f);
 }
 
-void Boid::update(const std::vector<Boid>& boids, const std::vector<Impulse>& impulses, const float& dt)
+void Boid::update(const std::vector<Boid>& boids, const std::vector<Impulse>& impulses, float dt)
 {
 	prev_position = position;
 	prev_velocity = velocity;
@@ -156,7 +156,7 @@ void Boid::flock(const std::vector<Boid>& boids)
 	density = std::max(std::max(cohCount, aliCount), sepCount);
 }
 
-sf::Vector2f Boid::steer_at(const sf::Vector2f& steer_direction)
+sf::Vector2f Boid::steer_at(const sf::Vector2f& steer_direction) const
 {
 	sf::Vector2f steer = v2f::direction(velocity, steer_direction); // steering direction
 	steer = v2f::limit(steer, config->boid_max_steer);
@@ -173,7 +173,7 @@ void Boid::steer_towards(sf::Vector2f point, float weight)
 	apply_force(steer_at(steer) * weight);
 }
 
-bool Boid::outside_border(const float& dt)
+bool Boid::outside_border(float dt)
 {
 	switch (config->turn_at_border)
 	{
@@ -183,7 +183,7 @@ bool Boid::outside_border(const float& dt)
 		return teleport_at_border();
 	}
 }
-bool Boid::turn_at_border(const float& dt)
+bool Boid::turn_at_border(float dt)
 {
 	float width_margin = border->width() - border->width() * config->turn_margin_factor;
 	float height_margin = border->height() - border->height() * config->turn_margin_factor;
@@ -239,7 +239,7 @@ sf::Vector3f Boid::position_color() const
 		util::interpolate(config->boid_color_top_left.y * 255, config->boid_color_top_right.y * 255, config->boid_color_bot_left.y * 255, config->boid_color_bot_right.y * 255, t, s) / 255.0f,
 		util::interpolate(config->boid_color_top_left.z * 255, config->boid_color_top_right.z * 255, config->boid_color_bot_left.z * 255, config->boid_color_bot_right.z * 255, t, s) / 255.0f);
 }
-sf::Vector3f Boid::cycle_color(const float& dt)
+sf::Vector3f Boid::cycle_color(float dt)
 {
 	if (!config->boid_cycle_colors.size())
 		return sf::Vector3f();
@@ -258,7 +258,7 @@ sf::Vector3f Boid::cycle_color(const float& dt)
 
 	return v2f::lerp(color1, color2, newT);
 }
-sf::Vector3f Boid::density_color(const float& dt)
+sf::Vector3f Boid::density_color(float dt)
 {
 	if (!config->boid_density_colors.size())
 		return sf::Vector3f();
@@ -317,7 +317,7 @@ sf::Vector3f Boid::rotation_color() const
 
 	return v2f::lerp(color1, color2, newT);
 }
-sf::Vector3f Boid::audio_color(const float& dt)
+sf::Vector3f Boid::audio_color(float dt) const
 {
 	if (!config->audio_responsive_colors.size())
 		return sf::Vector3f();
@@ -337,7 +337,7 @@ sf::Vector3f Boid::audio_color(const float& dt)
 
 	return v2f::lerp(color1, color2, newT);
 }
-sf::Vector3f Boid::impulse_color(const std::vector<Impulse>& impulses)
+sf::Vector3f Boid::impulse_color(const std::vector<Impulse>& impulses) const
 {
 	if (!config->impulse_colors.size())
 		return sf::Vector3f();

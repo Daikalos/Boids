@@ -13,7 +13,7 @@ public:
 	~Debug();
 
 	void load(const FontHolder& font_holder);
-	void update(const InputHandler& input_handler, const float& dt);
+	void update(const InputHandler& input_handler, float dt);
 	void draw(sf::RenderWindow& window) const;
 
 	void set_update_freq(float value)

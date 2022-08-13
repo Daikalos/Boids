@@ -137,7 +137,7 @@ public:
 
 	// call at start of loop before poll event
 	//
-	void update(const float& dt);
+	void update(float dt);
 	void handle_event(const sf::Event& event);
 
 public:
@@ -257,7 +257,6 @@ public:
 	}
 
 private: // VARIABLES
-
 	bool _keyboard_enabled;
 	bool _mouse_enabled;
 	bool _joystick_enabled;
@@ -265,7 +264,6 @@ private: // VARIABLES
 	float _held_threshold;
 
 #if KEYBOARDMOUSE_ENABLED
-
 	float _scroll_delta;
 
 	bool _current_button_state[sf::Mouse::ButtonCount];
@@ -278,11 +276,9 @@ private: // VARIABLES
 
 	std::unordered_map<Binding::Key, sf::Keyboard::Key> _key_bindings;
 	std::unordered_map<Binding::Button, sf::Mouse::Button> _button_bindings;
-
 #endif
 
 #if JOYSTICK_ENABLED
-
 	std::unordered_set<uint> _available_joysticks;
 
 	bool _current_button_joystick_state[sf::Joystick::Count * sf::Joystick::ButtonCount];

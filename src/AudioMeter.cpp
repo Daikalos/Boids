@@ -55,7 +55,7 @@ void AudioMeter::initialize()
 	SAFE_RELEASE(pDevice);
 }
 
-void AudioMeter::update(const float& dt)
+void AudioMeter::update(float dt)
 {
 	volume = 0.0f;
 

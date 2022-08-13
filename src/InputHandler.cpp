@@ -30,7 +30,7 @@ InputHandler::~InputHandler()
 
 }
 
-void InputHandler::update(const float& dt)
+void InputHandler::update(float dt)
 {
 #if KEYBOARDMOUSE_ENABLED
 	_scroll_delta = 0.0f;

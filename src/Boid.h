@@ -13,9 +13,9 @@
 class Boid
 {
 public:
-	Boid(Grid& grid, Config& config, const AudioMeter& audio_meter, const RectI& border, const sf::Vector2f& pos);
+	Boid(Grid& grid, Config& config, const AudioMeter& audio_meter, const RectInt& border, const sf::Vector2f& pos);
 
-	void update(const std::vector<Boid>& boids, const std::vector<Impulse>& impulses, const float& physics_dt);
+	void update(const std::vector<Boid>& boids, const std::vector<Impulse>& impulses, float dt);
 	void steer_towards(sf::Vector2f point, float weight);
 	void update_grid_cells(const std::vector<Boid>& boids) const;
 
@@ -41,19 +41,19 @@ public: // Properties
 private:
 	void flock(const std::vector<Boid>& boids);
 
-	sf::Vector2f steer_at(const sf::Vector2f& steer_direction);
+	sf::Vector2f steer_at(const sf::Vector2f& steer_direction) const;
 
-	bool outside_border(const float& dt);
-	bool turn_at_border(const float& dt);
+	bool outside_border(float dt);
+	bool turn_at_border(float dt);
 	bool teleport_at_border();
 
 	sf::Vector3f position_color() const;
-	sf::Vector3f cycle_color(const float& dt);
-	sf::Vector3f density_color(const float& dt);
+	sf::Vector3f cycle_color(float dt);
+	sf::Vector3f density_color(float dt);
 	sf::Vector3f velocity_color() const;
 	sf::Vector3f rotation_color() const;
-	sf::Vector3f audio_color(const float& dt);
-	sf::Vector3f impulse_color(const std::vector<Impulse>& impulses);
+	sf::Vector3f audio_color(float dt) const;
+	sf::Vector3f impulse_color(const std::vector<Impulse>& impulses) const;
 
 	inline void apply_force(const sf::Vector2f& force)
 	{
@@ -64,7 +64,7 @@ private:
 	Grid* grid;
 	Config* config;
 	const AudioMeter* audio_meter;
-	const RectI* border;
+	const RectInt* border;
 
 	sf::Vector2f position, prev_position;
 	sf::Vector2f velocity, prev_velocity;

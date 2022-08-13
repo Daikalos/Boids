@@ -80,7 +80,7 @@ public:
 
 private:
 	sf::Vector2i contDims;
-	RectI gridRect;
+	RectInt gridRect;
 
 private:
 	Grid() = delete;

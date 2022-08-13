@@ -32,7 +32,7 @@ public:
 		return length;
 	}
 
-	void update(const float& dt)
+	void update(float dt)
 	{
 		length += speed * dt;
 	}

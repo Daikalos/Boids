@@ -23,7 +23,7 @@ public:
 	}
 
 	void initialize();
-	void update(const float& dt);
+	void update(float dt);
 
 	void clear();
 

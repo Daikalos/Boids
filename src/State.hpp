@@ -40,7 +40,7 @@ public:
 		vertices.resize(vertex_count);
 		colors.resize(vertex_count);
 
-		glVertexPointer(2, GL_FLOAT, 0, vertices.data());
+		glVertexPointer(2, GL_FLOAT, 0, vertices.data()); // attach pointers again in case of reallocation
 		glColorPointer(3, GL_FLOAT, 0, colors.data());
 	}
 
