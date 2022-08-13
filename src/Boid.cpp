@@ -353,18 +353,20 @@ sf::Vector3f Boid::impulse_color(const std::vector<Impulse>& impulses) const
 		float percentage = (impulse_length / config->impulse_fade_distance);
 		float size = impulse.get_size() * (1.0f - percentage);
 
-		float scaled_length = std::fmodf(percentage, 1.0f) * (float)(config->impulse_colors.size() - 1);
-
-		int index1 = (int)scaled_length;
-		int index2 = ((int)scaled_length + 1) % config->impulse_colors.size();
-
-		sf::Vector3f color1 = config->impulse_colors[index1];
-		sf::Vector3f color2 = config->impulse_colors[index2];
-
-		float newT = scaled_length - std::floorf(scaled_length);
-
 		if (diff <= size)
-			return v2f::lerp(color1, color2, newT);;
+		{
+			float scaled_length = std::fmodf(percentage, 1.0f) * (float)(config->impulse_colors.size() - 1);
+
+			int index1 = (int)scaled_length;
+			int index2 = ((int)scaled_length + 1) % config->impulse_colors.size();
+
+			sf::Vector3f color1 = config->impulse_colors[index1];
+			sf::Vector3f color2 = config->impulse_colors[index2];
+
+			float newT = scaled_length - std::floorf(scaled_length);
+
+			return v2f::lerp(color1, color2, newT);
+		}
 	}
 
 	return color;

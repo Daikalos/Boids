@@ -11,12 +11,12 @@
 
 struct Vertex
 {
-	GLfloat x, y;
+	GLfloat x{0.0f}, y{0.0f};
 };
 
 struct Color
 {
-	GLfloat r, g, b;
+	GLfloat r{0.0f}, g{0.0f}, b{0.0f};
 };
 
 class State

@@ -14,7 +14,7 @@ int main()
 	if (!video_mode.isValid())
 		return -1;
 
-	sf::RenderWindow window(video_mode, "Boids", sf::Style::Close);
+	sf::RenderWindow window(video_mode, "Boids", sf::Style::Fullscreen);
 	
 	if (!window.setActive(true))
 		return -1;
@@ -45,8 +45,12 @@ int main()
 	texture_holder.load(TextureID::Background, "content/" + config.background_texture);
 	font_holder.load(FontID::F8Bit, "content/font_8bit.ttf");
 
-	Camera camera(window, config);
+	Camera camera(config);
+	camera.set_size(sf::Vector2f(window.getSize().x, window.getSize().y));
+	camera.set_position(sf::Vector2f(window.getSize()) / 2.0f);
+
 	InputHandler input_handler;
+	input_handler.set_button_binding(Binding::Button::Drag, sf::Mouse::Button::Middle);
 
 	Debug debug(config);
 	debug.load(font_holder);
@@ -68,7 +72,9 @@ int main()
 		min_distance * 2, min_distance * 2);
 
 	GLsizei vertex_count = config.boid_count * 3;
-	State state(vertex_count);
+	State state(config.boid_count * 3);
+
+	std::vector<Impulse> impulses;
 
 	std::vector<Boid> boids;
 	boids.reserve(config.boid_count);
@@ -82,15 +88,7 @@ int main()
 		boids.emplace_back(Boid(grid, config, audio_meter, border, pos));
 	}
 
-	std::vector<Impulse> impulses;
-
-	Policy policy = config.boid_count <= 3000 ? Policy::unseq : Policy::par_unseq;
-
-	glClearColor(
-		config.background_color.x, 
-		config.background_color.y,
-		config.background_color.z, 1.0f);
-
+	glViewport(0, 0, window.getSize().x, window.getSize().y);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glScalef(1.0f, -1.0f, 1.0f);
@@ -99,6 +97,8 @@ int main()
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
+
+	Policy policy = config.boid_count <= 3000 ? Policy::unseq : Policy::par_unseq;
 
 	while (window.isOpen())
 	{
@@ -151,8 +151,8 @@ int main()
 					break;
 				case Reconstruct::RBoidsCycle:
 					{
-						for (int i = 0; i < config.boid_count; ++i)
-							boids[i].set_cycle_time(config.boid_cycle_colors_random ? util::random(0.0f, 1.0f) : 0.0f);
+						for (Boid& boid : boids)
+							boid.set_cycle_time(config.boid_cycle_colors_random ? util::random(0.0f, 1.0f) : 0.0f);
 					}
 					break;
 				case Reconstruct::RBackgroundTex:
@@ -171,7 +171,7 @@ int main()
 					window.setFramerateLimit(config.vertical_sync ? 0 : config.max_framerate);
 					break;
 				case Reconstruct::RCamera:
-					camera.set_scale(config.camera_zoom);
+					camera.set_scale(sf::Vector2f(config.camera_zoom, config.camera_zoom));
 					break;
 				case Reconstruct::RPhysics:
 					physics_dt = 1.0f / std::fmaxf(config.physics_update_freq, 1.0f);
@@ -186,10 +186,11 @@ int main()
 		sf::Event event;
 		while (window.pollEvent(event))
 		{
+			input_handler.handle_event(event);
+			camera.handle_event(event);
+
 			switch (event.type)
 			{
-				input_handler.handle_event(event);
-
 				case sf::Event::Closed:
 					window.close();
 					break;
@@ -203,7 +204,9 @@ int main()
 						glMatrixMode(GL_MODELVIEW);
 
 						border = RectInt(0, 0, window.getSize().x, window.getSize().y);
-						camera.set_position((sf::Vector2f)window.getSize() / 2.0f);
+
+						camera.set_size(sf::Vector2f(window.getSize()));
+						camera.set_position(sf::Vector2f(window.getSize()) / 2.0f);
 
 						grid = Grid(
 							border.left  - min_distance * (config.grid_extra_cells + 1),
@@ -211,18 +214,20 @@ int main()
 							border.right + min_distance * (config.grid_extra_cells + 1),
 							border.bot   + min_distance * (config.grid_extra_cells + 1),
 							min_distance * 2.0f, min_distance * 2.0f);
+
+						background.load_prop(config, sf::VideoMode(window.getSize(), sf::VideoMode::getDesktopMode().bitsPerPixel));
 					}
 					break;
 			}
 		}
 
-		camera.update(input_handler);
+		camera.update(input_handler, window);
 		audio_meter.update(dt);
 
-		mouse_pos = sf::Vector2f(camera.get_mouse_world_position());
+		mouse_pos = sf::Vector2f(camera.get_mouse_world_position(window));
 
 		if (config.impulse_enabled && input_handler.get_button_pressed(sf::Mouse::Button::Left))
-			impulses.push_back(Impulse(mouse_pos, config.impulse_speed, config.impulse_size, 0.0f));
+			impulses.push_back(Impulse(mouse_pos, config.impulse_speed, config.impulse_size, -config.impulse_size));
 
 		for (int i = impulses.size() - 1; i >= 0; --i)
 		{
@@ -235,7 +240,7 @@ int main()
 		}
 
 		ticks = 0;
-		while (accumulator >= physics_dt && ++ticks < death_spiral)
+		while (accumulator >= physics_dt && ticks++ < death_spiral)
 		{
 			accumulator -= physics_dt;
 
@@ -294,7 +299,9 @@ int main()
 		float interp = accumulator / physics_dt;
 		state.update(boids, config, interp);
 
-		glClear(GL_COLOR_BUFFER_BIT);
+		sf::Vector3f color = config.background_color * 255.0f;
+		window.clear(*(sf::Color*)(&color));
+		window.setView(camera);
 
 		background.draw(window);
 

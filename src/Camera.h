@@ -3,63 +3,77 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/OpenGL.hpp>
 
-#include "InputHandler.h"
 #include "Config.h"
+
+#include "InputHandler.h"
+#include "NonCopyable.h"
+
 #include "VecUtil.h"
 
-class Camera
+class Camera : public sf::View, NonCopyable
 {
 public:
-	Camera() = delete;
-	Camera(const sf::RenderWindow& window, Config& config);
+	Camera(Config& config) 
+		: config(&config), position(0, 0), scale(config.camera_zoom, config.camera_zoom), size(0, 0), drag_pos(0, 0) {}
+	~Camera() {}
 
 	// call after poll event
 	//
-	void update(const InputHandler& input_handler);
-
-	template<typename T> sf::Vector2<T> view_to_world(sf::Vector2<T> position) const
-	{
-		return sf::Vector2<T>(get_view_matrix() * sf::Vector2f(position));
-	}
+	void update(const InputHandler& input_handler, const sf::RenderWindow& window);
+	void handle_event(const sf::Event& event);
 
 public:
-	inline const float* get_world_matrix() const
+	template<typename T> 
+	sf::Vector2<T> view_to_world(const sf::Vector2<T>& position) const
+	{
+		return sf::Vector2<T>(get_view_matrix() * position);
+	}
+
+	const float* get_world_matrix() const
 	{
 		return sf::Transform()
-			.translate((sf::Vector2f)window->getSize() / 2.0f)
+			.translate(size / 2.0f)
 			.scale(scale)
 			.translate(-position).getMatrix();
 	}
-	inline sf::Transform get_view_matrix() const
+
+	sf::Transform get_view_matrix() const
 	{
 		return sf::Transform()
 			.translate(position)
 			.scale(1.0f / scale)
-			.translate((sf::Vector2f)window->getSize() / -2.0f);
+			.translate(size / -2.0f);
 	}
 
-	inline sf::Vector2f get_position() const { return position; }
-	inline sf::Vector2i get_mouse_world_position() const { return view_to_world(sf::Mouse::getPosition(*window)); }
+	sf::Vector2f get_mouse_world_position(const sf::RenderWindow& window) const { return view_to_world(sf::Vector2f(sf::Mouse::getPosition(window))); }
 
-	inline void set_position(sf::Vector2f position)
+	sf::Vector2f get_position() const { return position; }
+	sf::Vector2f get_scale() const { return scale; }
+	sf::Vector2f get_size() const { return size; }
+
+	void set_position(sf::Vector2f position)
 	{
+		setCenter(position);
 		this->position = position;
 	}
-	inline void set_scale(float scale)
+	void set_scale(sf::Vector2f scale)
 	{
-		this->scale.x = scale;
-		this->scale.y = scale;
+		setSize(size * (1.0f / scale));
+		this->scale = scale;
+	}
+	void set_size(sf::Vector2f size) 
+	{ 
+		this->size = size;
+		setSize(size);
 	}
 
-	inline sf::Vector2f get_scale() const { return scale; }
-
 private:
-	const sf::RenderWindow* window;
 	Config* config;
 
 	sf::Vector2f position;
 	sf::Vector2f scale;
+	sf::Vector2f size;
 
-	sf::Vector2i dragPos;
+	sf::Vector2f drag_pos;
 };
 

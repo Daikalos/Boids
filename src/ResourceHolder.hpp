@@ -35,6 +35,8 @@ public:
 	template <class Parameter>
 	void load(const Identifier& id, const std::string& path, const Parameter& second_param);
 
+	void remove(const Identifier& id);
+
 	Resource& get(const Identifier& id);
 	const Resource& get(const Identifier& id) const;
 
@@ -50,7 +52,10 @@ void ResourceHolder<Resource, Identifier>::load(const Identifier& id, const std:
 	std::unique_ptr<Resource> resource(new Resource());
 
 	if (!resource->loadFromFile(path))
+	{
+		remove(id);
 		return;
+	}
 
 	auto inserted = _resources.insert(std::make_pair(id, std::move(resource)));
 	assert(inserted.second);
@@ -63,10 +68,22 @@ void ResourceHolder<Resource, Identifier>::load(const Identifier& id, const std:
 	std::unique_ptr<Resource> resource(new Resource());
 
 	if (!resource->loadFromFile(path, second_param))
+	{
+		remove(id);
 		return;
+	}
 
 	auto inserted = _resources.insert(std::make_pair(id, std::move(resource)));
 	assert(inserted.second);
+}
+
+template<class Resource, class Identifier>
+void ResourceHolder<Resource, Identifier>::remove(const Identifier& id)
+{
+	if (!exists(id))
+		return;
+
+	_resources.erase(id);
 }
 
 template<typename Resource, typename Identifier>
@@ -83,6 +100,7 @@ const Resource& ResourceHolder<Resource, Identifier>::get(const Identifier& id) 
 
 	return *it->second.get();
 }
+
 
 template<class Resource, class Identifier>
 bool ResourceHolder<Resource, Identifier>::exists(const Identifier& id) const

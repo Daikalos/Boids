@@ -4,7 +4,7 @@
         "background" :
         {
             "background_color" : "0 0 0",
-            "background_texture" : "",
+            "background_texture" : "background.png",
             "background_position_x" : 0,
             "background_position_y" : 0,
             "background_fit_screen" : true,
@@ -26,9 +26,9 @@
         
         "rules" :
         {
-            "sep_distance" : 22.5,
-            "ali_distance" : 55.0,
-            "coh_distance" : 55.0,
+            "sep_distance" : 25.0,
+            "ali_distance" : 60.0,
+            "coh_distance" : 60.0,
 
             "sep_weight" : 2.9,
             "ali_weight" : 1.6,
@@ -129,8 +129,8 @@
 
             "impulse_enabled" : true,
             "impulse_size" : 50.0,
-            "impulse_speed" : 600.0,
-            "impulse_fade_distance" : 800.0,
+            "impulse_speed" : 400.0,
+            "impulse_fade_distance" : 300.0,
             "impulse_colors" :
             [
                 "255 20 255",
@@ -148,7 +148,7 @@
             "steer_towards_factor" : 0.9,
             "steer_away_factor" : 0.9,
 
-            "predator_enabled" : true,
+            "predator_enabled" : false,
             "predator_distance" : 250.0,
             "predator_factor" : 0.6,
 
