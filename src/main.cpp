@@ -203,6 +203,8 @@ int main()
 						glOrtho(0, window.getSize().x, 0, window.getSize().y, -1.0, 1.0);
 						glMatrixMode(GL_MODELVIEW);
 
+						video_mode = sf::VideoMode(window.getSize(), sf::VideoMode::getDesktopMode().bitsPerPixel);
+
 						border = RectInt(0, 0, window.getSize().x, window.getSize().y);
 
 						camera.set_size(sf::Vector2f(window.getSize()));
@@ -215,7 +217,7 @@ int main()
 							border.bot   + min_distance * (config.grid_extra_cells + 1),
 							min_distance * 2.0f, min_distance * 2.0f);
 
-						background.load_prop(config, sf::VideoMode(window.getSize(), sf::VideoMode::getDesktopMode().bitsPerPixel));
+						background.load_prop(config, video_mode);
 					}
 					break;
 			}
