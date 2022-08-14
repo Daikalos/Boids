@@ -158,14 +158,14 @@ int main()
 						}
 						else
 						{
+							boids.erase(boids.begin() + config.boid_count, boids.end());
+
 							sorted_boids.erase(std::remove_if(
 								sorted_boids.begin(), sorted_boids.end(),
 								[&config](const int& index)
 								{
 									return index >= config.boid_count;
 								}), sorted_boids.end());
-
-							boids.erase(boids.begin() + config.boid_count, boids.end());
 						}
 					}
 					break;
