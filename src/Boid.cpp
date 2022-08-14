@@ -144,22 +144,14 @@ void Boid::flock(const std::vector<Boid>& boids)
 		apply_force(steer_at(coh) * config->coh_weight);
 	}
 
-	{
-		float length = v2f::length(velocity);
-
-		if (length > config->boid_max_speed)
-			velocity = v2f::normalize(velocity, config->boid_max_speed);
-		else if (length < config->boid_min_speed)
-			velocity = v2f::normalize(velocity, config->boid_min_speed);
-	}
-
+	velocity = v2f::clamp(velocity, config->boid_max_speed, config->boid_min_speed);
 	density = std::max(std::max(cohCount, aliCount), sepCount);
 }
 
 sf::Vector2f Boid::steer_at(const sf::Vector2f& steer_direction) const
 {
 	sf::Vector2f steer = v2f::direction(velocity, steer_direction); // steering direction
-	steer = v2f::limit(steer, config->boid_max_steer);
+	steer = v2f::clamp(steer, config->boid_max_steer, 0.0f);
 
 	return steer;
 }

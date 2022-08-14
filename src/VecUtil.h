@@ -63,24 +63,24 @@ public:
 
 		return vector;
 	}
-	static inline sf::Vector2<T> limit(sf::Vector2<T> vector, float maxLength)
+	static inline sf::Vector2<T> clamp(sf::Vector2<T> vector, float max_length, float min_length)
 	{
-		if (length(vector) > maxLength)
-			return normalize(vector, maxLength);
+		float l = length(vector);
+
+		if (l > max_length)
+			return normalize(vector, max_length);
+
+		if (l < min_length)
+			return normalize(vector, min_length);
 
 		return vector;
 	}
-	static inline sf::Vector2<T> min(sf::Vector2<T> vector, float minLength)
-	{
-		if (length(vector) < minLength)
-			return normalize(vector, minLength);
 
-		return vector;
-	}
 	static inline sf::Vector2<T> direction(sf::Vector2<T> from, sf::Vector2<T> to)
 	{
 		return sf::Vector2<T>(to.x - from.x, to.y - from.y);
 	}
+
 	static inline sf::Vector2<T> rotate_point(sf::Vector2<T> point, sf::Vector2<T> center, float angle)
 	{
 		sf::Vector2<T> dir = direction(center, point);
@@ -92,6 +92,7 @@ public:
 			(dir.x * c - dir.y * s) + center.x,
 			(dir.x * s + dir.y * c) + center.y);
 	}
+
 	static inline float lerp(float a, float b, float f)
 	{
 		return (a * (1.0f - f)) + (b * f);
