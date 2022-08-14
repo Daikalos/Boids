@@ -299,8 +299,10 @@ int main()
 		float interp = accumulator / physics_dt;
 		state.update(boids, config, interp);
 
-		sf::Vector3f color = config.background_color * 255.0f;
-		window.clear(*(sf::Color*)(&color));
+		sf::Vector3f vec_color = config.background_color * 255.0f;
+		sf::Color color = sf::Color(vec_color.x, vec_color.y, vec_color.z, 255.0f);
+
+		window.clear(color);
 		window.setView(camera);
 
 		background.draw(window);

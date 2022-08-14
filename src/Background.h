@@ -36,11 +36,12 @@ public:
 
 		background.setScale(desired_scale);
 
-		if (config.background_color.x > FLT_EPSILON || config.background_color.y > FLT_EPSILON || config.background_color.z > FLT_EPSILON)
-			background.setColor(sf::Color(
-				config.background_color.x * 255,
-				config.background_color.y * 255,
-				config.background_color.z * 255));
+		bool set_color = config.background_color.x > FLT_EPSILON || config.background_color.y > FLT_EPSILON || config.background_color.z > FLT_EPSILON;
+
+		background.setColor(set_color ? sf::Color(
+			config.background_color.x * 255,
+			config.background_color.y * 255,
+			config.background_color.z * 255) : sf::Color(255, 255, 255));
 	}
 
 	void draw(sf::RenderWindow& window) const
