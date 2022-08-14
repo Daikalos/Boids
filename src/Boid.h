@@ -28,9 +28,9 @@ public: // Properties
 
 	inline sf::Vector2f get_origin() const 
 	{ 
-		return sf::Vector2f(
-			position.x + config->boid_size_width / 2.0f, 
-			position.y + config->boid_size_height / 2.0f);
+		return position + sf::Vector2f(
+			config->boid_size_width, 
+			config->boid_size_height) / 2.0f;
 	}
 
 	inline int get_cell_index() const { return cell_index; }

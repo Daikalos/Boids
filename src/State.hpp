@@ -48,15 +48,15 @@ public:
 	{
 		std::for_each(
 			std::execution::par_unseq, boids.begin(), boids.end(),
-			[&](const Boid& boid)
+			[this, &boids, &config, &interp](const Boid& boid)
 			{
 				int v = std::distance(boids.data(), &boid) * 3;
 
 				sf::Vector2f pos = boid.get_position();
 				sf::Vector2f prev_pos = boid.get_prev_position();
 
-				sf::Vector2f origin = sf::Vector2f(pos.x + config.boid_size_width / 2.0f, pos.y + config.background_height / 2.0f);
-				sf::Vector2f prev_origin = sf::Vector2f(prev_pos.x + config.boid_size_width / 2.0f, prev_pos.y + config.background_height / 2.0f);
+				sf::Vector2f origin = pos + sf::Vector2f(config.boid_size_width, config.boid_size_height) / 2.0f;
+				sf::Vector2f prev_origin = prev_pos + sf::Vector2f(config.boid_size_width, config.boid_size_height) / 2.0f;
 
 				float rot = v2f::angle(boid.get_velocity());
 				float prev_rot = v2f::angle(boid.get_prev_velocity());

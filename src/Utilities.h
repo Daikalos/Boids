@@ -32,6 +32,17 @@ namespace util
 	}
 
 	template<typename T>
+	static inline T wrap(T val, T min, T max)
+	{
+		if (val > min && val < max)
+			return val;
+
+		return (val < min) ? 
+			max - std::fmodf(min - val, max - min) : 
+			min + std::fmodf(val - min, max - min);
+	}
+
+	template<typename T>
 	static inline T map_to_range(T val, T minIn, T maxIn, T minOut, T maxOut)
 	{
 		float x = (val - minIn) / (maxIn - minIn);

@@ -35,7 +35,7 @@ public:
 
 	static inline float length(const sf::Vector2<T>& from, const sf::Vector2<T>& to)
 	{
-		return std::sqrtf(direction(from, to));
+		return length(direction(from, to));
 	}
 	static inline float length_sq(const sf::Vector2<T>& from, const sf::Vector2<T>& to)
 	{
@@ -112,6 +112,11 @@ public:
 		return sf::Vector2<T>(
 			(dir.x * c - dir.y * s) + center.x,
 			(dir.x * s + dir.y * c) + center.y);
+	}
+
+	static inline sf::Vector2<T> abs(sf::Vector2<T> vector)
+	{
+		return sf::Vector2<T>(std::fabsf(vector.x), std::fabsf(vector.y));
 	}
 
 	static inline float lerp(float a, float b, float f)

@@ -9,32 +9,33 @@
 class Grid
 {
 public:
-	Grid(int grid_left, int grid_top, int grid_right, int grid_bot, int cont_width, int cont_height)
-		: contDims({ cont_width, cont_height }), gridRect(grid_left, grid_top, grid_right, grid_bot)
+	Grid(RectInt grid, RectInt border, sf::Vector2i cont_dims)
+		: grid_rect(grid), border_rect(border), cont_dims(cont_dims)
 	{
-		width = gridRect.width() / cont_width;
-		height = gridRect.height() / cont_height;
+		width = grid_rect.width() / cont_dims.x;
+		height = grid_rect.height() / cont_dims.y;
+
+		border_rect.top_left = (border_rect.top_left / cont_dims);
+		border_rect.bot_right = (border_rect.bot_right / cont_dims);
+
 		count = width * height;
 
-		cellsStartIndices = (int*)::operator new(count * sizeof(int));
-		cellsEndIndices = (int*)::operator new(count * sizeof(int));
+		cells_start_indices = (int*)::operator new(count * sizeof(int));
+		cells_end_indices = (int*)::operator new(count * sizeof(int));
 
 		reset_buffers();
 	}
-	~Grid() 
-	{ 
-
-	}
+	~Grid() = default;
 
 	void reset_buffers()
 	{
-		memset(cellsStartIndices, -1, sizeof(int) * count);
-		memset(cellsEndIndices, -1, sizeof(int) * count);
+		memset(cells_start_indices, -1, sizeof(int) * count);
+		memset(cells_end_indices, -1, sizeof(int) * count);
 	}
 
 	sf::Vector2f relative_pos(sf::Vector2f position) const
 	{
-		return (position - sf::Vector2f(gridRect.top_left)) / sf::Vector2f(contDims);
+		return (position - sf::Vector2f(grid_rect.top_left)) / sf::Vector2f(cont_dims);
 	}
 
 	int at_pos(sf::Vector2f position) const
@@ -47,21 +48,27 @@ public:
 	}
 	int at_pos(int x, int y) const
 	{
-		if (!within_grid(x, y))
-			return -1;
+		x = util::wrap(x, 0, width);
+		y = util::wrap(y, 0, height);
 
 		return x + y * width;
 	}
 
+	sf::Vector2i at_pos(int i) const
+	{
+		return sf::Vector2i(i % width, i / width);
+	}
+
 	Grid& operator=(Grid&& rhs) noexcept
 	{
-		std::swap(cellsStartIndices, rhs.cellsStartIndices);
-		std::swap(cellsEndIndices, rhs.cellsEndIndices);
+		std::swap(cells_start_indices, rhs.cells_start_indices);
+		std::swap(cells_end_indices, rhs.cells_end_indices);
 		std::swap(width, rhs.width);
 		std::swap(height, rhs.height);
 		std::swap(count, rhs.count);
-		std::swap(contDims, rhs.contDims);
-		std::swap(gridRect, rhs.gridRect);
+		std::swap(cont_dims, rhs.cont_dims);
+		std::swap(grid_rect, rhs.grid_rect);
+		std::swap(border_rect, rhs.border_rect);
 
 		return *this;
 	}
@@ -73,14 +80,14 @@ private:
 	}
 
 public:
-	int* cellsStartIndices;
-	int* cellsEndIndices;
+	RectInt grid_rect;
+	RectInt border_rect;
+	sf::Vector2i cont_dims;
 
 	int width, height, count;
 
-private:
-	sf::Vector2i contDims;
-	RectInt gridRect;
+	int* cells_start_indices;
+	int* cells_end_indices;
 
 private:
 	Grid() = delete;

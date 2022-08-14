@@ -15,23 +15,23 @@
 
         "boid" :
         {
-            "boid_count" : 2000,
-            "boid_size_width" : 22.0,
-            "boid_size_height" : 11.0,
-            "boid_max_speed" : 360.0,
-            "boid_min_speed" : 160.0,
+            "boid_count" : 2500,
+            "boid_size_width" : 12.0,
+            "boid_size_height" : 6.0,
+            "boid_max_speed" : 200.0,
+            "boid_min_speed" : 100.0,
             "boid_max_steer" : 4.0,
-            "boid_view_angle" : 240.0
+            "boid_view_angle" : 180.0
         },
         
         "rules" :
         {
-            "sep_distance" : 22.5,
-            "ali_distance" : 55.0,
-            "coh_distance" : 55.0,
+            "sep_distance" : 15.0,
+            "ali_distance" : 30.0,
+            "coh_distance" : 40.0,
 
             "sep_weight" : 2.9,
-            "ali_weight" : 1.6,
+            "ali_weight" : 1.5,
             "coh_weight" : 1.8
         },
 
@@ -63,7 +63,7 @@
 
             "boid_density" : 70,
             "boid_density_cycle_enabled" : true,
-            "boid_density_cycle_speed" : 0.75,
+            "boid_density_cycle_speed" : 0.5,
             "boid_density_colors" : 
             [
                 "90 0 90",
@@ -129,8 +129,8 @@
 
             "impulse_enabled" : true,
             "impulse_size" : 50.0,
-            "impulse_speed" : 600.0,
-            "impulse_fade_distance" : 800.0,
+            "impulse_speed" : 400.0,
+            "impulse_fade_distance" : 300.0,
             "impulse_colors" :
             [
                 "255 20 255",
@@ -163,7 +163,7 @@
             "max_framerate" : 200,
             "physics_update_freq" : 90,
 
-            "debug_enabled" : false,
+            "debug_enabled" : true,
             "debug_update_freq" : 0.5,
             "debug_toggle_key" : 85
         }

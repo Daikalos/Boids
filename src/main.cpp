@@ -57,7 +57,7 @@ int main()
 
 	Background background;
 	background.load_texture(texture_holder);
-	background.load_prop(config, border.get_size());
+	background.load_prop(config, border.size());
 
 	AudioMeter audio_meter(config, 1.0f);
 	audio_meter.initialize();
@@ -65,11 +65,13 @@ int main()
 	int min_distance = std::ceilf(std::sqrtf(std::fmaxf(std::fmaxf(config.sep_distance, config.ali_distance), config.coh_distance)));
 
 	Grid grid(
-		border.left	 - min_distance * (config.grid_extra_cells + 1),
-		border.top	 - min_distance * (config.grid_extra_cells + 1),
-		border.right + min_distance * (config.grid_extra_cells + 1),
-		border.bot   + min_distance * (config.grid_extra_cells + 1),
-		min_distance * 2, min_distance * 2);
+		{
+			border.left		- min_distance * (config.grid_extra_cells + 1),
+			border.top		- min_distance * (config.grid_extra_cells + 1),
+			border.right	+ min_distance * (config.grid_extra_cells + 1),
+			border.bot		+ min_distance * (config.grid_extra_cells + 1) 
+		}, 
+		border, { min_distance * 2, min_distance * 2 });
 
 	GLsizei vertex_count = config.boid_count * 3;
 	State state(vertex_count);
@@ -127,11 +129,13 @@ int main()
 						min_distance = std::sqrtf(std::fmaxf(std::fmaxf(config.sep_distance, config.ali_distance), config.coh_distance));
 
 						grid = Grid(
-							border.left  - min_distance * (config.grid_extra_cells + 1),
-							border.top   - min_distance * (config.grid_extra_cells + 1),
-							border.right + min_distance * (config.grid_extra_cells + 1),
-							border.bot   + min_distance * (config.grid_extra_cells + 1),
-							min_distance * 2.0f, min_distance * 2.0f);
+							{
+								border.left		- min_distance * (config.grid_extra_cells + 1),
+								border.top		- min_distance * (config.grid_extra_cells + 1),
+								border.right	+ min_distance * (config.grid_extra_cells + 1),
+								border.bot		+ min_distance * (config.grid_extra_cells + 1)
+							},
+							border, { min_distance * 2, min_distance * 2 });
 					}
 					break;
 				case Reconstruct::RBoids:
@@ -178,10 +182,10 @@ int main()
 				case Reconstruct::RBackgroundTex:
 					texture_holder.load(TextureID::Background, "content/" + config.background_texture);
 					background.load_texture(texture_holder);
-					background.load_prop(config, border.get_size());
+					background.load_prop(config, border.size());
 					break;
 				case Reconstruct::RBackgroundProp:
-					background.load_prop(config, border.get_size());
+					background.load_prop(config, border.size());
 
 					vc = config.background_color * 255.0f;
 					background_color = sf::Color(vc.x, vc.y, vc.z, 255.0f);
@@ -232,13 +236,15 @@ int main()
 						camera.set_position(sf::Vector2f(window.getSize()) / 2.0f);
 
 						grid = Grid(
-							border.left  - min_distance * (config.grid_extra_cells + 1),
-							border.top   - min_distance * (config.grid_extra_cells + 1),
-							border.right + min_distance * (config.grid_extra_cells + 1),
-							border.bot   + min_distance * (config.grid_extra_cells + 1),
-							min_distance * 2.0f, min_distance * 2.0f);
+							{
+								border.left		- min_distance * (config.grid_extra_cells + 1),
+								border.top		- min_distance * (config.grid_extra_cells + 1),
+								border.right	+ min_distance * (config.grid_extra_cells + 1),
+								border.bot		+ min_distance * (config.grid_extra_cells + 1)
+							},
+							border, { min_distance * 2, min_distance * 2 });
 
-						background.load_prop(config, border.get_size());
+						background.load_prop(config, border.size());
 					}
 					break;
 			}

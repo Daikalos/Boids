@@ -55,28 +55,21 @@ void Boid::flock(const std::vector<Boid>& boids, const std::vector<int>& sorted_
 	int cohCount = 0;
 
 	int neighbours = 0;
-	int neighbourIndices[4] {-1,-1,-1,-1};
+	int neighbour_indicies[4] {-1,-1,-1,-1};
 
-	sf::Vector2f gridCellIndicesRaw = grid->relative_pos(position);
-	sf::Vector2i gridCellIndices = sf::Vector2i(gridCellIndicesRaw);
-	sf::Vector2f gridCellOverflow = gridCellIndicesRaw - sf::Vector2f(gridCellIndices);
+	sf::Vector2f grid_cell_raw = grid->relative_pos(get_origin());
+	sf::Vector2i grid_cell = sf::Vector2i(grid_cell_raw);
+	sf::Vector2f grid_cell_overflow = grid_cell_raw - sf::Vector2f(grid_cell);
 
-	int xNeighbor = gridCellIndices.x + (gridCellOverflow.x > 0.5f ? 1 : -1);
-	int yNeighbor = gridCellIndices.y + (gridCellOverflow.y > 0.5f ? 1 : -1);
+	sf::Vector2f relative_pos = grid_cell_overflow * sf::Vector2f(grid->cont_dims);
 
-	if (xNeighbor < 0 || xNeighbor >= grid->width)
-		xNeighbor = -1;
-	if (yNeighbor < 0 || yNeighbor >= grid->height)
-		yNeighbor = -1;
+	int x_neighbor = grid_cell.x + (grid_cell_overflow.x > 0.5f ? 1 : -1);
+	int y_neighbor = grid_cell.y + (grid_cell_overflow.y > 0.5f ? 1 : -1);
 
-	neighbourIndices[neighbours++] = grid->at_pos(gridCellIndices.x, gridCellIndices.y);
-
-	if (xNeighbor != -1)
-		neighbourIndices[neighbours++] = grid->at_pos(xNeighbor, gridCellIndices.y);
-	if (yNeighbor != -1)
-		neighbourIndices[neighbours++] = grid->at_pos(gridCellIndices.x, yNeighbor);
-	if (xNeighbor != -1 && yNeighbor != -1)
-		neighbourIndices[neighbours++] = grid->at_pos(xNeighbor, yNeighbor);
+	neighbour_indicies[neighbours++] = grid->at_pos(grid_cell.x, grid_cell.y);	// current
+	neighbour_indicies[neighbours++] = grid->at_pos(x_neighbor, grid_cell.y);	// left or right of current
+	neighbour_indicies[neighbours++] = grid->at_pos(grid_cell.x, y_neighbor);	// top or left of current
+	neighbour_indicies[neighbours++] = grid->at_pos(x_neighbor, y_neighbor);	// top left or bot left of current
 
 	float min_distance = std::fminf(config->coh_distance, config->ali_distance);
 	float length = v2f::length(velocity);
@@ -84,8 +77,8 @@ void Boid::flock(const std::vector<Boid>& boids, const std::vector<int>& sorted_
 
 	for (int i = 0; i < neighbours; ++i)
 	{
-		int gridCellIndex = neighbourIndices[i];
-		for (int j = grid->cellsStartIndices[gridCellIndex]; j <= grid->cellsEndIndices[gridCellIndex] && j > -1; ++j) // do in one loop
+		int grid_cell_index = neighbour_indicies[i];
+		for (int j = grid->cells_start_indices[grid_cell_index]; j <= grid->cells_end_indices[grid_cell_index] && j > -1; ++j) // do in one loop
 		{
 			const Boid* b = &boids[sorted_boids[j]];
 
@@ -93,12 +86,24 @@ void Boid::flock(const std::vector<Boid>& boids, const std::vector<int>& sorted_
 				continue;
 
 			sf::Vector2f other_origin = b->get_origin();
-			float distance = v2f::length_sq(origin, other_origin);
+
+			sf::Vector2f other_grid_cell_raw = grid->relative_pos(other_origin);
+			sf::Vector2i other_grid_cell = sf::Vector2i(other_grid_cell_raw);
+			sf::Vector2f other_grid_cell_overflow = other_grid_cell_raw - sf::Vector2f(other_grid_cell);
+
+			sf::Vector2f other_relative_pos = other_grid_cell_overflow * sf::Vector2f(grid->cont_dims);
+			sf::Vector2i other_relative_grid_cell = other_grid_cell - grid_cell;
+
+			other_relative_pos.x += (grid->cont_dims.x * other_relative_grid_cell.x);
+			other_relative_pos.y += (grid->cont_dims.y * other_relative_grid_cell.y);
+
+			sf::Vector2f dir = v2f::direction(relative_pos, other_relative_pos);
+			sf::Vector2f adir = v2f::direction(origin, other_origin);
+
+			float distance = v2f::length_sq(dir);
 
 			if (distance <= FLT_EPSILON)
 				continue;
-
-			sf::Vector2f dir = v2f::direction(origin, other_origin);
 
 			if (distance <= min_distance)
 			{
@@ -108,7 +113,7 @@ void Boid::flock(const std::vector<Boid>& boids, const std::vector<int>& sorted_
 				{
 					if (distance <= config->coh_distance)
 					{
-						coh += other_origin;	  // Head towards center of boids
+						coh += origin + dir; // Head towards center of boids
 						++cohCount;
 					}
 					if (distance <= config->ali_distance)
@@ -126,6 +131,8 @@ void Boid::flock(const std::vector<Boid>& boids, const std::vector<int>& sorted_
 		}
 	}
 
+	density = std::max(std::max(cohCount, aliCount), sepCount);
+
 	if (sepCount > 0) // separation
 	{
 		sep = v2f::normalize(sep / (float)sepCount, config->boid_max_speed);
@@ -138,14 +145,13 @@ void Boid::flock(const std::vector<Boid>& boids, const std::vector<int>& sorted_
 	}
 	if (cohCount > 0) // cohesion
 	{
-		coh = v2f::direction(get_origin(), coh / (float)cohCount);
+		coh = v2f::direction(origin, coh / (float)cohCount);
 		coh = v2f::normalize(coh, config->boid_max_speed);
 
 		apply_force(steer_at(coh) * config->coh_weight);
 	}
 
 	velocity = v2f::clamp(velocity, config->boid_max_speed, config->boid_min_speed);
-	density = std::max(std::max(cohCount, aliCount), sepCount);
 }
 
 sf::Vector2f Boid::steer_at(const sf::Vector2f& steer_direction) const
@@ -203,22 +209,19 @@ bool Boid::teleport_at_border()
 {
 	sf::Vector2f current = position;
 
-	if (position.x + config->boid_size_width * 1.25f < border->left)
+	if (position.x + config->boid_size_width < border->left)
 		position.x = (float)border->right;
 
 	if (position.x > border->right)
-		position.x = border->left - config->boid_size_width * 1.25f;
+		position.x = border->left - config->boid_size_width;
 
-	if (position.y + config->boid_size_height * 1.25f < border->top)
+	if (position.y + config->boid_size_height < border->top)
 		position.y = (float)border->bot;
 
 	if (position.y > border->bot)
-		position.y = border->top - config->boid_size_height * 1.25f;
+		position.y = border->top - config->boid_size_height;
 
-	if (current != position)
-		return true;
-
-	return false;
+	return (current != position);
 }
 
 sf::Vector3f Boid::position_color() const
@@ -368,18 +371,18 @@ void Boid::update_grid_cells(const std::vector<Boid>& boids, const std::vector<i
 {
 	if (index == 0)
 	{
-		grid->cellsStartIndices[cell_index] = index;
+		grid->cells_start_indices[cell_index] = index;
 		return;
 	}
 
 	if (index == config->boid_count - 1)
-		grid->cellsEndIndices[cell_index] = index;
+		grid->cells_end_indices[cell_index] = index;
 
 	int other_index = boids[sorted_boids[index - 1]].get_cell_index();
 
 	if (other_index != cell_index)
 	{
-		grid->cellsStartIndices[cell_index] = index;
-		grid->cellsEndIndices[other_index] = index - 1;
+		grid->cells_start_indices[cell_index] = index;
+		grid->cells_end_indices[other_index] = index - 1;
 	}
 }
