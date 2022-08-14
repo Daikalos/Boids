@@ -77,7 +77,10 @@ int main()
 	std::vector<Impulse> impulses;
 
 	std::vector<Boid> boids;
+	std::vector<int> sorted_boids;
+
 	boids.reserve(config.boid_count);
+	sorted_boids.reserve(config.boid_count);
 
 	for (int i = 0; i < config.boid_count; ++i)
 	{
@@ -85,7 +88,8 @@ int main()
 			util::random(0, border.width()) - border.left,
 			util::random(0, border.height()) - border.top);
 
-		boids.emplace_back(Boid(grid, config, audio_meter, border, pos));
+		boids.emplace_back(grid, config, audio_meter, border, pos);
+		sorted_boids.emplace_back(i);
 	}
 
 	glViewport(0, 0, window.getSize().x, window.getSize().y);
@@ -139,17 +143,30 @@ int main()
 
 						if (config.boid_count > prev.boid_count) // new is larger
 						{
+							boids.reserve(config.boid_count);
+							sorted_boids.reserve(config.boid_count);
+
 							for (int i = prev.boid_count; i < config.boid_count; ++i)
 							{
 								sf::Vector2f pos = sf::Vector2f(
 									util::random(0, border.width()) - border.left,
 									util::random(0, border.height()) - border.top);
 
-								boids.emplace_back(Boid(grid, config, audio_meter, border, pos));
+								boids.emplace_back(grid, config, audio_meter, border, pos);
+								sorted_boids.emplace_back(i);
 							}
 						}
 						else
+						{
+							sorted_boids.erase(std::remove_if(
+								sorted_boids.begin(), sorted_boids.end(),
+								[&config](const int& index)
+								{
+									return index >= config.boid_count;
+								}), sorted_boids.end());
+
 							boids.erase(boids.begin() + config.boid_count, boids.end());
+						}
 					}
 					break;
 				case Reconstruct::RBoidsCycle:
@@ -253,32 +270,17 @@ int main()
 			grid.reset_buffers();
 
 			maybe_parallel(
-				[&boids](auto& pol)
+				[&boids, &sorted_boids, &config, &input_handler, &impulses, &mouse_pos, &physics_dt](auto& pol)
 				{
 					std::for_each(pol, boids.begin(), boids.end(),
 						[](Boid& boid) { boid.set_cell_index(); });
 
-				}, policy);
+					std::sort(pol, sorted_boids.begin(), sorted_boids.end(),
+						[&boids](const int& i0, const int& i1) { return boids[i0].get_cell_index() < boids[i1].get_cell_index(); });
 
-			maybe_parallel(
-				[&boids](auto& pol)
-				{
-					std::sort(pol, boids.begin(), boids.end(),
-						[](const Boid& b0, const Boid& b1) { return b0.get_cell_index() < b1.get_cell_index(); });
+					std::for_each(pol, sorted_boids.begin(), sorted_boids.end(),
+						[&boids, &sorted_boids](const int& index) { boids[index].update_grid_cells(boids, sorted_boids, &index - sorted_boids.data()); });
 
-				}, policy);
-
-			maybe_parallel(
-				[&boids](auto& pol)
-				{
-					std::for_each(pol, boids.begin(), boids.end(),
-						[&boids](const Boid& boid) { boid.update_grid_cells(boids); });
-
-				}, policy);
-
-			maybe_parallel(
-				[&](auto& pol)
-				{
 					std::for_each(pol, boids.begin(), boids.end(),
 						[&](Boid& boid)
 						{
@@ -296,7 +298,7 @@ int main()
 								}
 							}
 
-							boid.update(boids, impulses, physics_dt);
+							boid.update(boids, sorted_boids, impulses, physics_dt);
 						});
 
 				}, policy);

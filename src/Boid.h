@@ -15,9 +15,9 @@ class Boid
 public:
 	Boid(Grid& grid, Config& config, const AudioMeter& audio_meter, const RectInt& border, const sf::Vector2f& pos);
 
-	void update(const std::vector<Boid>& boids, const std::vector<Impulse>& impulses, float dt);
 	void steer_towards(sf::Vector2f point, float weight);
-	void update_grid_cells(const std::vector<Boid>& boids) const;
+	void update_grid_cells(const std::vector<Boid>& boids, const std::vector<int>& sorted_boids, int index) const;
+	void update(const std::vector<Boid>& boids, const std::vector<int>& sorted_boids, const std::vector<Impulse>& impulses, float dt);
 
 public: // Properties
 	inline sf::Vector2f get_position() const { return position; }
@@ -39,7 +39,7 @@ public: // Properties
 	void set_cycle_time(float val) { cycle_time = val; }
 
 private:
-	void flock(const std::vector<Boid>& boids);
+	void flock(const std::vector<Boid>& boids, const std::vector<int>& sorted_boids);
 
 	sf::Vector2f steer_at(const sf::Vector2f& steer_direction) const;
 

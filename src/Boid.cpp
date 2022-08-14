@@ -11,12 +11,12 @@ Boid::Boid(Grid& grid, Config& config, const AudioMeter& audio_meter, const Rect
 		cycle_time = util::random(0.0f, 1.0f);
 }
 
-void Boid::update(const std::vector<Boid>& boids, const std::vector<Impulse>& impulses, float dt)
+void Boid::update(const std::vector<Boid>& boids, const std::vector<int>& sorted_boids, const std::vector<Impulse>& impulses, float dt)
 {
 	prev_position = position;
 	prev_velocity = velocity;
 
-	flock(boids);
+	flock(boids, sorted_boids);
 
 	position += velocity * dt;
 
@@ -44,7 +44,7 @@ void Boid::update(const std::vector<Boid>& boids, const std::vector<Impulse>& im
 	}
 }
 
-void Boid::flock(const std::vector<Boid>& boids)
+void Boid::flock(const std::vector<Boid>& boids, const std::vector<int>& sorted_boids)
 {
 	sf::Vector2f sep;
 	sf::Vector2f ali;
@@ -87,7 +87,7 @@ void Boid::flock(const std::vector<Boid>& boids)
 		int gridCellIndex = neighbourIndices[i];
 		for (int j = grid->cellsStartIndices[gridCellIndex]; j <= grid->cellsEndIndices[gridCellIndex] && j > -1; ++j) // do in one loop
 		{
-			const Boid* b = &boids[j];
+			const Boid* b = &boids[sorted_boids[j]];
 
 			if (b == this)
 				continue;
@@ -364,10 +364,8 @@ sf::Vector3f Boid::impulse_color(const std::vector<Impulse>& impulses) const
 	return color;
 }
 
-void Boid::update_grid_cells(const std::vector<Boid>& boids) const
+void Boid::update_grid_cells(const std::vector<Boid>& boids, const std::vector<int>& sorted_boids, int index) const
 {
-	int index = std::distance(boids.data(), this);
-
 	if (index == 0)
 	{
 		grid->cellsStartIndices[cell_index] = index;
@@ -377,7 +375,7 @@ void Boid::update_grid_cells(const std::vector<Boid>& boids) const
 	if (index == config->boid_count - 1)
 		grid->cellsEndIndices[cell_index] = index;
 
-	int other_index = boids[index - 1].get_cell_index();
+	int other_index = boids[sorted_boids[index - 1]].get_cell_index();
 
 	if (other_index != cell_index)
 	{
