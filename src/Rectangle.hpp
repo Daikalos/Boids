@@ -25,6 +25,8 @@ struct Rect
 	inline T width() const { return (right - left); }
 	inline T height() const { return (bot - top); }
 
+	inline sf::Vector2<T> get_size() { return sf::Vector2<T>(width(), height()); }
+
 	union
 	{
 		sf::Vector2<T> top_left;

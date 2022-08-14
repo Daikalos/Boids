@@ -57,7 +57,7 @@ int main()
 
 	Background background;
 	background.load_texture(texture_holder);
-	background.load_prop(config, video_mode);
+	background.load_prop(config, border.get_size());
 
 	AudioMeter audio_meter(config, 1.0f);
 	audio_meter.initialize();
@@ -158,10 +158,10 @@ int main()
 				case Reconstruct::RBackgroundTex:
 					texture_holder.load(TextureID::Background, "content/" + config.background_texture);
 					background.load_texture(texture_holder);
-					background.load_prop(config, video_mode);
+					background.load_prop(config, border.get_size());
 					break;
 				case Reconstruct::RBackgroundProp:
-					background.load_prop(config, video_mode);
+					background.load_prop(config, border.get_size());
 					break;
 				case Reconstruct::RAudio:
 					audio_meter.clear();
@@ -203,8 +203,6 @@ int main()
 						glOrtho(0, window.getSize().x, 0, window.getSize().y, -1.0, 1.0);
 						glMatrixMode(GL_MODELVIEW);
 
-						video_mode = sf::VideoMode(window.getSize(), sf::VideoMode::getDesktopMode().bitsPerPixel);
-
 						border = RectInt(0, 0, window.getSize().x, window.getSize().y);
 
 						camera.set_size(sf::Vector2f(window.getSize()));
@@ -217,7 +215,7 @@ int main()
 							border.bot   + min_distance * (config.grid_extra_cells + 1),
 							min_distance * 2.0f, min_distance * 2.0f);
 
-						background.load_prop(config, video_mode);
+						background.load_prop(config, border.get_size());
 					}
 					break;
 			}

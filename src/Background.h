@@ -17,7 +17,7 @@ public:
 		else
 			background.setTexture(sf::Texture(), true);
 	}
-	void load_prop(Config& config, const sf::VideoMode& video_mode)
+	void load_prop(Config& config, const sf::Vector2i& size)
 	{
 		background.setPosition(sf::Vector2f(
 			config.background_position_x,
@@ -27,8 +27,8 @@ public:
 
 		if (config.background_fit_screen)
 			desired_scale = sf::Vector2f(
-				video_mode.size.x / background.getLocalBounds().width,
-				video_mode.size.y / background.getLocalBounds().height);
+				size.x / background.getLocalBounds().width,
+				size.y / background.getLocalBounds().height);
 		else if (config.background_override_size)
 			desired_scale = sf::Vector2f(
 				config.background_width / background.getLocalBounds().width,
