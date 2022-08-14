@@ -4,7 +4,7 @@
         "background" :
         {
             "background_color" : "0 0 0",
-            "background_texture" : "background.png",
+            "background_texture" : "",
             "background_position_x" : 0,
             "background_position_y" : 0,
             "background_fit_screen" : true,
@@ -163,7 +163,7 @@
             "max_framerate" : 200,
             "physics_update_freq" : 90,
 
-            "debug_enabled" : true,
+            "debug_enabled" : false,
             "debug_update_freq" : 0.5,
             "debug_toggle_key" : 85
         }

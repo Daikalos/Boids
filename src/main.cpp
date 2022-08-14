@@ -72,7 +72,7 @@ int main()
 		min_distance * 2, min_distance * 2);
 
 	GLsizei vertex_count = config.boid_count * 3;
-	State state(config.boid_count * 3);
+	State state(vertex_count);
 
 	std::vector<Impulse> impulses;
 
@@ -99,6 +99,9 @@ int main()
 	glEnableClientState(GL_COLOR_ARRAY);
 
 	Policy policy = config.boid_count <= 3000 ? Policy::unseq : Policy::par_unseq;
+
+	sf::Vector3f vc = config.background_color * 255.0f;
+	sf::Color background_color = sf::Color(vc.x, vc.y, vc.z, 255.0f);
 
 	while (window.isOpen())
 	{
@@ -162,6 +165,9 @@ int main()
 					break;
 				case Reconstruct::RBackgroundProp:
 					background.load_prop(config, border.get_size());
+
+					vc = config.background_color * 255.0f;
+					background_color = sf::Color(vc.x, vc.y, vc.z, 255.0f);
 					break;
 				case Reconstruct::RAudio:
 					audio_meter.clear();
@@ -281,7 +287,7 @@ int main()
 
 							if (config.predator_enabled && !(config.steer_enabled && (input_handler.get_button_held(sf::Mouse::Button::Left) || input_handler.get_button_held(sf::Mouse::Button::Right))))
 							{
-								float dist = v2f::distance_squared(boid.get_origin(), mouse_pos);
+								float dist = v2f::length_sq(boid.get_origin(), mouse_pos);
 
 								if (dist <= config.predator_distance)
 								{
@@ -299,10 +305,7 @@ int main()
 		float interp = accumulator / physics_dt;
 		state.update(boids, config, interp);
 
-		sf::Vector3f vec_color = config.background_color * 255.0f;
-		sf::Color color = sf::Color(vec_color.x, vec_color.y, vec_color.z, 255.0f);
-
-		window.clear(color);
+		window.clear(background_color);
 		window.setView(camera);
 
 		background.draw(window);

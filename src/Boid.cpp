@@ -93,7 +93,7 @@ void Boid::flock(const std::vector<Boid>& boids)
 				continue;
 
 			sf::Vector2f other_origin = b->get_origin();
-			float distance = v2f::distance_squared(origin, other_origin);
+			float distance = v2f::length_sq(origin, other_origin);
 
 			if (distance <= FLT_EPSILON)
 				continue;
@@ -151,7 +151,7 @@ void Boid::flock(const std::vector<Boid>& boids)
 sf::Vector2f Boid::steer_at(const sf::Vector2f& steer_direction) const
 {
 	sf::Vector2f steer = v2f::direction(velocity, steer_direction); // steering direction
-	steer = v2f::clamp(steer, config->boid_max_steer, 0.0f);
+	steer = v2f::max(steer, config->boid_max_steer);
 
 	return steer;
 }
