@@ -63,7 +63,15 @@ int main()
 	audio_meter.initialize();
 
 	int min_distance = std::sqrtf(std::fmaxf(std::fmaxf(config.sep_distance, config.ali_distance), config.coh_distance));;
-	Grid grid(config, (RectFloat)border, sf::Vector2f(min_distance, min_distance) * 2.0f);
+
+	RectFloat grid_border = (RectFloat)border + (config.turn_at_border ? 
+		RectFloat(
+			-min_distance * config.grid_extra_cells,
+			-min_distance * config.grid_extra_cells,
+			+min_distance * config.grid_extra_cells,
+			+min_distance * config.grid_extra_cells) : RectFloat());
+
+	Grid grid(config, grid_border, sf::Vector2f(min_distance, min_distance) * 2.0f);
 
 	GLsizei vertex_count = config.boid_count * 3;
 	State state(vertex_count);
@@ -96,7 +104,7 @@ int main()
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
 
-	Policy policy = config.boid_count <= 3000 ? Policy::unseq : Policy::par_unseq;
+	Policy policy = config.boid_count <= 1500 ? Policy::unseq : Policy::par_unseq;
 
 	sf::Vector3f vc = config.background_color * 255.0f;
 	sf::Color background_color = sf::Color(vc.x, vc.y, vc.z, 255.0f);
@@ -119,12 +127,20 @@ int main()
 				case Reconstruct::RGrid:
 					{
 						min_distance = std::sqrtf(std::fmaxf(std::fmaxf(config.sep_distance, config.ali_distance), config.coh_distance));
-						grid = Grid(config, (RectFloat)border, sf::Vector2f(min_distance, min_distance) * 2.0f);
+
+						grid_border = (RectFloat)border + (config.turn_at_border ?
+							RectFloat(
+								-min_distance * config.grid_extra_cells,
+								-min_distance * config.grid_extra_cells,
+								+min_distance * config.grid_extra_cells,
+								+min_distance * config.grid_extra_cells) : RectFloat());
+
+						grid = Grid(config, grid_border, sf::Vector2f(min_distance, min_distance) * 2.0f);
 					}
 					break;
 				case Reconstruct::RBoids:
 					{
-						policy = config.boid_count <= 3000 ? Policy::unseq : Policy::par_unseq;
+						policy = config.boid_count <= 1500 ? Policy::unseq : Policy::par_unseq;
 
 						vertex_count = config.boid_count * 3;
 						state.resize(vertex_count);
@@ -219,7 +235,14 @@ int main()
 						camera.set_size(sf::Vector2f(window.getSize()));
 						camera.set_position(sf::Vector2f(window.getSize()) / 2.0f);
 
-						grid = Grid(config, (RectFloat)border, sf::Vector2f(min_distance, min_distance) * 2.0f);
+						grid_border = (RectFloat)border + (config.turn_at_border ?
+							RectFloat(
+								-min_distance * config.grid_extra_cells,
+								-min_distance * config.grid_extra_cells,
+								+min_distance * config.grid_extra_cells,
+								+min_distance * config.grid_extra_cells) : RectFloat());
+
+						grid = Grid(config, grid_border, sf::Vector2f(min_distance, min_distance) * 2.0f);
 
 						background.load_prop(config, border.size());
 					}
@@ -269,17 +292,15 @@ int main()
 						{
 							if (config.steer_enabled)
 							{
-								// add distance 
-
 								float dist = 0.0f;
 
 								if (input_handler.get_button_held(sf::Mouse::Button::Left) || input_handler.get_button_held(sf::Mouse::Button::Right))
-									dist = std::sqrtf(1.0f / v2f::length_opt(boid.get_saved_origin(), mouse_pos));
+									dist = 15.0f / std::sqrtf(v2f::length(boid.get_saved_origin(), mouse_pos)); // hard coded because cant update config... 
 
 								if (input_handler.get_button_held(sf::Mouse::Button::Left))
-									boid.steer_towards(mouse_pos, config.steer_towards_factor * dist * 5);
+									boid.steer_towards(mouse_pos, config.steer_towards_factor * dist);
 								if (input_handler.get_button_held(sf::Mouse::Button::Right))
-									boid.steer_towards(mouse_pos, -config.steer_away_factor * dist * 5);
+									boid.steer_towards(mouse_pos, -config.steer_away_factor * dist);
 							}
 
 							if (config.predator_enabled && !(config.steer_enabled && (input_handler.get_button_held(sf::Mouse::Button::Left) || input_handler.get_button_held(sf::Mouse::Button::Right))))

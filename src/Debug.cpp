@@ -1,16 +1,5 @@
 #include "Debug.h"
 
-Debug::Debug(Config& config)
-	: config(&config), update_freq_max(this->config->debug_update_freq), update_freq(0.0f)
-{
-
-}
-
-Debug::~Debug()
-{
-
-}
-
 void Debug::load(const FontHolder& font_holder)
 {
 	if (font_holder.exists(FontID::F8Bit))

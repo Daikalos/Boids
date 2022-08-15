@@ -9,8 +9,8 @@
 class Debug
 {
 public:
-	Debug(Config& config);
-	~Debug();
+	Debug(Config& config)
+		: config(&config), update_freq_max(this->config->debug_update_freq), update_freq(0.0f) { }
 
 	void load(const FontHolder& font_holder);
 	void update(const InputHandler& input_handler, float dt);

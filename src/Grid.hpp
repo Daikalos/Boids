@@ -9,20 +9,20 @@
 class Grid
 {
 public:
-	Grid(Config& config, RectFloat grid, sf::Vector2f cont_dims)
-		: config(&config), grid_rect(grid), cont_dims(cont_dims)
+	Grid(Config& config, RectFloat grid, sf::Vector2f container)
+		: config(&config), grid_rect(grid), cont_dims(container)
 	{
 		grid_rect.top_left -= sf::Vector2f(config.boid_size_width, config.boid_size_height);
 		grid_rect.bot_right += sf::Vector2f(config.boid_size_width, config.boid_size_height);
 
-		float a = grid_rect.width() / (float)this->cont_dims.x;
-		float b = grid_rect.height() / (float)this->cont_dims.y;
+		float a = grid_rect.width() / this->cont_dims.x;
+		float b = grid_rect.height() / this->cont_dims.y;
 
-		this->cont_dims.x = grid_rect.width() / std::floorf(a);
-		this->cont_dims.y = grid_rect.height() / std::floorf(b);
+		cont_dims.x = grid_rect.width() / std::floorf(a);
+		cont_dims.y = grid_rect.height() / std::floorf(b);
 
-		width = grid_rect.width() / this->cont_dims.x;
-		height = grid_rect.height() / this->cont_dims.y;
+		width = grid_rect.width() / cont_dims.x;
+		height = grid_rect.height() / cont_dims.y;
 
 		count = width * height;
 
@@ -31,7 +31,6 @@ public:
 
 		reset_buffers();
 	}
-	~Grid() = default;
 
 	void reset_buffers()
 	{
@@ -54,6 +53,9 @@ public:
 	}
 	int at_pos(int x, int y) const
 	{
+		x = util::wrap(x, 0, width);
+		y = util::wrap(y, 0, height);
+
 		return x + y * width;
 	}
 
@@ -74,12 +76,6 @@ public:
 		std::swap(cells_end_indices, rhs.cells_end_indices);
 
 		return *this;
-	}
-
-private:
-	bool within_grid(int x, int y) const
-	{
-		return !(x < 0 || y < 0 || x >= width || y >= height);
 	}
 
 public:

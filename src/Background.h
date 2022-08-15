@@ -8,7 +8,6 @@ class Background
 {
 public:
 	Background() { }
-	~Background() { }
 
 	void load_texture(const TextureHolder& texture_holder)
 	{

@@ -34,7 +34,7 @@ inline ColorFlags operator|=(ColorFlags& a, ColorFlags b)
 	return a = a | b;
 }
 
-enum class Reconstruct
+enum class Reconstruct : int
 {
 	RGrid,
 	RBoids,
@@ -45,7 +45,9 @@ enum class Reconstruct
 	RWindow,
 	RCamera,
 	RPhysics,
-	RDebug
+	RDebug,
+	
+	RCount
 };
 
 struct Config
@@ -143,7 +145,6 @@ struct Config
 
 public:
 	Config();
-	~Config();
 
 	void load();
 	std::vector<Reconstruct> refresh(Config& prev);

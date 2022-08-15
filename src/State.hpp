@@ -30,10 +30,6 @@ public:
 		glVertexPointer(2, GL_FLOAT, 0, vertices.data());
 		glColorPointer(3, GL_FLOAT, 0, colors.data());
 	}
-	~State()
-	{
-
-	}
 
 	void resize(GLsizei vertex_count)
 	{

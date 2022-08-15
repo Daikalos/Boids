@@ -123,11 +123,6 @@ Config::Config()
 	predator_distance *= predator_distance;
 }
 
-Config::~Config()
-{
-
-}
-
 void Config::load()
 {
 	std::ifstream project_file(FILE_NAME + ".json", std::ifstream::binary);
@@ -160,11 +155,11 @@ void Config::load()
 std::vector<Reconstruct> Config::refresh(Config& prev)
 {
 	std::vector<Reconstruct> result;
-	result.reserve(8);
+	result.reserve((int)Reconstruct::RCount);
 
 	load();
 
-	if (prev.sep_distance != sep_distance || prev.ali_distance != ali_distance || prev.coh_distance != coh_distance)
+	if (prev.sep_distance != sep_distance || prev.ali_distance != ali_distance || prev.coh_distance != coh_distance || prev.turn_at_border != turn_at_border)
 		result.push_back(Reconstruct::RGrid);
 	if (prev.boid_count != boid_count)
 		result.push_back(Reconstruct::RBoids);

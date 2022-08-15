@@ -25,11 +25,6 @@ InputHandler::InputHandler()
 #endif
 }
 
-InputHandler::~InputHandler()
-{
-
-}
-
 void InputHandler::update(float dt)
 {
 #if KEYBOARDMOUSE_ENABLED

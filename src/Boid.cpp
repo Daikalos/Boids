@@ -58,8 +58,10 @@ void Boid::flock(const std::vector<Boid>& boids, const std::vector<int>& sorted_
 	float min_distance = std::fminf(config->coh_distance, config->ali_distance);
 	float length = v2f::length(saved_velocity);
 
-	int neighbours = 0;
-	int neighbour_indicies[4] {-1,-1,-1,-1};
+	int neighbours = 4;
+
+	int neighbour_indicies[4];
+	sf::Vector2i neighbour[4];
 
 	sf::Vector2f grid_cell_raw = grid->relative_pos(origin);
 	sf::Vector2i grid_cell = sf::Vector2i(grid_cell_raw);
@@ -67,25 +69,26 @@ void Boid::flock(const std::vector<Boid>& boids, const std::vector<int>& sorted_
 
 	sf::Vector2f relative_pos = grid_cell_overflow * sf::Vector2f(grid->cont_dims);
 
-	int x_neighbor = grid_cell.x + (grid_cell_overflow.x > 0.5f ? 1 : -1);
-	int y_neighbor = grid_cell.y + (grid_cell_overflow.y > 0.5f ? 1 : -1);
+	int x = (grid_cell_overflow.x > 0.5f ? 1 : -1);
+	int y = (grid_cell_overflow.y > 0.5f ? 1 : -1);
 
-	neighbour_indicies[neighbours++] = grid->at_pos(grid_cell.x, grid_cell.y);	// current
-	neighbour_indicies[neighbours++] = grid->at_pos(x_neighbor, grid_cell.y);	// left or right of current
-	neighbour_indicies[neighbours++] = grid->at_pos(grid_cell.x, y_neighbor);	// top or bot of current
-	neighbour_indicies[neighbours++] = grid->at_pos(x_neighbor, y_neighbor);	// top left/right bot left/right of current
+	int x_neighbor = grid_cell.x + x;
+	int y_neighbor = grid_cell.y + y;
+
+	neighbour[0] = sf::Vector2i(0, 0);
+	neighbour[1] = sf::Vector2i(x, 0);
+	neighbour[2] = sf::Vector2i(0, y);
+	neighbour[3] = sf::Vector2i(x, y);
+
+	neighbour_indicies[0] = grid->at_pos(grid_cell.x, grid_cell.y);	// current
+	neighbour_indicies[1] = grid->at_pos(x_neighbor, grid_cell.y);	// left or right of current
+	neighbour_indicies[2] = grid->at_pos(grid_cell.x, y_neighbor);	// top or bot of current
+	neighbour_indicies[3] = grid->at_pos(x_neighbor, y_neighbor);	// top left/right bot left/right of current
 
 	for (int i = 0; i < neighbours; ++i)
 	{
 		int grid_cell_index = neighbour_indicies[i];
-
-		sf::Vector2i cell = grid->at_pos(grid_cell_index);
-		sf::Vector2i neighbour_cell = cell - grid_cell; // wrong
-
-		cell.x = util::wrap(cell.x, 0, grid->width);
-		cell.y = util::wrap(cell.y, 0, grid->height);
-
-		grid_cell_index = grid->at_pos(cell);
+		sf::Vector2i neighbour_cell = neighbour[i];
 
 		for (int j = grid->cells_start_indices[grid_cell_index]; j <= grid->cells_end_indices[grid_cell_index] && j > -1; ++j) // do in one loop
 		{
@@ -141,19 +144,19 @@ void Boid::flock(const std::vector<Boid>& boids, const std::vector<int>& sorted_
 	if (sepCount > 0) // separation
 	{
 		sep = v2f::normalize(sep / (float)sepCount, config->boid_max_speed);
-		apply_force(steer_at(sep) * config->sep_weight);
+		velocity += steer_at(sep) * config->sep_weight;
 	}
 	if (aliCount > 0) // alignment
 	{
 		ali = v2f::normalize(ali / (float)aliCount, config->boid_max_speed);
-		apply_force(steer_at(ali) * config->ali_weight);
+		velocity += steer_at(ali) * config->ali_weight;
 	}
 	if (cohCount > 0) // cohesion
 	{
 		coh = v2f::direction(origin, coh / (float)cohCount);
 		coh = v2f::normalize(coh, config->boid_max_speed);
 
-		apply_force(steer_at(coh) * config->coh_weight);
+		velocity += steer_at(coh) * config->coh_weight;
 	}
 
 	velocity = v2f::clamp(velocity, config->boid_max_speed, config->boid_min_speed);
@@ -173,7 +176,7 @@ void Boid::steer_towards(sf::Vector2f point, float weight)
 		return;
 
 	sf::Vector2f steer = v2f::normalize(v2f::direction(get_origin(), point), config->boid_max_speed); 
-	apply_force(steer_at(steer) * weight);
+	velocity += steer_at(steer) * weight;
 }
 
 bool Boid::outside_border(float dt)
@@ -284,7 +287,7 @@ sf::Vector3f Boid::velocity_color() const
 	if (!config->boid_velocity_colors.size())
 		return sf::Vector3f();
 
-	float velocity_percentage = (v2f::length(velocity) - config->boid_min_speed) / (config->boid_max_speed - config->boid_min_speed);
+	float velocity_percentage = util::clamp((v2f::length(velocity) - config->boid_min_speed) / (config->boid_max_speed - config->boid_min_speed), 0.0f, 1.0f);
 
 	float scaled_velocity = velocity_percentage * (float)(config->boid_velocity_colors.size() - 1);
 

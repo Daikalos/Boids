@@ -28,7 +28,6 @@ public:
 
 public:
 	ResourceHolder() { }
-	~ResourceHolder() { }
 
 	void load(const Identifier& id, const std::string& path);
 

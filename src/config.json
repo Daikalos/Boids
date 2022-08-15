@@ -18,7 +18,7 @@
             "boid_count" : 2000,
             "boid_size_width" : 22.0,
             "boid_size_height" : 11.0,
-            "boid_max_speed" : 360.0,
+            "boid_max_speed" : 370.0,
             "boid_min_speed" : 160.0,
             "boid_max_steer" : 4.0,
             "boid_view_angle" : 240.0
@@ -30,8 +30,8 @@
             "ali_distance" : 60.0,
             "coh_distance" : 60.0,
 
-            "sep_weight" : 2.9,
-            "ali_weight" : 1.6,
+            "sep_weight" : 2.8,
+            "ali_weight" : 1.5,
             "coh_weight" : 1.8
         },
 
@@ -40,10 +40,10 @@
             "color_options" : [ 2, 3, 4, 5 ],
 
             "color_positional_weight" : 1.0,
-            "color_cycle_weight" : 0.0,
-            "color_density_weight" : 0.7,
-            "color_velocity_weight" : 0.0,
-            "color_rotation_weight" : 0.0,
+            "color_cycle_weight" : 0.5,
+            "color_density_weight" : 0.9,
+            "color_velocity_weight" : 0.5,
+            "color_rotation_weight" : -1.7,
             "color_audio_weight" : 1.0,
 
             "boid_color_top_left" : "255 20 255",
@@ -61,8 +61,8 @@
                 "90 0 90"
             ],
 
-            "boid_density" : 20,
-            "boid_density_cycle_enabled" : false,
+            "boid_density" : 70,
+            "boid_density_cycle_enabled" : true,
             "boid_density_cycle_speed" : 0.75,
             "boid_density_colors" : 
             [
@@ -130,7 +130,7 @@
             "impulse_enabled" : true,
             "impulse_size" : 50.0,
             "impulse_speed" : 400.0,
-            "impulse_fade_distance" : 300.0,
+            "impulse_fade_distance" : 3100.0,
             "impulse_colors" :
             [
                 "255 20 255",
@@ -148,7 +148,7 @@
             "steer_towards_factor" : 0.9,
             "steer_away_factor" : 0.9,
 
-            "predator_enabled" : false,
+            "predator_enabled" : true,
             "predator_distance" : 250.0,
             "predator_factor" : 0.6,
 
@@ -156,14 +156,14 @@
             "turn_margin_factor" : 0.85,
             "turn_factor" : 275.0,
 
-            "grid_extra_cells" : 16,
+            "grid_extra_cells" : 32,
             "camera_enabled" : false,
             "camera_zoom" : 1.0,
             "vertical_sync" : true,
             "max_framerate" : 200,
-            "physics_update_freq" : 90,
+            "physics_update_freq" : 60,
 
-            "debug_enabled" : true,
+            "debug_enabled" : false,
             "debug_update_freq" : 0.5,
             "debug_toggle_key" : 85
         }

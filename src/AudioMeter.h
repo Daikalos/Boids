@@ -17,15 +17,13 @@ public:
 	AudioMeter(Config& config, float refresh_freq);
 	~AudioMeter();
 
-	float get_volume() const
-	{
-		return volume;
-	}
-
 	void initialize();
 	void update(float dt);
 
 	void clear();
+
+public:
+	float get_volume() const noexcept { return volume; }
 
 private:
 	void refresh(std::wstring* comp);

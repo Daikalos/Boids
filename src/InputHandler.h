@@ -133,7 +133,6 @@ public:
 
 public:
 	InputHandler();
-	~InputHandler();
 
 	// call at start of loop before poll event
 	//

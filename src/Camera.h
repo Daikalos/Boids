@@ -15,7 +15,6 @@ class Camera : public sf::View, NonCopyable
 public:
 	Camera(Config& config) 
 		: config(&config), position(0, 0), scale(config.camera_zoom, config.camera_zoom), size(0, 0), drag_pos(0, 0) {}
-	~Camera() {}
 
 	// call after poll event
 	//
