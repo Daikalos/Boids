@@ -12,6 +12,11 @@ struct Rect
 	Rect(sf::Vector2<T> top_left, sf::Vector2<T> bot_right)
 		: top_left(top_left), bot_right(bot_right) { };
 
+	template<typename U>
+	explicit Rect(Rect<U> rect) :	
+		top_left(sf::Vector2<T>(rect.top_left)), 
+		bot_right(sf::Vector2<T>(rect.bot_right)) { };
+
 	inline T width() const { return (right - left); }
 	inline T height() const { return (bot - top); }
 

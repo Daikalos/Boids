@@ -72,19 +72,20 @@ void Boid::flock(const std::vector<Boid>& boids, const std::vector<int>& sorted_
 
 	neighbour_indicies[neighbours++] = grid->at_pos(grid_cell.x, grid_cell.y);	// current
 	neighbour_indicies[neighbours++] = grid->at_pos(x_neighbor, grid_cell.y);	// left or right of current
-	neighbour_indicies[neighbours++] = grid->at_pos(grid_cell.x, y_neighbor);	// top or left of current
-	neighbour_indicies[neighbours++] = grid->at_pos(x_neighbor, y_neighbor);	// top left or bot left of current
+	neighbour_indicies[neighbours++] = grid->at_pos(grid_cell.x, y_neighbor);	// top or bot of current
+	neighbour_indicies[neighbours++] = grid->at_pos(x_neighbor, y_neighbor);	// top left/right bot left/right of current
 
 	for (int i = 0; i < neighbours; ++i)
 	{
 		int grid_cell_index = neighbour_indicies[i];
 
 		sf::Vector2i cell = grid->at_pos(grid_cell_index);
-		sf::Vector2i neighbour_cell = cell - grid_cell;
+		sf::Vector2i neighbour_cell = cell - grid_cell; // wrong
 
-		grid_cell_index = grid->at_pos(
-			util::wrap(cell.x, 0, grid->width), 
-			util::wrap(cell.y, 0, grid->height));
+		cell.x = util::wrap(cell.x, 0, grid->width);
+		cell.y = util::wrap(cell.y, 0, grid->height);
+
+		grid_cell_index = grid->at_pos(cell);
 
 		for (int j = grid->cells_start_indices[grid_cell_index]; j <= grid->cells_end_indices[grid_cell_index] && j > -1; ++j) // do in one loop
 		{

@@ -26,7 +26,7 @@
         
         "rules" :
         {
-            "sep_distance" : 25.0,
+            "sep_distance" : 30.0,
             "ali_distance" : 60.0,
             "coh_distance" : 60.0,
 
@@ -61,7 +61,7 @@
                 "90 0 90"
             ],
 
-            "boid_density" : 30,
+            "boid_density" : 20,
             "boid_density_cycle_enabled" : false,
             "boid_density_cycle_speed" : 0.75,
             "boid_density_colors" : 

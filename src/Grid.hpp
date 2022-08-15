@@ -9,19 +9,25 @@
 class Grid
 {
 public:
-	Grid(RectInt grid, RectInt border, sf::Vector2i cont_dims)
-		: grid_rect(grid), border_rect(border), cont_dims(cont_dims)
+	Grid(Config& config, RectFloat grid, sf::Vector2f cont_dims)
+		: config(&config), grid_rect(grid), cont_dims(cont_dims)
 	{
-		width = grid_rect.width() / cont_dims.x;
-		height = grid_rect.height() / cont_dims.y;
+		grid_rect.top_left -= sf::Vector2f(config.boid_size_width, config.boid_size_height);
+		grid_rect.bot_right += sf::Vector2f(config.boid_size_width, config.boid_size_height);
 
-		border_rect.top_left = (border_rect.top_left / cont_dims);
-		border_rect.bot_right = (border_rect.bot_right / cont_dims);
+		float a = grid_rect.width() / (float)this->cont_dims.x;
+		float b = grid_rect.height() / (float)this->cont_dims.y;
+
+		this->cont_dims.x = grid_rect.width() / std::floorf(a);
+		this->cont_dims.y = grid_rect.height() / std::floorf(b);
+
+		width = grid_rect.width() / this->cont_dims.x;
+		height = grid_rect.height() / this->cont_dims.y;
 
 		count = width * height;
 
-		cells_start_indices = (int*)::operator new(count * sizeof(int));
-		cells_end_indices = (int*)::operator new(count * sizeof(int));
+		cells_start_indices = (int*)::operator new(sizeof(int) * count);
+		cells_end_indices = (int*)::operator new(sizeof(int) * count);
 
 		reset_buffers();
 	}
@@ -35,7 +41,7 @@ public:
 
 	sf::Vector2f relative_pos(sf::Vector2f position) const
 	{
-		return (position - sf::Vector2f(grid_rect.top_left)) / sf::Vector2f(cont_dims);
+		return (position - grid_rect.top_left) / cont_dims;
 	}
 
 	int at_pos(sf::Vector2f position) const
@@ -58,14 +64,14 @@ public:
 
 	Grid& operator=(Grid&& rhs) noexcept
 	{
-		std::swap(cells_start_indices, rhs.cells_start_indices);
-		std::swap(cells_end_indices, rhs.cells_end_indices);
+		std::swap(config, rhs.config);
+		std::swap(grid_rect, rhs.grid_rect);
+		std::swap(cont_dims, rhs.cont_dims);
 		std::swap(width, rhs.width);
 		std::swap(height, rhs.height);
 		std::swap(count, rhs.count);
-		std::swap(cont_dims, rhs.cont_dims);
-		std::swap(grid_rect, rhs.grid_rect);
-		std::swap(border_rect, rhs.border_rect);
+		std::swap(cells_start_indices, rhs.cells_start_indices);
+		std::swap(cells_end_indices, rhs.cells_end_indices);
 
 		return *this;
 	}
@@ -77,9 +83,10 @@ private:
 	}
 
 public:
-	RectInt grid_rect;
-	RectInt border_rect;
-	sf::Vector2i cont_dims;
+	Config* config;
+
+	RectFloat grid_rect;
+	sf::Vector2f cont_dims;
 
 	int width, height, count, border_count;
 

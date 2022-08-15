@@ -62,24 +62,8 @@ int main()
 	AudioMeter audio_meter(config, 1.0f);
 	audio_meter.initialize();
 
-	int min_distance = std::ceilf(std::sqrtf(std::fmaxf(std::fmaxf(config.sep_distance, config.ali_distance), config.coh_distance)));
-
-	RectInt grid_border =
-	{
-			border.left		- min_distance,
-			border.top		- min_distance,
-			border.right	+ min_distance,
-			border.bot		+ min_distance
-	};
-
-	Grid grid(grid_border,
-		//{
-		//	border.left		- min_distance * (config.grid_extra_cells + 1),
-		//	border.top		- min_distance * (config.grid_extra_cells + 1),
-		//	border.right	+ min_distance * (config.grid_extra_cells + 1),
-		//	border.bot		+ min_distance * (config.grid_extra_cells + 1) 
-		//}, 
-		grid_border, { min_distance * 2, min_distance * 2 });
+	int min_distance = std::sqrtf(std::fmaxf(std::fmaxf(config.sep_distance, config.ali_distance), config.coh_distance));;
+	Grid grid(config, (RectFloat)border, sf::Vector2f(min_distance, min_distance) * 2.0f);
 
 	GLsizei vertex_count = config.boid_count * 3;
 	State state(vertex_count);
@@ -135,15 +119,7 @@ int main()
 				case Reconstruct::RGrid:
 					{
 						min_distance = std::sqrtf(std::fmaxf(std::fmaxf(config.sep_distance, config.ali_distance), config.coh_distance));
-
-						grid = Grid(
-							{
-								border.left		- min_distance * (config.grid_extra_cells + 1),
-								border.top		- min_distance * (config.grid_extra_cells + 1),
-								border.right	+ min_distance * (config.grid_extra_cells + 1),
-								border.bot		+ min_distance * (config.grid_extra_cells + 1)
-							},
-							border, { min_distance * 2, min_distance * 2 });
+						grid = Grid(config, (RectFloat)border, sf::Vector2f(min_distance, min_distance) * 2.0f);
 					}
 					break;
 				case Reconstruct::RBoids:
@@ -243,14 +219,7 @@ int main()
 						camera.set_size(sf::Vector2f(window.getSize()));
 						camera.set_position(sf::Vector2f(window.getSize()) / 2.0f);
 
-						grid = Grid(
-							{
-								border.left		- min_distance * (config.grid_extra_cells + 1),
-								border.top		- min_distance * (config.grid_extra_cells + 1),
-								border.right	+ min_distance * (config.grid_extra_cells + 1),
-								border.bot		+ min_distance * (config.grid_extra_cells + 1)
-							},
-							border, { min_distance * 2, min_distance * 2 });
+						grid = Grid(config, (RectFloat)border, sf::Vector2f(min_distance, min_distance) * 2.0f);
 
 						background.load_prop(config, border.size());
 					}
@@ -298,12 +267,24 @@ int main()
 					std::for_each(pol, boids.begin(), boids.end(),
 						[&](Boid& boid)
 						{
-							boid.steer_towards(mouse_pos, config.steer_towards_factor * config.steer_enabled * input_handler.get_button_held(sf::Mouse::Button::Left));
-							boid.steer_towards(mouse_pos, -config.steer_away_factor * config.steer_enabled * input_handler.get_button_held(sf::Mouse::Button::Right));
+							if (config.steer_enabled)
+							{
+								// add distance 
+
+								float dist = 0.0f;
+
+								if (input_handler.get_button_held(sf::Mouse::Button::Left) || input_handler.get_button_held(sf::Mouse::Button::Right))
+									dist = std::sqrtf(1.0f / v2f::length_opt(boid.get_saved_origin(), mouse_pos));
+
+								if (input_handler.get_button_held(sf::Mouse::Button::Left))
+									boid.steer_towards(mouse_pos, config.steer_towards_factor * dist * 5);
+								if (input_handler.get_button_held(sf::Mouse::Button::Right))
+									boid.steer_towards(mouse_pos, -config.steer_away_factor * dist * 5);
+							}
 
 							if (config.predator_enabled && !(config.steer_enabled && (input_handler.get_button_held(sf::Mouse::Button::Left) || input_handler.get_button_held(sf::Mouse::Button::Right))))
 							{
-								float dist = v2f::length_sq(boid.get_origin(), mouse_pos);
+								float dist = v2f::length_sq(boid.get_saved_origin(), mouse_pos);
 
 								if (dist <= config.predator_distance)
 								{
