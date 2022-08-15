@@ -64,14 +64,22 @@ int main()
 
 	int min_distance = std::ceilf(std::sqrtf(std::fmaxf(std::fmaxf(config.sep_distance, config.ali_distance), config.coh_distance)));
 
-	Grid grid(
-		{
-			border.left		- min_distance * (config.grid_extra_cells + 1),
-			border.top		- min_distance * (config.grid_extra_cells + 1),
-			border.right	+ min_distance * (config.grid_extra_cells + 1),
-			border.bot		+ min_distance * (config.grid_extra_cells + 1) 
-		}, 
-		border, { min_distance * 2, min_distance * 2 });
+	RectInt grid_border =
+	{
+			border.left		- min_distance,
+			border.top		- min_distance,
+			border.right	+ min_distance,
+			border.bot		+ min_distance
+	};
+
+	Grid grid(grid_border,
+		//{
+		//	border.left		- min_distance * (config.grid_extra_cells + 1),
+		//	border.top		- min_distance * (config.grid_extra_cells + 1),
+		//	border.right	+ min_distance * (config.grid_extra_cells + 1),
+		//	border.bot		+ min_distance * (config.grid_extra_cells + 1) 
+		//}, 
+		grid_border, { min_distance * 2, min_distance * 2 });
 
 	GLsizei vertex_count = config.boid_count * 3;
 	State state(vertex_count);

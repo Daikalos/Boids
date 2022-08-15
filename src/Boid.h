@@ -22,8 +22,10 @@ public:
 public: // Properties
 	inline sf::Vector2f get_position() const { return position; }
 	inline sf::Vector2f get_prev_position() const { return prev_position; }
+	inline sf::Vector2f get_saved_position() const { return saved_position; }
 	inline sf::Vector2f get_velocity() const { return velocity; }
 	inline sf::Vector2f get_prev_velocity() const { return prev_velocity; }
+	inline sf::Vector2f get_saved_velocity() const { return saved_velocity; }
 	inline sf::Vector3f get_color() const { return color; }
 
 	inline sf::Vector2f get_origin() const 
@@ -32,10 +34,28 @@ public: // Properties
 			config->boid_size_width, 
 			config->boid_size_height) / 2.0f;
 	}
+	inline sf::Vector2f get_prev_origin() const
+	{
+		return prev_position + sf::Vector2f(
+			config->boid_size_width,
+			config->boid_size_height) / 2.0f;
+	}
+	inline sf::Vector2f get_saved_origin() const
+	{
+		return saved_position + sf::Vector2f(
+			config->boid_size_width,
+			config->boid_size_height) / 2.0f;
+	}
 
 	inline int get_cell_index() const { return cell_index; }
 
-	void set_cell_index() { cell_index = grid->at_pos(get_origin()); }
+	void set_cell_index() 
+	{ 
+		saved_position = position; // usually you swap pos and vel buffers, but this works as well
+		saved_velocity = velocity;
+
+		cell_index = grid->at_pos(get_origin());
+	}
 	void set_cycle_time(float val) { cycle_time = val; }
 
 private:
@@ -66,8 +86,8 @@ private:
 	const AudioMeter* audio_meter;
 	const RectInt* border;
 
-	sf::Vector2f position, prev_position;
-	sf::Vector2f velocity, prev_velocity;
+	sf::Vector2f position, prev_position, saved_position;
+	sf::Vector2f velocity, prev_velocity, saved_velocity;
 	sf::Vector3f color;
 
 	float cycle_time{0.0f};

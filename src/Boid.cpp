@@ -54,10 +54,14 @@ void Boid::flock(const std::vector<Boid>& boids, const std::vector<int>& sorted_
 	int aliCount = 0;
 	int cohCount = 0;
 
+	sf::Vector2f origin = get_saved_origin();
+	float min_distance = std::fminf(config->coh_distance, config->ali_distance);
+	float length = v2f::length(saved_velocity);
+
 	int neighbours = 0;
 	int neighbour_indicies[4] {-1,-1,-1,-1};
 
-	sf::Vector2f grid_cell_raw = grid->relative_pos(get_origin());
+	sf::Vector2f grid_cell_raw = grid->relative_pos(origin);
 	sf::Vector2i grid_cell = sf::Vector2i(grid_cell_raw);
 	sf::Vector2f grid_cell_overflow = grid_cell_raw - sf::Vector2f(grid_cell);
 
@@ -71,13 +75,17 @@ void Boid::flock(const std::vector<Boid>& boids, const std::vector<int>& sorted_
 	neighbour_indicies[neighbours++] = grid->at_pos(grid_cell.x, y_neighbor);	// top or left of current
 	neighbour_indicies[neighbours++] = grid->at_pos(x_neighbor, y_neighbor);	// top left or bot left of current
 
-	float min_distance = std::fminf(config->coh_distance, config->ali_distance);
-	float length = v2f::length(velocity);
-	sf::Vector2f origin = get_origin();
-
 	for (int i = 0; i < neighbours; ++i)
 	{
 		int grid_cell_index = neighbour_indicies[i];
+
+		sf::Vector2i cell = grid->at_pos(grid_cell_index);
+		sf::Vector2i neighbour_cell = cell - grid_cell;
+
+		grid_cell_index = grid->at_pos(
+			util::wrap(cell.x, 0, grid->width), 
+			util::wrap(cell.y, 0, grid->height));
+
 		for (int j = grid->cells_start_indices[grid_cell_index]; j <= grid->cells_end_indices[grid_cell_index] && j > -1; ++j) // do in one loop
 		{
 			const Boid* b = &boids[sorted_boids[j]];
@@ -85,21 +93,17 @@ void Boid::flock(const std::vector<Boid>& boids, const std::vector<int>& sorted_
 			if (b == this)
 				continue;
 
-			sf::Vector2f other_origin = b->get_origin();
+			sf::Vector2f other_origin = b->get_saved_origin();
 
 			sf::Vector2f other_grid_cell_raw = grid->relative_pos(other_origin);
 			sf::Vector2i other_grid_cell = sf::Vector2i(other_grid_cell_raw);
 			sf::Vector2f other_grid_cell_overflow = other_grid_cell_raw - sf::Vector2f(other_grid_cell);
+			sf::Vector2f other_relative_pos = other_grid_cell_overflow * sf::Vector2f(grid->cont_dims); // other grid cell should be relative
 
-			sf::Vector2f other_relative_pos = other_grid_cell_overflow * sf::Vector2f(grid->cont_dims);
-			sf::Vector2i other_relative_grid_cell = other_grid_cell - grid_cell;
-
-			other_relative_pos.x += (grid->cont_dims.x * other_relative_grid_cell.x);
-			other_relative_pos.y += (grid->cont_dims.y * other_relative_grid_cell.y);
+			other_relative_pos.x += (grid->cont_dims.x * neighbour_cell.x);
+			other_relative_pos.y += (grid->cont_dims.y * neighbour_cell.y);
 
 			sf::Vector2f dir = v2f::direction(relative_pos, other_relative_pos);
-			sf::Vector2f adir = v2f::direction(origin, other_origin);
-
 			float distance = v2f::length_sq(dir);
 
 			if (distance <= FLT_EPSILON)
@@ -118,7 +122,7 @@ void Boid::flock(const std::vector<Boid>& boids, const std::vector<int>& sorted_
 					}
 					if (distance <= config->ali_distance)
 					{
-						ali += b->get_velocity(); // Align with every boids velocity
+						ali += b->get_saved_velocity(); // Align with every boids velocity
 						++aliCount;
 					}
 				}

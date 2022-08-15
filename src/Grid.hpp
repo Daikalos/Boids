@@ -48,9 +48,6 @@ public:
 	}
 	int at_pos(int x, int y) const
 	{
-		x = util::wrap(x, 0, width);
-		y = util::wrap(y, 0, height);
-
 		return x + y * width;
 	}
 
@@ -84,7 +81,7 @@ public:
 	RectInt border_rect;
 	sf::Vector2i cont_dims;
 
-	int width, height, count;
+	int width, height, count, border_count;
 
 	int* cells_start_indices;
 	int* cells_end_indices;

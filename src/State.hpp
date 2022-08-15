@@ -55,8 +55,8 @@ public:
 				sf::Vector2f pos = boid.get_position();
 				sf::Vector2f prev_pos = boid.get_prev_position();
 
-				sf::Vector2f origin = pos + sf::Vector2f(config.boid_size_width, config.boid_size_height) / 2.0f;
-				sf::Vector2f prev_origin = prev_pos + sf::Vector2f(config.boid_size_width, config.boid_size_height) / 2.0f;
+				sf::Vector2f origin = boid.get_origin();
+				sf::Vector2f prev_origin = boid.get_prev_origin();
 
 				float rot = v2f::angle(boid.get_velocity());
 				float prev_rot = v2f::angle(boid.get_prev_velocity());

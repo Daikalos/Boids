@@ -118,6 +118,10 @@ public:
 	{
 		return sf::Vector2<T>(std::fabsf(vector.x), std::fabsf(vector.y));
 	}
+	static inline sf::Vector2<T> floor(sf::Vector2<T> vector)
+	{
+		return sf::Vector2<T>(std::floorf(vector.x), std::floorf(vector.y));
+	}
 
 	static inline float lerp(float a, float b, float f)
 	{

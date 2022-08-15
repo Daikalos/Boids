@@ -40,10 +40,10 @@
             "color_options" : [ 2, 3, 4, 5 ],
 
             "color_positional_weight" : 1.0,
-            "color_cycle_weight" : 0.5,
+            "color_cycle_weight" : 0.0,
             "color_density_weight" : 0.7,
-            "color_velocity_weight" : 0.4,
-            "color_rotation_weight" : -1.7,
+            "color_velocity_weight" : 0.0,
+            "color_rotation_weight" : 0.0,
             "color_audio_weight" : 1.0,
 
             "boid_color_top_left" : "255 20 255",
@@ -61,8 +61,8 @@
                 "90 0 90"
             ],
 
-            "boid_density" : 70,
-            "boid_density_cycle_enabled" : true,
+            "boid_density" : 30,
+            "boid_density_cycle_enabled" : false,
             "boid_density_cycle_speed" : 0.75,
             "boid_density_colors" : 
             [
@@ -163,7 +163,7 @@
             "max_framerate" : 200,
             "physics_update_freq" : 90,
 
-            "debug_enabled" : false,
+            "debug_enabled" : true,
             "debug_update_freq" : 0.5,
             "debug_toggle_key" : 85
         }

@@ -16,6 +16,7 @@ struct Rect
 	inline T height() const { return (bot - top); }
 
 	inline sf::Vector2<T> size() { return sf::Vector2<T>(width(), height()); }
+	inline T count() { return width() * height(); }
 
 	union
 	{
