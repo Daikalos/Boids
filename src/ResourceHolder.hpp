@@ -20,6 +20,8 @@ enum class FontID
 	F8Bit
 };
 
+static const std::string RESOURCE_FOLDER = "content/";
+
 template <class Resource, class Identifier>
 class ResourceHolder : private NonCopyable
 {

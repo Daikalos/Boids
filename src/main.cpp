@@ -42,8 +42,8 @@ int main()
 	TextureHolder texture_holder;
 	FontHolder font_holder;
 
-	texture_holder.load(TextureID::Background, "content/" + config.background_texture);
-	font_holder.load(FontID::F8Bit, "content/font_8bit.ttf");
+	texture_holder.load(TextureID::Background, RESOURCE_FOLDER + config.background_texture);
+	font_holder.load(FontID::F8Bit, RESOURCE_FOLDER + "font_8bit.ttf");
 
 	Camera camera(config);
 	camera.set_size(sf::Vector2f(window.getSize().x, window.getSize().y));
@@ -117,10 +117,10 @@ int main()
 		input_handler.update(dt);
 		debug.update(input_handler, dt);
 
-		if (debug.get_refresh())
+		if (debug.get_refresh()) // time to refresh data
 		{
 			Config prev = config;
-			for (const Reconstruct& reconstruct : config.refresh(prev)) // not clean, but it does not matter much for small project
+			for (const Reconstruct& reconstruct : config.refresh(prev)) // not very clean, but it does not matter much for small project
 			{
 				switch (reconstruct)
 				{
@@ -275,7 +275,7 @@ int main()
 
 			grid.reset_buffers();
 
-			maybe_parallel(
+			policy_select(
 				[&boids, &sorted_boids, &config, &input_handler, &impulses, &mouse_pos, &physics_dt](auto& pol)
 				{
 					std::for_each(pol, boids.begin(), boids.end(),

@@ -11,7 +11,7 @@ enum Policy
 };
 
 template<class F>
-static auto maybe_parallel(F f, Policy p)
+static auto policy_select(F f, Policy p)
 {
 	switch (p) 
 	{

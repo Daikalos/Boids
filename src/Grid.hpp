@@ -78,16 +78,18 @@ public:
 		return *this;
 	}
 
-public:
+private:
 	Config* config;
 
+public:
 	RectFloat grid_rect;
 	sf::Vector2f cont_dims;
 
-	int width, height, count, border_count;
-
 	int* cells_start_indices;
 	int* cells_end_indices;
+
+private:
+	int width, height, count;
 
 private:
 	Grid() = delete;
