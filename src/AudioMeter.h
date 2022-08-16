@@ -8,10 +8,11 @@
 #include <unordered_map>
 
 #include "Config.h"
+#include "NonCopyable.h"
 
 #define SAFE_RELEASE(p) { if ( (p) ) { (p)->Release(); (p) = NULL; } }
 
-class AudioMeter
+class AudioMeter : public NonCopyable
 {
 public:
 	AudioMeter(Config& config, float refresh_freq);

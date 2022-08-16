@@ -6,7 +6,9 @@
 #include "InputHandler.h"
 #include "Config.h"
 
-class Debug
+#include "NonCopyable.h"
+
+class Debug : public NonCopyable
 {
 public:
 	Debug(Config& config)

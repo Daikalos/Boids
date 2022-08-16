@@ -129,8 +129,8 @@
 
             "impulse_enabled" : true,
             "impulse_size" : 50.0,
-            "impulse_speed" : 400.0,
-            "impulse_fade_distance" : 3100.0,
+            "impulse_speed" : 500.0,
+            "impulse_fade_distance" : 400.0,
             "impulse_colors" :
             [
                 "255 20 255",
