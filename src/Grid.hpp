@@ -12,11 +12,11 @@ public:
 	Grid(Config& config, RectFloat grid, sf::Vector2f container)
 		: config(&config), grid_rect(grid), cont_dims(container)
 	{
-		grid_rect.top_left -= sf::Vector2f(config.boid_size_width, config.boid_size_height);
-		grid_rect.bot_right += sf::Vector2f(config.boid_size_width, config.boid_size_height);
+		grid_rect.top_left -= sf::Vector2f(config.boid_size_width, config.boid_size_height) / 2.0f;
+		grid_rect.bot_right += sf::Vector2f(config.boid_size_width, config.boid_size_height) / 2.0f;
 
-		float a = grid_rect.width() / this->cont_dims.x;
-		float b = grid_rect.height() / this->cont_dims.y;
+		float a = grid_rect.width() / cont_dims.x;
+		float b = grid_rect.height() / cont_dims.y;
 
 		cont_dims.x = grid_rect.width() / std::floorf(a);
 		cont_dims.y = grid_rect.height() / std::floorf(b);
