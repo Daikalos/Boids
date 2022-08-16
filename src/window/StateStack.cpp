@@ -73,7 +73,7 @@ void StateStack::clear()
 State::ptr StateStack::create_state(const States::ID& state_id)
 {
 	auto found = _factories.find(state_id);
-	assert(found != factories.end());
+	assert(found != _factories.end());
 
 	return found->second();
 }

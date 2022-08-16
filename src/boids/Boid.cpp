@@ -87,8 +87,8 @@ void Boid::flock(const std::vector<Boid>& boids, const std::vector<int>& sorted_
 
 	for (int i = 0; i < neighbours; ++i)
 	{
-		int grid_cell_index = neighbour_indicies[i];
-		sf::Vector2i neighbour_cell = neighbour[i];
+		const int grid_cell_index = neighbour_indicies[i];
+		const sf::Vector2i neighbour_cell = neighbour[i];
 
 		for (int j = _grid->_cells_start_indices[grid_cell_index]; j <= _grid->_cells_end_indices[grid_cell_index] && j > -1; ++j) // do in one loop
 		{
@@ -116,7 +116,7 @@ void Boid::flock(const std::vector<Boid>& boids, const std::vector<int>& sorted_
 
 			if (distance <= min_distance)
 			{
-				float angle = v2f::angle(_saved_velocity, dir, length, v2f::length(dir));
+				const float angle = v2f::angle(_saved_velocity, dir, length, v2f::length(dir));
 
 				if (angle <= _config->boid_view_angle)
 				{

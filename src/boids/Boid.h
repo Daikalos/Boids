@@ -56,7 +56,7 @@ public: // Properties
 
 		_cell_index = _grid->at_pos(get_origin());
 	}
-	void set_cycle_time(float val) 
+	void set_cycle_time(const float val) 
 	{ 
 		_cycle_time = val;
 	}

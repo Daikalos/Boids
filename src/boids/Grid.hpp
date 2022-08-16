@@ -82,7 +82,7 @@ public:
 	}
 
 private:
-	Config* _config;
+	Config* _config{nullptr};
 
 public:
 	RectFloat _rect;

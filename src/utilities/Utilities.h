@@ -61,7 +61,7 @@ namespace util
 	template<typename T>
 	static inline T set_precision(const T val, const int places)
 	{
-		float n = std::powf(10.0f, places);
+		float n = std::powf(10.0f, (float)places);
 		return std::roundf(val * n) / n;
 	}
 
