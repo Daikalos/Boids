@@ -37,7 +37,7 @@ namespace util
 		if (val > min && val < max)
 			return val;
 
-		T range_size = max - min;
+		const T range_size = max - min;
 
 		if (val < min)
 			return max - std::fmodf(min - val, range_size);

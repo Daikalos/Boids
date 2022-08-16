@@ -9,6 +9,8 @@ Config::Config()
 	coh_distance *= coh_distance;
 
 	predator_distance *= predator_distance;
+
+	load();
 }
 
 void Config::load()
@@ -61,10 +63,6 @@ std::vector<Reconstruct> Config::refresh(Config& prev)
 		result.push_back(Reconstruct::RAudio);
 	if (prev.camera_zoom != camera_zoom)
 		result.push_back(Reconstruct::RCamera);
-	if (prev.physics_update_freq != physics_update_freq)
-		result.push_back(Reconstruct::RPhysics);
-	if (prev.debug_update_freq != debug_update_freq)
-		result.push_back(Reconstruct::RDebug);
 
 	if (prev.background_color != background_color ||
 		prev.background_position_x != background_position_x ||

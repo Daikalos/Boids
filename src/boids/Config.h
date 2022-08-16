@@ -4,7 +4,7 @@
 #include <nlohmann/json.hpp>
 #include <fstream>
 
-#include "Utilities.h"
+#include "../utilities/Utilities.h"
 
 static const std::string FILE_NAME = "config";
 
@@ -44,8 +44,6 @@ enum class Reconstruct : int
 	RAudio,
 	RWindow,
 	RCamera,
-	RPhysics,
-	RDebug,
 	
 	RCount
 };

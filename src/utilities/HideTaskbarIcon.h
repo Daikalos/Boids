@@ -3,7 +3,7 @@
 #include <SFML/Graphics.hpp>
 #include <ShObjIdl.h>
 
-static void hide_taskbar_icon(const sf::RenderWindow& render_window)
+static void hide_taskbar_icon(const sf::RenderWindow& window)
 {
 	ITaskbarList* pTaskList = NULL;
 	
@@ -14,7 +14,7 @@ static void hide_taskbar_icon(const sf::RenderWindow& render_window)
 
 	if (hr == S_OK)
 	{
-		pTaskList->DeleteTab(render_window.getSystemHandle());
+		pTaskList->DeleteTab(window.getSystemHandle());
 		pTaskList->Release();
 	}
 

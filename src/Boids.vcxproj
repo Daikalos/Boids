@@ -19,40 +19,52 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AudioMeter.cpp" />
-    <ClCompile Include="Boid.cpp" />
-    <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="Config.cpp" />
-    <ClCompile Include="Debug.cpp" />
-    <ClCompile Include="InputHandler.cpp" />
+    <ClCompile Include="boids\AudioMeter.cpp" />
+    <ClCompile Include="boids\Boid.cpp" />
+    <ClCompile Include="boids\Config.cpp" />
+    <ClCompile Include="boids\Debug.cpp" />
+    <ClCompile Include="boids\MainState.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="window\Application.cpp" />
+    <ClCompile Include="window\Camera.cpp" />
+    <ClCompile Include="window\InputHandler.cpp" />
+    <ClCompile Include="window\State.cpp" />
+    <ClCompile Include="window\StateStack.cpp" />
+    <ClCompile Include="window\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AudioMeter.h" />
-    <ClInclude Include="Background.h" />
-    <ClInclude Include="Boid.h" />
-    <ClInclude Include="Camera.h" />
-    <ClInclude Include="Config.h" />
-    <ClInclude Include="Debug.h" />
-    <ClInclude Include="Grid.hpp" />
-    <ClInclude Include="HideTaskbarIcon.h" />
-    <ClInclude Include="Impulse.hpp" />
-    <ClInclude Include="Include.h" />
-    <ClInclude Include="InputHandler.h" />
-    <ClInclude Include="NonCopyable.h" />
-    <ClInclude Include="PolicySelect.h" />
-    <ClInclude Include="Rectangle.hpp" />
-    <ClInclude Include="ResourceHolder.hpp" />
-    <ClInclude Include="State.hpp" />
-    <ClInclude Include="Utilities.h" />
-    <ClInclude Include="VecUtil.h" />
+    <ClInclude Include="boids\AudioMeter.h" />
+    <ClInclude Include="boids\Background.h" />
+    <ClInclude Include="boids\Boid.h" />
+    <ClInclude Include="boids\Config.h" />
+    <ClInclude Include="boids\Debug.h" />
+    <ClInclude Include="boids\Grid.hpp" />
+    <ClInclude Include="boids\Impulse.hpp" />
+    <ClInclude Include="utilities\PolicySelect.h" />
+    <ClInclude Include="utilities\Rectangle.hpp" />
+    <ClInclude Include="window\ResourceHolder.hpp" />
+    <ClInclude Include="utilities\NonCopyable.h" />
+    <ClInclude Include="utilities\Utilities.h" />
+    <ClInclude Include="utilities\VecUtil.h" />
+    <ClInclude Include="window\Application.h" />
+    <ClInclude Include="window\Camera.h" />
+    <ClInclude Include="utilities\HideTaskbarIcon.h" />
+    <ClInclude Include="window\InputHandler.h" />
+    <ClInclude Include="boids\MainState.h" />
+    <ClInclude Include="window\State.h" />
+    <ClInclude Include="window\States.h" />
+    <ClInclude Include="window\StateStack.h" />
+    <ClInclude Include="window\Window.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="config.json" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{b48ae00d-0ac7-4b9e-b3e0-798f6e674da3}</ProjectGuid>
     <RootNamespace>Boids</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.22000.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -173,7 +185,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>sfml-system-d.lib;sfml-window-d.lib;sfml-graphics-d.lib;sfml-main.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>sfml-system-d.lib;sfml-window-d.lib;sfml-graphics-d.lib;sfml-main.lib;opengl32.lib;dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <StackReserveSize>4194304 </StackReserveSize>
     </Link>
   </ItemDefinitionGroup>
@@ -203,7 +215,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>sfml-system.lib;sfml-window.lib;sfml-main.lib;sfml-graphics.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>sfml-system.lib;sfml-window.lib;sfml-main.lib;sfml-graphics.lib;opengl32.lib;dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <StackReserveSize>4194304 </StackReserveSize>
     </Link>
   </ItemDefinitionGroup>

@@ -6,7 +6,7 @@
 #include <unordered_set>
 #include <string>
 
-#include "NonCopyable.h"
+#include "../utilities/NonCopyable.h"
 
 #define KEYBOARDMOUSE_ENABLED 1
 #define JOYSTICK_ENABLED 0

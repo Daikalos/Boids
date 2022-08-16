@@ -81,7 +81,7 @@ public:
 		return vector;
 	}
 
-	static inline sf::Vector2<T> max(const sf::Vector2<T>& vector, float max_length)
+	static inline sf::Vector2<T> limit(const sf::Vector2<T>& vector, float max_length)
 	{
 		if (length(vector) > max_length)
 			return normalize(vector, max_length);

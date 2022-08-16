@@ -7,8 +7,9 @@
 #include <string>
 #include <unordered_map>
 
+#include "../utilities/NonCopyable.h"
+
 #include "Config.h"
-#include "NonCopyable.h"
 
 #define SAFE_RELEASE(p) { if ( (p) ) { (p)->Release(); (p) = NULL; } }
 
@@ -24,21 +25,21 @@ public:
 	void clear();
 
 public:
-	float get_volume() const noexcept { return volume; }
+	float get_volume() const noexcept { return _volume; }
 
 private:
 	void refresh(std::wstring* comp);
 
 private:
-	Config* config;
+	Config* _config{nullptr};
 
-	float volume{0.0f};
-	float refresh_freq_max{0.0f};
-	float refresh_freq{0.0f};
+	float _volume{0.0f};
+	float _refresh_freq_max{0.0f};
+	float _refresh_freq{0.0f};
 
-	IAudioMeterInformation* pMeterInfo{NULL};
-	IAudioSessionManager2* pSessionManager{NULL};
-	IMMDevice* pDevice{NULL};
+	IAudioMeterInformation* _meter_info{NULL};
+	IAudioSessionManager2* _session_manager{NULL};
+	IMMDevice* _device{NULL};
 
-	std::unordered_map<std::wstring, std::pair<IAudioSessionControl*, IAudioMeterInformation*>> processes_session_control;
+	std::unordered_map<std::wstring, std::pair<IAudioSessionControl*, IAudioMeterInformation*>> _processes_session_control;
 };

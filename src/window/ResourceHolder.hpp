@@ -8,7 +8,7 @@
 #include <iostream>
 #include <filesystem>
 
-#include "NonCopyable.h"
+#include "../utilities/NonCopyable.h"
 
 enum class TextureID
 {

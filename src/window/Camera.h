@@ -3,18 +3,16 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/OpenGL.hpp>
 
-#include "Config.h"
+#include "../utilities/NonCopyable.h"
+#include "../utilities/VecUtil.h"
 
 #include "InputHandler.h"
-#include "NonCopyable.h"
-
-#include "VecUtil.h"
 
 class Camera : public sf::View, NonCopyable
 {
 public:
-	Camera(Config& config) 
-		: config(&config), position(0, 0), scale(config.camera_zoom, config.camera_zoom), size(0, 0), drag_pos(0, 0) {}
+	Camera() 
+		: _position(0, 0), _scale(1.0f, 1.0f), _size(0, 0), _drag_pos(0, 0) {}
 
 	// call after poll event
 	//
@@ -31,48 +29,46 @@ public:
 	const float* get_world_matrix() const
 	{
 		return sf::Transform()
-			.translate(size / 2.0f)
-			.scale(scale)
-			.translate(-position).getMatrix();
+			.translate(_size / 2.0f)
+			.scale(_scale)
+			.translate(-_position).getMatrix();
 	}
 
 	sf::Transform get_view_matrix() const
 	{
 		return sf::Transform()
-			.translate(position)
-			.scale(1.0f / scale)
-			.translate(size / -2.0f);
+			.translate(_position)
+			.scale(1.0f / _scale)
+			.translate(_size / -2.0f);
 	}
 
 	sf::Vector2f get_mouse_world_position(const sf::RenderWindow& window) const { return view_to_world(sf::Vector2f(sf::Mouse::getPosition(window))); }
 
-	sf::Vector2f get_position() const { return position; }
-	sf::Vector2f get_scale() const { return scale; }
-	sf::Vector2f get_size() const { return size; }
+	sf::Vector2f get_position() const { return _position; }
+	sf::Vector2f get_scale() const { return _scale; }
+	sf::Vector2f get_size() const { return _size; }
 
 	void set_position(sf::Vector2f position)
 	{
+		_position = position;
 		setCenter(position);
-		this->position = position;
 	}
 	void set_scale(sf::Vector2f scale)
 	{
-		setSize(size * (1.0f / scale));
-		this->scale = scale;
+		_scale = scale;
+		setSize(_size * (1.0f / scale));
 	}
 	void set_size(sf::Vector2f size) 
 	{ 
-		this->size = size;
-		setSize(size);
+		_size = size;
+		setSize(size * (1.0f / _scale));
 	}
 
 private:
-	Config* config;
+	sf::Vector2f _position;
+	sf::Vector2f _scale;
+	sf::Vector2f _size;
 
-	sf::Vector2f position;
-	sf::Vector2f scale;
-	sf::Vector2f size;
-
-	sf::Vector2f drag_pos;
+	sf::Vector2f _drag_pos;
 };
 

@@ -2,17 +2,19 @@
 
 #include <SFML/Graphics.hpp>
 
-#include "ResourceHolder.hpp"
+#include "../window/ResourceHolder.hpp"
+
+#include "Config.h"
 
 class Background
 {
 public:
-	Background() { }
+	Background() = default;
 
-	void load_texture(const TextureHolder& texture_holder)
+	void load_texture(const TextureHolder& _texture_holder)
 	{
-		if (texture_holder.exists(TextureID::Background))
-			background.setTexture(texture_holder.get(TextureID::Background), true);
+		if (_texture_holder.exists(TextureID::Background))
+			background.setTexture(_texture_holder.get(TextureID::Background), true);
 		else
 			background.setTexture(sf::Texture(), true);
 	}
