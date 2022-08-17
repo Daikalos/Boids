@@ -52,7 +52,7 @@ void ResourceHolder<Resource, Identifier>::load(const Identifier& id, const std:
 {
 	std::unique_ptr<Resource> resource(new Resource());
 
-	if (!resource->loadFromFile(path))
+	if (!resource->loadFromFile(RESOURCE_FOLDER + path))
 	{
 		remove(id);
 		return;
@@ -68,7 +68,7 @@ void ResourceHolder<Resource, Identifier>::load(const Identifier& id, const std:
 {
 	std::unique_ptr<Resource> resource(new Resource());
 
-	if (!resource->loadFromFile(path, second_param))
+	if (!resource->loadFromFile(RESOURCE_FOLDER + path, second_param))
 	{
 		remove(id);
 		return;

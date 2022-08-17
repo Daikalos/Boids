@@ -3,8 +3,8 @@
 MainState::MainState(StateStack& stack, Context context, Config& config) 
     : State(stack, context), _config(&config), _debug(*_config), _audio_meter(*_config, 1.0f)
 {
-    context._texture_holder->load(TextureID::Background, RESOURCE_FOLDER + _config->background_texture);
-    context._font_holder->load(FontID::F8Bit, RESOURCE_FOLDER + "font_8bit.ttf");
+    context._texture_holder->load(TextureID::Background, _config->background_texture);
+    context._font_holder->load(FontID::F8Bit, "font_8bit.ttf");
 
     _debug.load(*context._font_holder);
     _audio_meter.initialize();
@@ -134,7 +134,7 @@ bool MainState::pre_update(float dt)
 					}
 				}
 				break;
-			case Reconstruct::RBoidsCycle:
+			case Reconstruct::RBoidsCycle:	
 				{
 					for (Boid& boid : _boids)
 						boid.set_cycle_time(_config->boid_cycle_colors_random ? util::random(0.0f, 1.0f) : 0.0f);
@@ -142,7 +142,7 @@ bool MainState::pre_update(float dt)
 				break;
 			case Reconstruct::RBackgroundTex:
 				{
-					context()._texture_holder->load(TextureID::Background, "content/" + _config->background_texture);
+					context()._texture_holder->load(TextureID::Background, _config->background_texture);
 
 					_background.load_texture(*context()._texture_holder);
 					_background.load_prop(*_config, sf::Vector2i(context()._window->getSize()));
