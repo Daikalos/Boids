@@ -13,7 +13,7 @@ AudioMeter::~AudioMeter()
 
 	for (int i = 0; i < _config->audio_responsive_apps.size(); ++i)
 	{
-		std::wstring process_name = _config->audio_responsive_apps[i];
+		std::wstring& process_name = _config->audio_responsive_apps[i];
 
 		SAFE_RELEASE(_processes_session_control[process_name].first);
 		SAFE_RELEASE(_processes_session_control[process_name].second);

@@ -58,5 +58,5 @@ protected:
 
 private:
 	StateStack* _state_stack;
-	Context _context;
+	Context		_context;
 };

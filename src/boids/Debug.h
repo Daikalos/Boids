@@ -43,16 +43,16 @@ private:
 	}
 
 private:
-	Config* _config;
+	Config*		_config;
 
-	float _update_freq_max{0.0f};
-	float _update_freq{0.0f};
+	float		_update_freq_max{0.0f};
+	float		_update_freq{0.0f};
 
-	bool _enabled{false};
-	bool _refresh{false};
+	bool		_enabled{false};
+	bool		_refresh{false};
 
-	sf::Text _debug_text_state;
-	sf::Text _debug_text_info;
+	sf::Text	_debug_text_state;
+	sf::Text	_debug_text_info;
 	std::string _debug_info;
 };
 

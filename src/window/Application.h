@@ -31,12 +31,12 @@ private:
 	void register_states();
 
 private:
-	Config _config;
-	Camera _camera;
-	Window _window;
-	InputHandler _input_handler;
-	TextureHolder _texture_holder;
-	FontHolder _font_holder;
-	StateStack _state_stack;
+	Config			_config;
+	Camera			_camera;
+	Window			_window;
+	InputHandler	_input_handler;
+	TextureHolder	_texture_holder;
+	FontHolder		_font_holder;
+	StateStack		_state_stack;
 };
 

@@ -25,8 +25,8 @@ public:
 	}
 
 private:
-	sf::Vector2f _position{0.0f, 0.0f};
-	const float _speed{0.0f};
-	const float _size{ 0.0f };
-	float _length{0.0f};
+	sf::Vector2f	_position{0.0f, 0.0f};
+	const float		_speed{0.0f};
+	const float		_size{ 0.0f };
+	float			_length{0.0f};
 };

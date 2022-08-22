@@ -81,9 +81,9 @@ void Boid::flock(const std::vector<Boid>& boids, const std::vector<int>& sorted_
 	neighbour[3] = sf::Vector2i(x, y);
 
 	neighbour_indicies[0] = _grid->at_pos(grid_cell.x, grid_cell.y);	// current
-	neighbour_indicies[1] = _grid->at_pos(x_neighbor, grid_cell.y);	// left or right of current
-	neighbour_indicies[2] = _grid->at_pos(grid_cell.x, y_neighbor);	// top or bot of current
-	neighbour_indicies[3] = _grid->at_pos(x_neighbor, y_neighbor);	// top left/right bot left/right of current
+	neighbour_indicies[1] = _grid->at_pos(x_neighbor, grid_cell.y);		// left or right of current
+	neighbour_indicies[2] = _grid->at_pos(grid_cell.x, y_neighbor);		// top or bot of current
+	neighbour_indicies[3] = _grid->at_pos(x_neighbor, y_neighbor);		// top left/right bot left/right of current
 
 	for (int i = 0; i < neighbours; ++i)
 	{
@@ -171,12 +171,20 @@ sf::Vector2f Boid::steer_at(const sf::Vector2f& steer_direction) const
 	return steer;
 }
 
-void Boid::steer_towards(sf::Vector2f point, float weight)
+void Boid::steer_towards(const sf::Vector2f& point, float weight)
 {
 	if (std::abs(weight) <= FLT_EPSILON)
 		return;
 
 	sf::Vector2f steer = v2f::normalize(v2f::direction(get_origin(), point), _config->boid_max_speed); 
+	_velocity += steer_at(steer) * weight;
+}
+void Boid::steer_towards(const sf::Vector2f& direction, float length, float weight)
+{
+	if (std::abs(weight) <= FLT_EPSILON)
+		return;
+
+	sf::Vector2f steer = v2f::normalize(direction, length, _config->boid_max_speed);
 	_velocity += steer_at(steer) * weight;
 }
 

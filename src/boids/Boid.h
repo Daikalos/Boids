@@ -16,7 +16,9 @@ class Boid
 public:
 	Boid(Grid& grid, Config& config, const AudioMeter& audio_meter, const RectInt& border, const sf::Vector2f& pos);
 
-	void steer_towards(sf::Vector2f point, float weight);
+	void steer_towards(const sf::Vector2f& point, float weight);
+	void steer_towards(const sf::Vector2f& direction, float length, float weight);
+
 	void update_grid_cells(const std::vector<Boid>& boids, const std::vector<int>& sorted_boids, int index) const;
 	void update(const std::vector<Boid>& boids, const std::vector<int>& sorted_boids, const std::vector<Impulse>& impulses, float dt);
 	
@@ -79,19 +81,19 @@ private:
 	sf::Vector3f impulse_color(const std::vector<Impulse>& impulses) const;
 
 private:
-	Grid* _grid;
-	Config* _config;
-	const AudioMeter* _audio_meter;
-	const RectInt* _border;
+	Grid*				_grid;
+	Config*				_config;
+	const AudioMeter*	_audio_meter;
+	const RectInt*		_border;
 
-	sf::Vector2f _position, _prev_position, _saved_position;
-	sf::Vector2f _velocity, _prev_velocity, _saved_velocity;
-	sf::Vector3f _color;
+	sf::Vector2f		_position, _prev_position, _saved_position;
+	sf::Vector2f		_velocity, _prev_velocity, _saved_velocity;
+	sf::Vector3f		_color;
 
-	float _cycle_time{0.0f};
-	float _density_time{0.0f};
+	float				_cycle_time{0.0f};
+	float				_density_time{0.0f};
 
-	int _density{0};
-	int _cell_index{0};
+	int					_density{0};
+	int					_cell_index{0};
 };
 

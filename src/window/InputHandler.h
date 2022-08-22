@@ -256,22 +256,22 @@ public:
 	}
 
 private: // VARIABLES
-	bool _keyboard_enabled;
-	bool _mouse_enabled;
-	bool _joystick_enabled;
+	bool	_keyboard_enabled;
+	bool	_mouse_enabled;
+	bool	_joystick_enabled;
 
-	float _held_threshold;
+	float	_held_threshold;
 
 #if KEYBOARDMOUSE_ENABLED
-	float _scroll_delta;
+	float	_scroll_delta;
 
-	bool _current_button_state[sf::Mouse::ButtonCount];
-	bool _previous_button_state[sf::Mouse::ButtonCount];
-	float _button_held_timer[sf::Mouse::ButtonCount];
+	bool	_current_button_state[sf::Mouse::ButtonCount];
+	bool	_previous_button_state[sf::Mouse::ButtonCount];
+	float	_button_held_timer[sf::Mouse::ButtonCount];
 
-	bool _current_key_state[sf::Keyboard::KeyCount];
-	bool _previous_key_state[sf::Keyboard::KeyCount];
-	float _key_held_timer[sf::Keyboard::KeyCount];
+	bool	_current_key_state[sf::Keyboard::KeyCount];
+	bool	_previous_key_state[sf::Keyboard::KeyCount];
+	float	_key_held_timer[sf::Keyboard::KeyCount];
 
 	std::unordered_map<Binding::Key, sf::Keyboard::Key> _key_bindings;
 	std::unordered_map<Binding::Button, sf::Mouse::Button> _button_bindings;

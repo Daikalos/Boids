@@ -217,27 +217,35 @@ bool MainState::fixed_update(float dt)
 					bool hold_left = context().input_handler->get_button_held(sf::Mouse::Button::Left);
 					bool hold_right = context().input_handler->get_button_held(sf::Mouse::Button::Right);
 
-					if (_config->steer_enabled)
+					if (_config->steer_enabled || _config->predator_enabled)
 					{
-						float dist = 0.0f;
+						sf::Vector2f dir = v2f::direction(boid.get_saved_origin(), _mouse_pos);
 
-						if (hold_left || hold_right)
-							dist = 15.0f / std::sqrtf(v2f::length(boid.get_saved_origin(), _mouse_pos)); // hard coded because cant update _config->.. 
-
-						if (hold_left)
-							boid.steer_towards(_mouse_pos, _config->steer_towards_factor * dist);
-						if (hold_right)
-							boid.steer_towards(_mouse_pos, -_config->steer_away_factor * dist);
-					}
-
-					if (_config->predator_enabled && !(_config->steer_enabled && (hold_left || hold_right)))
-					{
-						float dist = v2f::length_sq(boid.get_saved_origin(), _mouse_pos);
-
-						if (dist <= _config->predator_distance)
+						if (_config->steer_enabled)
 						{
-							float factor = (dist > FLT_EPSILON) ? std::sqrtf(dist / _config->predator_distance) : FLT_EPSILON;
-							boid.steer_towards(_mouse_pos, -_config->predator_factor / factor);
+							float weight = 0.0f;
+							float length_opt = 0.0f;
+
+							if (hold_left || hold_right)
+							{
+								length_opt = v2f::length_opt(dir);
+								weight = 15.0f / std::sqrtf(length_opt); // hard coded because cant update _config->.. 
+							}
+
+							if (hold_left)
+								boid.steer_towards(dir, length_opt, _config->steer_towards_factor * weight);
+							if (hold_right)
+								boid.steer_towards(dir, length_opt, -_config->steer_away_factor * weight);
+						}
+
+						if (_config->predator_enabled && !(_config->steer_enabled && (hold_left || hold_right)))
+						{
+							float length_sq = v2f::length_sq(dir);
+							if (length_sq <= _config->predator_distance)
+							{
+								float weight = std::sqrtf(length_sq / _config->predator_distance);
+								boid.steer_towards(_mouse_pos, -_config->predator_factor / weight);
+							}
 						}
 					}
 

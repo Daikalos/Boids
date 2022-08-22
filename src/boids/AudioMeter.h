@@ -15,6 +15,9 @@
 
 class AudioMeter : public NonCopyable
 {
+private:
+	using ProcessInfo = typename std::pair<IAudioSessionControl*, IAudioMeterInformation*>;
+
 public:
 	AudioMeter(Config& config, float refresh_freq);
 	~AudioMeter();
@@ -31,15 +34,15 @@ private:
 	void refresh(std::wstring* comp);
 
 private:
-	Config* _config{nullptr};
+	Config*					_config{nullptr};
 
-	float _volume{0.0f};
-	float _refresh_freq_max{0.0f};
-	float _refresh_freq{0.0f};
+	float					_volume{0.0f};
+	float					_refresh_freq_max{0.0f};
+	float					_refresh_freq{0.0f};
 
 	IAudioMeterInformation* _meter_info{NULL};
-	IAudioSessionManager2* _session_manager{NULL};
-	IMMDevice* _device{NULL};
+	IAudioSessionManager2*	_session_manager{NULL};
+	IMMDevice*				_device{NULL};
 
-	std::unordered_map<std::wstring, std::pair<IAudioSessionControl*, IAudioMeterInformation*>> _processes_session_control;
+	std::unordered_map<std::wstring, ProcessInfo> _processes_session_control;
 };

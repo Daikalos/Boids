@@ -13,7 +13,7 @@ public:
 	Grid() = default;
 
 	Grid(Config& config, RectFloat rect, sf::Vector2f cont_dims)
-		: _config(&config), _rect(rect), _cont_dims(cont_dims)
+		: _rect(rect), _cont_dims(cont_dims)
 	{
 		rect.top_left -= sf::Vector2f(config.boid_size_width, config.boid_size_height) / 2.0f;
 		rect.bot_right += sf::Vector2f(config.boid_size_width, config.boid_size_height) / 2.0f;
@@ -69,7 +69,6 @@ public:
 
 	Grid& operator=(Grid&& rhs) noexcept
 	{
-		std::swap(_config, rhs._config);
 		std::swap(_rect, rhs._rect);
 		std::swap(_cont_dims, rhs._cont_dims);
 		std::swap(_width, rhs._width);
@@ -81,15 +80,12 @@ public:
 		return *this;
 	}
 
-private:
-	Config* _config{nullptr};
-
 public:
-	RectFloat _rect;
-	sf::Vector2f _cont_dims;
+	RectFloat		_rect;
+	sf::Vector2f	_cont_dims;
 
-	int* _cells_start_indices{nullptr};
-	int* _cells_end_indices{nullptr};
+	int*			_cells_start_indices{nullptr};
+	int*			_cells_end_indices{nullptr};
 
 private:
 	int _width{0}, _height{0}, _count{0};

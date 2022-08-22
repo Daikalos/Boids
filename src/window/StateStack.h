@@ -57,10 +57,10 @@ private:
 	};
 
 private:
-	std::vector<State::ptr> _stack;
-	std::vector<PendingChange> _pending_list;
+	std::vector<State::ptr>		_stack;
+	std::vector<PendingChange>	_pending_list;
 
-	State::Context _context;
+	State::Context				_context;
 	std::unordered_map<States::ID, std::function<State::ptr()>> _factories;
 };
 

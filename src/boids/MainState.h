@@ -42,24 +42,24 @@ public:
 	void draw() override;
 
 private:
-	Config* _config;
+	Config*					_config;
 
-	Grid _grid;
-	Debug _debug;
-	AudioMeter _audio_meter;
-	Background _background;
+	Grid					_grid;
+	Debug					_debug;
+	AudioMeter				_audio_meter;
+	Background				_background;
 
-	std::vector<Impulse> _impulses;
-	std::vector<Boid> _boids;
-	std::vector<int> _sorted_boids;
+	std::vector<Impulse>	_impulses;
+	std::vector<Boid>		_boids;
+	std::vector<int>		_sorted_boids;
 
-	std::vector<Vertex> _vertices;
-	std::vector<Color> _colors;
+	std::vector<Vertex>		_vertices;
+	std::vector<Color>		_colors;
 	
-	RectInt _border;
+	RectInt					_border;
 
-	sf::Vector2f _mouse_pos;
-	float _min_distance;
+	sf::Vector2f			_mouse_pos;
+	float					_min_distance;
 
-	Policy _policy;
+	Policy					_policy;
 };

@@ -56,13 +56,13 @@ public:
 	std::vector<sf::VideoMode> get_modes() const;
 
 private:
-	std::string _name;
-	sf::VideoMode _mode;
-	WindowBorder _border;
-	sf::ContextSettings _settings;
-	bool _vertical_sync;
-	int _frame_rate;
-	sf::Color _clear_color;
+	std::string				_name;
+	sf::VideoMode			_mode;
+	WindowBorder			_border;
+	sf::ContextSettings		_settings;
+	bool					_vertical_sync;
+	int						_frame_rate;
+	sf::Color				_clear_color;
 
-	Camera* _camera;
+	Camera*					_camera;
 };
