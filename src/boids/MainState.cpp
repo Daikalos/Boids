@@ -1,20 +1,20 @@
 #include "MainState.h"
 
-MainState::MainState(StateStack& stack, Context context, Config& config) 
-    : State(stack, context), _config(&config), _debug(*_config), _audio_meter(*_config, 1.0f)
+MainState::MainState(StateStack& stack, Context context, Config& config) : 
+	State(stack, context), _config(&config), _debug(*_config), _audio_meter(*_config, 1.0f)
 {
-    context._texture_holder->load(TextureID::Background, _config->background_texture);
-    context._font_holder->load(FontID::F8Bit, "font_8bit.ttf");
+    context.texture_holder->load(TextureID::Background, _config->background_texture);
+    context.font_holder->load(FontID::F8Bit, "font_8bit.ttf");
 
-    _debug.load(*context._font_holder);
+    _debug.load(*context.font_holder);
     _audio_meter.initialize();
 
-    _background.load_texture(*context._texture_holder);
-    _background.load_prop(*_config, sf::Vector2i(context._window->getSize()));
+    _background.load_texture(*context.texture_holder);
+    _background.load_prop(*_config, sf::Vector2i(context.window->getSize()));
 
     _min_distance = std::sqrtf(std::fmaxf(std::fmaxf(_config->sep_distance, _config->ali_distance), _config->coh_distance));
 
-    _border = context._window->get_border();
+    _border = context.window->get_border();
 
     RectFloat grid_border = (RectFloat)_border + (_config->turn_at_border ?
         RectFloat(
@@ -53,7 +53,7 @@ bool MainState::handle_event(const sf::Event& event)
     {
     case sf::Event::Resized:
         {
-			_border = context()._window->get_border();
+			_border = context().window->get_border();
 
             RectFloat grid_border = (RectFloat)_border + (_config->turn_at_border ?
                 RectFloat(
@@ -64,7 +64,7 @@ bool MainState::handle_event(const sf::Event& event)
 
             _grid = Grid(*_config, grid_border, sf::Vector2f(_min_distance, _min_distance) * 2.0f);
 
-            _background.load_prop(*_config, sf::Vector2i(context()._window->getSize()));
+            _background.load_prop(*_config, sf::Vector2i(context().window->getSize()));
         }
         break;
     }
@@ -142,29 +142,29 @@ bool MainState::pre_update(float dt)
 				break;
 			case Reconstruct::RBackgroundTex:
 				{
-					context()._texture_holder->load(TextureID::Background, _config->background_texture);
+					context().texture_holder->load(TextureID::Background, _config->background_texture);
 
-					_background.load_texture(*context()._texture_holder);
-					_background.load_prop(*_config, sf::Vector2i(context()._window->getSize()));
+					_background.load_texture(*context().texture_holder);
+					_background.load_prop(*_config, sf::Vector2i(context().window->getSize()));
 				}
 				break;
 			case Reconstruct::RBackgroundProp:
 				{
-					_background.load_prop(*_config, sf::Vector2i(context()._window->getSize()));
+					_background.load_prop(*_config, sf::Vector2i(context().window->getSize()));
 
 					sf::Vector3f vc = _config->background_color * 255.0f;
-					context()._window->set_clear_color(sf::Color(vc.x, vc.y, vc.z, 255.0f));
+					context().window->set_clear_color(sf::Color(vc.x, vc.y, vc.z, 255.0f));
 				}
 				break;
 			case Reconstruct::RAudio:
 				_audio_meter.clear();
 				break;
 			case Reconstruct::RWindow:
-				context()._window->setVerticalSyncEnabled(_config->vertical_sync);
-				context()._window->setFramerateLimit(_config->vertical_sync ? 0 : _config->max_framerate);
+				context().window->setVerticalSyncEnabled(_config->vertical_sync);
+				context().window->setFramerateLimit(_config->vertical_sync ? 0 : _config->max_framerate);
 				break;
 			case Reconstruct::RCamera:
-				context()._camera->set_scale(sf::Vector2f(_config->camera_zoom, _config->camera_zoom));
+				context().camera->set_scale(sf::Vector2f(_config->camera_zoom, _config->camera_zoom));
 				break;
 			}
 		}
@@ -177,8 +177,8 @@ bool MainState::update(float dt)
 {
 	_audio_meter.update(dt);
 
-	_mouse_pos = sf::Vector2f(context()._camera->
-		get_mouse_world_position(*context()._window));
+	_mouse_pos = sf::Vector2f(context().camera->
+		get_mouse_world_position(*context().window));
 
 	if (_config->impulse_enabled && context().input_handler->get_button_pressed(sf::Mouse::Button::Left))
 		_impulses.push_back(Impulse(_mouse_pos, _config->impulse_speed, _config->impulse_size, -_config->impulse_size));
@@ -219,7 +219,7 @@ bool MainState::fixed_update(float dt)
 
 					if (_config->steer_enabled || _config->predator_enabled)
 					{
-						sf::Vector2f dir = vu::direction(boid.get_saved_origin(), _mouse_pos);
+						sf::Vector2f dir = vu::direction(boid.get_position(), _mouse_pos);
 
 						if (_config->steer_enabled)
 						{
@@ -248,12 +248,14 @@ bool MainState::fixed_update(float dt)
 							}
 						}
 					}
+
+					boid.flock(_boids, _sorted_boids);
 				});
 
 			std::for_each(pol, _boids.begin(), _boids.end(),
 				[&dt, this](Boid& boid)
 				{
-					boid.update(_boids, _sorted_boids, _impulses, dt);
+					boid.update(_impulses, dt);
 				});
 
 		}, _policy);
@@ -263,55 +265,59 @@ bool MainState::fixed_update(float dt)
 
 bool MainState::post_update(float dt, float interp)
 {
-	std::for_each(
-		std::execution::par_unseq, _boids.begin(), _boids.end(),
-		[&interp, this](const Boid& boid)
+	policy_select(
+		[&interp, this](auto& pol)
 		{
-			int v = (&boid - _boids.data()) * 3;
+			std::for_each(
+				pol, _boids.begin(), _boids.end(),
+				[&interp, this](const Boid& boid)
+				{
+					const int v = (&boid - _boids.data()) * 3;
 
-			sf::Vector2f pos = boid.get_position();
-			sf::Vector2f prev_pos = boid.get_prev_position();
+					sf::Vector3f color = boid.get_color();
 
-			sf::Vector2f origin = boid.get_origin();
-			sf::Vector2f prev_origin = boid.get_prev_origin();
+					const sf::Vector2f pos = boid.get_position();
+					const sf::Vector2f prev_pos = boid.get_prev_position();
 
-			float rot = vu::angle(boid.get_velocity());
-			float prev_rot = vu::angle(boid.get_prev_velocity());
+					const sf::Vector2f origin = boid.get_origin();
+					const sf::Vector2f prev_origin = boid.get_prev_origin();
 
-			sf::Vector2f pointA = vu::rotate_point({ pos.x + _config->boid_size_width	, pos.y + (_config->boid_size_height / 2)	}, origin, rot); // middle right tip
-			sf::Vector2f pointB = vu::rotate_point({ pos.x								, pos.y										}, origin, rot); // top left corner
-			sf::Vector2f pointC = vu::rotate_point({ pos.x								, pos.y + _config->boid_size_height			}, origin, rot); // bot left corner
+					const float rot = vu::angle(boid.get_velocity());
+					const float prev_rot = vu::angle(boid.get_prev_velocity());
 
-			sf::Vector2f prev_pointA = vu::rotate_point({ prev_pos.x + _config->boid_size_width	, prev_pos.y + (_config->boid_size_height / 2)	}, prev_origin, prev_rot); // middle right tip
-			sf::Vector2f prev_pointB = vu::rotate_point({ prev_pos.x							, prev_pos.y									}, prev_origin, prev_rot); // top left corner
-			sf::Vector2f prev_pointC = vu::rotate_point({ prev_pos.x							, prev_pos.y + _config->boid_size_height			}, prev_origin, prev_rot); // bot left corner
+					const sf::Vector2f pointA = vu::rotate_point({ pos.x + _config->boid_size_width	, pos.y + (_config->boid_size_height / 2) }, origin, rot); // middle right tip
+					const sf::Vector2f pointB = vu::rotate_point({ pos.x								, pos.y }, origin, rot); // top left corner
+					const sf::Vector2f pointC = vu::rotate_point({ pos.x								, pos.y + _config->boid_size_height }, origin, rot); // bot left corner
 
-			sf::Vector2f p0 = pointA * interp + prev_pointA * (1.0f - interp);
-			sf::Vector2f p1 = pointB * interp + prev_pointB * (1.0f - interp);
-			sf::Vector2f p2 = pointC * interp + prev_pointC * (1.0f - interp);
+					const sf::Vector2f prev_pointA = vu::rotate_point({ prev_pos.x + _config->boid_size_width	, prev_pos.y + (_config->boid_size_height / 2) }, prev_origin, prev_rot); // middle right tip
+					const sf::Vector2f prev_pointB = vu::rotate_point({ prev_pos.x							, prev_pos.y }, prev_origin, prev_rot); // top left corner
+					const sf::Vector2f prev_pointC = vu::rotate_point({ prev_pos.x							, prev_pos.y + _config->boid_size_height }, prev_origin, prev_rot); // bot left corner
 
-			_vertices[v + 0] = *(Vertex*)(&p0);
-			_vertices[v + 1] = *(Vertex*)(&p1);
-			_vertices[v + 2] = *(Vertex*)(&p2);
+					const sf::Vector2f p0 = pointA * interp + prev_pointA * (1.0f - interp);
+					const sf::Vector2f p1 = pointB * interp + prev_pointB * (1.0f - interp);
+					const sf::Vector2f p2 = pointC * interp + prev_pointC * (1.0f - interp);
 
-			sf::Vector3f color = boid.get_color();
+					_vertices[v + 0] = p0;
+					_vertices[v + 1] = p1;
+					_vertices[v + 2] = p2;
 
-			_colors[v + 0] = *(Color*)(&color);
-			_colors[v + 1] = *(Color*)(&color);
-			_colors[v + 2] = *(Color*)(&color);
-		});
+					_colors[v + 0] = color;
+					_colors[v + 1] = color;
+					_colors[v + 2] = color;
+				});
+		}, _policy);
 
     return true;
 }
 
 void MainState::draw()
 {
-	_background.draw(*context()._window);
+	_background.draw(*context().window);
 
 	glPushMatrix();
-	glLoadMatrixf(context()._camera->get_world_matrix());
+	glLoadMatrixf(context().camera->get_world_matrix());
 	glDrawArrays(GL_TRIANGLES, 0, _vertices.size());
 	glPopMatrix();
 
-	_debug.draw(*context()._window);
+	_debug.draw(*context().window);
 }

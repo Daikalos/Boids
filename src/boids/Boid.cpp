@@ -11,13 +11,8 @@ Boid::Boid(Grid& grid, Config& config, const AudioMeter& audio_meter, const Rect
 		_cycle_time = util::random(0.0f, 1.0f);
 }
 
-void Boid::update(const std::vector<Boid>& boids, const std::vector<int>& sorted_boids, const std::vector<Impulse>& impulses, float dt)
+void Boid::update(const std::vector<Impulse>& impulses, float dt)
 {
-	_prev_position = _position;
-	_prev_velocity = _velocity;
-
-	flock(boids, sorted_boids);
-
 	_position += _velocity * dt;
 
 	if (outside_border(dt))
@@ -56,8 +51,8 @@ void Boid::flock(const std::vector<Boid>& boids, const std::vector<int>& sorted_
 
 	const float min_distance = std::fminf(_config->coh_distance, _config->ali_distance);
 
-	const sf::Vector2f origin = get_saved_origin();
-	const float vel_length = vu::distance(_saved_velocity);
+	const sf::Vector2f origin = get_origin();
+	const float vel_length = vu::distance(_velocity);
 
 	const int neighbours = 4;
 
@@ -98,7 +93,7 @@ void Boid::flock(const std::vector<Boid>& boids, const std::vector<int>& sorted_
 			if (b == this)
 				continue;
 
-			const sf::Vector2f other_origin = b->get_saved_origin();
+			const sf::Vector2f other_origin = b->get_origin();
 
 			const sf::Vector2f other_grid_cell_raw = _grid->relative_pos(other_origin);
 			const sf::Vector2i other_grid_cell = sf::Vector2i(other_grid_cell_raw);
@@ -117,7 +112,7 @@ void Boid::flock(const std::vector<Boid>& boids, const std::vector<int>& sorted_
 
 			if (distance <= min_distance)
 			{
-				const float angle = vu::angle(_saved_velocity, dir, vel_length, std::sqrtf(distance));
+				const float angle = vu::angle(_prev_velocity, dir, vel_length, std::sqrtf(distance));
 
 				if (angle <= _config->boid_view_angle)
 				{
@@ -128,7 +123,7 @@ void Boid::flock(const std::vector<Boid>& boids, const std::vector<int>& sorted_
 					}
 					if (distance <= _config->ali_distance)
 					{
-						ali += b->get_saved_velocity(); // Align with every boids _velocity
+						ali += b->get_prev_velocity(); // Align with every boids _velocity
 						++aliCount;
 					}
 				}
@@ -378,7 +373,7 @@ sf::Vector3f Boid::impulse_color(const std::vector<Impulse>& impulses) const
 	return _color;
 }
 
-void Boid::update_grid_cells(const std::vector<Boid>& boids, const std::vector<int>& sorted_boids, int index) const
+void Boid::update_grid_cells(const std::vector<Boid>& boids, const std::vector<int>& sorted_boids, const int index) const
 {
 	if (index == 0)
 	{

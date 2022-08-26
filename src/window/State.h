@@ -19,13 +19,13 @@ public:
 	struct Context // holds vital objects
 	{
 		Context(Window& window, Camera& camera, InputHandler& input_handler, TextureHolder& texture_holder, FontHolder& font_holder)
-			: _window(&window), _camera(&camera), input_handler(&input_handler), _texture_holder(&texture_holder), _font_holder(&font_holder) { }
+			: window(&window), camera(&camera), input_handler(&input_handler), texture_holder(&texture_holder), font_holder(&font_holder) { }
 
-		Window* _window;
-		Camera* _camera;
-		InputHandler* input_handler;
-		TextureHolder* _texture_holder;
-		FontHolder* _font_holder;
+		Window*			window;
+		Camera*			camera;
+		InputHandler*	input_handler;
+		TextureHolder*	texture_holder;
+		FontHolder*		font_holder;
 	};
 
 public:
