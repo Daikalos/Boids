@@ -244,11 +244,15 @@ bool MainState::fixed_update(float dt)
 							if (length_sq <= _config->predator_distance)
 							{
 								float weight = std::sqrtf(length_sq / _config->predator_distance);
-								boid.steer_towards(_mouse_pos, -_config->predator_factor / weight);
+								boid.steer_towards(dir, -_config->predator_factor / weight);
 							}
 						}
 					}
+				});
 
+			std::for_each(pol, _boids.begin(), _boids.end(),
+				[&dt, this](Boid& boid)
+				{
 					boid.update(_boids, _sorted_boids, _impulses, dt);
 				});
 
