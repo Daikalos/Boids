@@ -3,7 +3,7 @@
 Boid::Boid(Grid& grid, Config& config, const AudioMeter& audio_meter, const RectInt& border, const sf::Vector2f& pos)
 	: _grid(&grid), _config(&config), _audio_meter(&audio_meter), _border(&border), _position(pos)
 {
-	_velocity = v2f::normalize(sf::Vector2f(
+	_velocity = vu::normalize(sf::Vector2f(
 		util::random(-1.0f, 1.0f),
 		util::random(-1.0f, 1.0f)), config.boid_max_speed);
 
@@ -54,9 +54,10 @@ void Boid::flock(const std::vector<Boid>& boids, const std::vector<int>& sorted_
 	int aliCount = 0;
 	int cohCount = 0;
 
-	const sf::Vector2f origin = get_saved_origin();
 	const float min_distance = std::fminf(_config->coh_distance, _config->ali_distance);
-	const float length = v2f::length(_saved_velocity);
+
+	const sf::Vector2f origin = get_saved_origin();
+	const float vel_length = vu::distance(_saved_velocity);
 
 	const int neighbours = 4;
 
@@ -108,15 +109,15 @@ void Boid::flock(const std::vector<Boid>& boids, const std::vector<int>& sorted_
 			other_relative_pos.x += (_grid->_cont_dims.x * neighbour_cell.x);
 			other_relative_pos.y += (_grid->_cont_dims.y * neighbour_cell.y);
 
-			const sf::Vector2f dir = v2f::direction(relative_pos, other_relative_pos);
-			const float distance = v2f::length_sq(dir);
+			const sf::Vector2f dir = vu::direction(relative_pos, other_relative_pos);
+			const float distance = vu::distance_sq(dir);
 
 			if (distance <= FLT_EPSILON)
 				continue;
 
 			if (distance <= min_distance)
 			{
-				const float angle = v2f::angle(_saved_velocity, dir, length, v2f::length(dir));
+				const float angle = vu::angle(_saved_velocity, dir, vel_length, std::sqrtf(distance));
 
 				if (angle <= _config->boid_view_angle)
 				{
@@ -144,48 +145,41 @@ void Boid::flock(const std::vector<Boid>& boids, const std::vector<int>& sorted_
 
 	if (sepCount > 0) // separation
 	{
-		sep = v2f::normalize(sep / (float)sepCount, _config->boid_max_speed);
+		sep = vu::normalize(sep / (float)sepCount, _config->boid_max_speed);
 		_velocity += steer_at(sep) * _config->sep_weight;
 	}
 	if (aliCount > 0) // alignment
 	{
-		ali = v2f::normalize(ali / (float)aliCount, _config->boid_max_speed);
+		ali = vu::normalize(ali / (float)aliCount, _config->boid_max_speed);
 		_velocity += steer_at(ali) * _config->ali_weight;
 	}
 	if (cohCount > 0) // cohesion
 	{
-		coh = v2f::direction(origin, coh / (float)cohCount);
-		coh = v2f::normalize(coh, _config->boid_max_speed);
+		coh = vu::direction(origin, coh / (float)cohCount);
+		coh = vu::normalize(coh, _config->boid_max_speed);
 
 		_velocity += steer_at(coh) * _config->coh_weight;
 	}
 
-	_velocity = v2f::clamp(_velocity, _config->boid_max_speed, _config->boid_min_speed);
+	_velocity = vu::clamp(_velocity, _config->boid_max_speed, _config->boid_min_speed);
 }
 
 sf::Vector2f Boid::steer_at(const sf::Vector2f& steer_direction) const
 {
-	sf::Vector2f steer = v2f::direction(_velocity, steer_direction); // steering direction
-	steer = v2f::limit(steer, _config->boid_max_steer);
-
-	return steer;
+	return vu::limit(vu::direction(_velocity, steer_direction), _config->boid_max_steer);
 }
 
-void Boid::steer_towards(const sf::Vector2f& point, float weight)
-{
-	if (std::abs(weight) <= FLT_EPSILON)
-		return;
-
-	sf::Vector2f steer = v2f::normalize(v2f::direction(get_origin(), point), _config->boid_max_speed); 
-	_velocity += steer_at(steer) * weight;
-}
 void Boid::steer_towards(const sf::Vector2f& direction, float length, float weight)
 {
-	if (std::abs(weight) <= FLT_EPSILON)
+	if (std::fabsf(weight) <= FLT_EPSILON)
 		return;
 
-	sf::Vector2f steer = v2f::normalize(direction, length, _config->boid_max_speed);
+	const sf::Vector2f steer = vu::normalize(direction, length, _config->boid_max_speed);
 	_velocity += steer_at(steer) * weight;
+}
+void Boid::steer_towards(const sf::Vector2f& point, float weight)
+{
+	steer_towards(point, vu::distance(point), weight);
 }
 
 bool Boid::outside_border(float dt)
@@ -268,7 +262,7 @@ sf::Vector3f Boid::cycle_color(float dt)
 
 	const float newT = scaled_time - std::floorf(scaled_time);
 
-	return v2f::lerp(color1, color2, newT);
+	return vu::lerp(color1, color2, newT);
 }
 sf::Vector3f Boid::density_color(float dt)
 {
@@ -289,14 +283,14 @@ sf::Vector3f Boid::density_color(float dt)
 
 	const float newT = scaled_density - std::floorf(scaled_density);
 
-	return v2f::lerp(color1, color2, newT);
+	return vu::lerp(color1, color2, newT);
 }
 sf::Vector3f Boid::velocity_color() const
 {
 	if (!_config->boid_velocity_colors.size())
 		return sf::Vector3f();
 
-	const float velocity_percentage = util::clamp((v2f::length(_velocity) - _config->boid_min_speed) / (_config->boid_max_speed - _config->boid_min_speed), 0.0f, 1.0f);
+	const float velocity_percentage = std::clamp((vu::distance(_velocity) - _config->boid_min_speed) / (_config->boid_max_speed - _config->boid_min_speed), 0.0f, 1.0f);
 
 	const float scaled_velocity = velocity_percentage * (float)(_config->boid_velocity_colors.size() - 1);
 
@@ -308,14 +302,14 @@ sf::Vector3f Boid::velocity_color() const
 
 	const float newT = scaled_velocity - std::floorf(scaled_velocity);
 
-	return v2f::lerp(color1, color2, newT);
+	return vu::lerp(color1, color2, newT);
 }
 sf::Vector3f Boid::rotation_color() const
 {
 	if (!_config->boid_rotation_colors.size())
 		return sf::Vector3f();
 
-	const float rotation_percentage = (v2f::angle(_velocity) + float(M_PI)) / (2.0f * float(M_PI));
+	const float rotation_percentage = (vu::angle(_velocity) + float(M_PI)) / (2.0f * float(M_PI));
 
 	const float scaled_rotation = rotation_percentage * (float)(_config->boid_rotation_colors.size() - 1);
 
@@ -327,7 +321,7 @@ sf::Vector3f Boid::rotation_color() const
 
 	const float newT = scaled_rotation - std::floorf(scaled_rotation);
 
-	return v2f::lerp(color1, color2, newT);
+	return vu::lerp(color1, color2, newT);
 }
 sf::Vector3f Boid::audio_color(float dt) const
 {
@@ -347,7 +341,7 @@ sf::Vector3f Boid::audio_color(float dt) const
 
 	const float newT = scaled_volume - std::floorf(scaled_volume);
 
-	return v2f::lerp(color1, color2, newT);
+	return vu::lerp(color1, color2, newT);
 }
 sf::Vector3f Boid::impulse_color(const std::vector<Impulse>& impulses) const
 {
@@ -356,10 +350,10 @@ sf::Vector3f Boid::impulse_color(const std::vector<Impulse>& impulses) const
 
 	for (const Impulse& impulse : impulses)
 	{
-		sf::Vector2f impulse_pos = impulse.get_position();
+		const sf::Vector2f impulse_pos = impulse.get_position();
 		const float impulse_length = impulse.get_length();
 
-		const float length = v2f::length(v2f::direction(impulse_pos, _position));
+		const float length = vu::distance(_position, impulse_pos);
 		const float diff = std::abs(length - impulse_length);
 
 		const float percentage = (impulse_length / _config->impulse_fade_distance);
@@ -377,7 +371,7 @@ sf::Vector3f Boid::impulse_color(const std::vector<Impulse>& impulses) const
 
 			const float newT = scaled_length - std::floorf(scaled_length);
 
-			return v2f::lerp(color1, color2, newT);
+			return vu::lerp(color1, color2, newT);
 		}
 	}
 

@@ -86,9 +86,6 @@
     <ClInclude Include="utilities\Utilities.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="utilities\VecUtil.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="boids\AudioMeter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -117,6 +114,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="window\ResourceHolder.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="utilities\VectorUtilities.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

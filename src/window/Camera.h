@@ -4,7 +4,7 @@
 #include <SFML/OpenGL.hpp>
 
 #include "../utilities/NonCopyable.h"
-#include "../utilities/VecUtil.h"
+#include "../utilities/VectorUtilities.h"
 
 #include "InputHandler.h"
 
@@ -48,17 +48,17 @@ public:
 	sf::Vector2f get_scale() const { return _scale; }
 	sf::Vector2f get_size() const { return _size; }
 
-	void set_position(sf::Vector2f position)
+	void set_position(const sf::Vector2f& position)
 	{
 		_position = position;
 		setCenter(position);
 	}
-	void set_scale(sf::Vector2f scale)
+	void set_scale(const sf::Vector2f& scale)
 	{
 		_scale = scale;
 		setSize(_size * (1.0f / scale));
 	}
-	void set_size(sf::Vector2f size) 
+	void set_size(const sf::Vector2f& size) 
 	{ 
 		_size = size;
 		setSize(size * (1.0f / _scale));

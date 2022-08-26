@@ -3,7 +3,7 @@
 #include <SFML/Graphics.hpp>
 
 #include "../utilities/Rectangle.hpp"
-#include "../utilities/VecUtil.h"
+#include "../utilities/VectorUtilities.h"
 
 #include "Config.h"
 

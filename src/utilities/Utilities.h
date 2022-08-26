@@ -21,17 +21,6 @@ namespace util
 	}
 
 	template<typename T>
-	static constexpr T clamp(const T val, const T min, const T max)
-	{
-		if (val < min)
-			return min;
-		if (val > max)
-			return max;
-
-		return val;
-	}
-
-	template<typename T>
 	static constexpr T wrap(T val, const T min, const T max)
 	{
 		if (val > min && val < max)
@@ -48,7 +37,7 @@ namespace util
 	template<typename T>
 	static constexpr T map_to_range(const T val, const T minIn, const T maxIn, const T minOut, const T maxOut)
 	{
-		float x = (val - minIn) / (maxIn - minIn);
+		const float x = (val - minIn) / (maxIn - minIn);
 		return minOut + (maxOut - minOut) * x;
 	}
 
@@ -61,7 +50,7 @@ namespace util
 	template<typename T>
 	static constexpr T set_precision(const T val, const int places)
 	{
-		float n = std::powf(10.0f, (float)places);
+		const float n = std::powf(10.0f, (float)places);
 		return std::roundf(val * n) / n;
 	}
 

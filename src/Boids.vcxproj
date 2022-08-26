@@ -42,10 +42,10 @@
     <ClInclude Include="boids\Impulse.hpp" />
     <ClInclude Include="utilities\PolicySelect.h" />
     <ClInclude Include="utilities\Rectangle.hpp" />
+    <ClInclude Include="utilities\VectorUtilities.h" />
     <ClInclude Include="window\ResourceHolder.hpp" />
     <ClInclude Include="utilities\NonCopyable.h" />
     <ClInclude Include="utilities\Utilities.h" />
-    <ClInclude Include="utilities\VecUtil.h" />
     <ClInclude Include="window\Application.h" />
     <ClInclude Include="window\Camera.h" />
     <ClInclude Include="utilities\HideTaskbarIcon.h" />

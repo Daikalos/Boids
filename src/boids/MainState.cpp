@@ -219,7 +219,7 @@ bool MainState::fixed_update(float dt)
 
 					if (_config->steer_enabled || _config->predator_enabled)
 					{
-						sf::Vector2f dir = v2f::direction(boid.get_saved_origin(), _mouse_pos);
+						sf::Vector2f dir = vu::direction(boid.get_saved_origin(), _mouse_pos);
 
 						if (_config->steer_enabled)
 						{
@@ -228,7 +228,7 @@ bool MainState::fixed_update(float dt)
 
 							if (hold_left || hold_right)
 							{
-								length_opt = v2f::length_opt(dir);
+								length_opt = vu::distance_opt(dir);
 								weight = 15.0f / std::sqrtf(length_opt); // hard coded because cant update _config->.. 
 							}
 
@@ -240,7 +240,7 @@ bool MainState::fixed_update(float dt)
 
 						if (_config->predator_enabled && !(_config->steer_enabled && (hold_left || hold_right)))
 						{
-							float length_sq = v2f::length_sq(dir);
+							float length_sq = vu::distance_sq(dir);
 							if (length_sq <= _config->predator_distance)
 							{
 								float weight = std::sqrtf(length_sq / _config->predator_distance);
@@ -271,16 +271,16 @@ bool MainState::post_update(float dt, float interp)
 			sf::Vector2f origin = boid.get_origin();
 			sf::Vector2f prev_origin = boid.get_prev_origin();
 
-			float rot = v2f::angle(boid.get_velocity());
-			float prev_rot = v2f::angle(boid.get_prev_velocity());
+			float rot = vu::angle(boid.get_velocity());
+			float prev_rot = vu::angle(boid.get_prev_velocity());
 
-			sf::Vector2f pointA = v2f::rotate_point({ pos.x + _config->boid_size_width	, pos.y + (_config->boid_size_height / 2)	}, origin, rot); // middle right tip
-			sf::Vector2f pointB = v2f::rotate_point({ pos.x								, pos.y										}, origin, rot); // top left corner
-			sf::Vector2f pointC = v2f::rotate_point({ pos.x								, pos.y + _config->boid_size_height			}, origin, rot); // bot left corner
+			sf::Vector2f pointA = vu::rotate_point({ pos.x + _config->boid_size_width	, pos.y + (_config->boid_size_height / 2)	}, origin, rot); // middle right tip
+			sf::Vector2f pointB = vu::rotate_point({ pos.x								, pos.y										}, origin, rot); // top left corner
+			sf::Vector2f pointC = vu::rotate_point({ pos.x								, pos.y + _config->boid_size_height			}, origin, rot); // bot left corner
 
-			sf::Vector2f prev_pointA = v2f::rotate_point({ prev_pos.x + _config->boid_size_width	, prev_pos.y + (_config->boid_size_height / 2)	}, prev_origin, prev_rot); // middle right tip
-			sf::Vector2f prev_pointB = v2f::rotate_point({ prev_pos.x							, prev_pos.y									}, prev_origin, prev_rot); // top left corner
-			sf::Vector2f prev_pointC = v2f::rotate_point({ prev_pos.x							, prev_pos.y + _config->boid_size_height			}, prev_origin, prev_rot); // bot left corner
+			sf::Vector2f prev_pointA = vu::rotate_point({ prev_pos.x + _config->boid_size_width	, prev_pos.y + (_config->boid_size_height / 2)	}, prev_origin, prev_rot); // middle right tip
+			sf::Vector2f prev_pointB = vu::rotate_point({ prev_pos.x							, prev_pos.y									}, prev_origin, prev_rot); // top left corner
+			sf::Vector2f prev_pointC = vu::rotate_point({ prev_pos.x							, prev_pos.y + _config->boid_size_height			}, prev_origin, prev_rot); // bot left corner
 
 			sf::Vector2f p0 = pointA * interp + prev_pointA * (1.0f - interp);
 			sf::Vector2f p1 = pointB * interp + prev_pointB * (1.0f - interp);
