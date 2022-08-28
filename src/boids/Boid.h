@@ -54,8 +54,9 @@ public: // Properties
 
 		const sf::Vector2f grid_cell_raw = _grid->relative_pos(origin);
 		const sf::Vector2i grid_cell = sf::Vector2i(grid_cell_raw);
+		const sf::Vector2f grid_cell_overflow = grid_cell_raw - sf::Vector2f(grid_cell);
 
-		_relative_pos = grid_cell_raw - sf::Vector2f(grid_cell);
+		_relative_pos = grid_cell_overflow * _grid->_cont_dims;
 		_cell_index = _grid->at_pos(grid_cell);
 	}
 

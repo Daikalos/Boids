@@ -13,7 +13,7 @@ Boid::Boid(Grid& grid, Config& config, const AudioMeter& audio_meter, const Rect
 
 void Boid::update(const std::vector<Impulse>& impulses, float dt)
 {
-	_velocity = vu::clamp(_velocity, _config->boid_max_speed, _config->boid_min_speed);
+	_velocity = vu::clamp(_velocity, _config->boid_min_speed, _config->boid_max_speed);
 
 	_position += _velocity * dt;
 
@@ -57,13 +57,13 @@ void Boid::flock(const std::vector<Boid>& boids, const std::vector<int>& sorted_
 	const int neighbours = 4;
 
 	int neighbour_indicies[neighbours];
-	sf::Vector2i neighbour[neighbours];
+	sf::Vector2f neighbour[neighbours];
 
 	const sf::Vector2f grid_cell_raw = _grid->relative_pos(origin);
 	const sf::Vector2i grid_cell = sf::Vector2i(grid_cell_raw);
 	const sf::Vector2f grid_cell_overflow = grid_cell_raw - sf::Vector2f(grid_cell);
 
-	const sf::Vector2f relative_pos = grid_cell_overflow * sf::Vector2f(_grid->_cont_dims);
+	const sf::Vector2f relative_pos = grid_cell_overflow * _grid->_cont_dims;
 
 	const int x = (grid_cell_overflow.x > 0.5f ? 1 : -1);
 	const int y = (grid_cell_overflow.y > 0.5f ? 1 : -1);
@@ -71,10 +71,10 @@ void Boid::flock(const std::vector<Boid>& boids, const std::vector<int>& sorted_
 	const int x_neighbor = grid_cell.x + x;
 	const int y_neighbor = grid_cell.y + y;
 
-	neighbour[0] = sf::Vector2i(0, 0);
-	neighbour[1] = sf::Vector2i(x, 0);
-	neighbour[2] = sf::Vector2i(0, y);
-	neighbour[3] = sf::Vector2i(x, y);
+	neighbour[0] = _grid->_cont_dims * sf::Vector2f(0, 0);
+	neighbour[1] = _grid->_cont_dims * sf::Vector2f(x, 0);
+	neighbour[2] = _grid->_cont_dims * sf::Vector2f(0, y);
+	neighbour[3] = _grid->_cont_dims * sf::Vector2f(x, y);
 
 	neighbour_indicies[0] = _grid->at_pos(grid_cell.x, grid_cell.y);	// current
 	neighbour_indicies[1] = _grid->at_pos(x_neighbor, grid_cell.y);		// left or right of current
@@ -84,7 +84,7 @@ void Boid::flock(const std::vector<Boid>& boids, const std::vector<int>& sorted_
 	for (int i = 0; i < neighbours; ++i)
 	{
 		const int grid_cell_index = neighbour_indicies[i];
-		const sf::Vector2i neighbour_cell = neighbour[i];
+		const sf::Vector2f neighbour_cell = neighbour[i];
 
 		for (int j = _grid->_cells_start_indices[grid_cell_index]; j <= _grid->_cells_end_indices[grid_cell_index] && j > -1; ++j) // do in one loop
 		{
@@ -95,10 +95,10 @@ void Boid::flock(const std::vector<Boid>& boids, const std::vector<int>& sorted_
 				continue;
 
 			const sf::Vector2f other_relative_pos = 
-				_grid->_cont_dims * (sf::Vector2f(neighbour_cell) + b->get_relative_position()); // need to get relative to this boid
+				neighbour_cell + b->get_relative_position(); // need to get relative to this boid
 
 			const sf::Vector2f dir	= vu::direction(relative_pos, other_relative_pos);
-			const float temp		= dir.lengthSq(), distance_sq = (temp > 0.0f ? temp : FLT_EPSILON);
+			const float temp		= vu::distance_sq(dir), distance_sq = (temp > 0.0f ? temp : FLT_EPSILON);
 			const float angle		= vu::angle(_prev_velocity, dir, vel_length, std::sqrtf(distance_sq));
 
 			if (angle <= _config->boid_view_angle) // angle only effects cohesion and alignment

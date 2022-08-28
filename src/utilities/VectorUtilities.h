@@ -114,19 +114,19 @@ namespace vu
 	}
 
 	template<Arithmetic T>
-	static constexpr sf::Vector2<T> clamp(const sf::Vector2<T>& vector, const float length, const float max_length, const float min_length)
+	static constexpr sf::Vector2<T> clamp(const sf::Vector2<T>& vector, const float length, const float min_length, const float max_length)
 	{
-		if (length > max_length)
-			return normalize(vector, length, max_length);
 		if (length < min_length)
 			return normalize(vector, length, min_length);
+		if (length > max_length)
+			return normalize(vector, length, max_length);
 
 		return vector;
 	}
 	template<Arithmetic T>
-	static constexpr sf::Vector2<T> clamp(const sf::Vector2<T>& vector, const float max_length, const float min_length)
+	static constexpr sf::Vector2<T> clamp(const sf::Vector2<T>& vector, const float min_length, const float max_length)
 	{
-		return clamp(vector, distance(vector), max_length, min_length);
+		return clamp(vector, distance(vector), min_length, max_length);
 	}
 
 	template<Arithmetic T>
