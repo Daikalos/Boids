@@ -203,13 +203,22 @@ bool MainState::fixed_update(float dt)
 		[&dt, this](auto& pol)
 		{
 			std::for_each(pol, _boids.begin(), _boids.end(),
-				[](Boid& boid) { boid.set_cell_index(); });
+				[](Boid& boid) 
+				{ 
+					boid.pre_update(); 
+				});
 
 			std::sort(pol, _sorted_boids.begin(), _sorted_boids.end(),
-				[this](const int& i0, const int& i1) { return _boids[i0].get_cell_index() < _boids[i1].get_cell_index(); });
+				[this](const int& i0, const int& i1)
+				{ 
+					return _boids[i0].get_cell_index() < _boids[i1].get_cell_index(); 
+				});
 
 			std::for_each(pol, _sorted_boids.begin(), _sorted_boids.end(),
-				[this](const int& index) { _boids[index].update_grid_cells(_boids, _sorted_boids, &index - _sorted_boids.data()); });
+				[this, &_sorted_boids = std::as_const(_sorted_boids)](const int& index) 
+				{ 
+					_boids[index].update_grid_cells(_boids, _sorted_boids, std::distance(_sorted_boids.data(), &index));
+				});
 
 			std::for_each(pol, _boids.begin(), _boids.end(),
 				[&dt, this](Boid& boid)
@@ -272,26 +281,23 @@ bool MainState::post_update(float dt, float interp)
 				pol, _boids.begin(), _boids.end(),
 				[&interp, this](const Boid& boid)
 				{
-					const int v = (&boid - _boids.data()) * 3;
+					const auto v = (&boid - _boids.data()) * 3;
 
 					sf::Vector3f color = boid.get_color();
 
-					const sf::Vector2f pos = boid.get_position();
-					const sf::Vector2f prev_pos = boid.get_prev_position();
-
-					const sf::Vector2f origin = boid.get_origin();
-					const sf::Vector2f prev_origin = boid.get_prev_origin();
+					const sf::Vector2f ori = boid.get_origin();
+					const sf::Vector2f prev_ori = boid.get_prev_origin();
 
 					const float rot = vu::angle(boid.get_velocity());
 					const float prev_rot = vu::angle(boid.get_prev_velocity());
 
-					const sf::Vector2f pointA = vu::rotate_point({ pos.x + _config->boid_size_width	, pos.y + (_config->boid_size_height / 2) }, origin, rot); // middle right tip
-					const sf::Vector2f pointB = vu::rotate_point({ pos.x								, pos.y }, origin, rot); // top left corner
-					const sf::Vector2f pointC = vu::rotate_point({ pos.x								, pos.y + _config->boid_size_height }, origin, rot); // bot left corner
+					const sf::Vector2f pointA = vu::rotate_point({ ori.x + (_config->boid_size_width / 2), ori.y									}, ori, rot); // middle right tip
+					const sf::Vector2f pointB = vu::rotate_point({ ori.x - (_config->boid_size_width / 2), ori.y - (_config->boid_size_height / 2)	}, ori, rot); // top left corner
+					const sf::Vector2f pointC = vu::rotate_point({ ori.x - (_config->boid_size_width / 2), ori.y + (_config->boid_size_height / 2)	}, ori, rot); // bot left corner
 
-					const sf::Vector2f prev_pointA = vu::rotate_point({ prev_pos.x + _config->boid_size_width	, prev_pos.y + (_config->boid_size_height / 2) }, prev_origin, prev_rot); // middle right tip
-					const sf::Vector2f prev_pointB = vu::rotate_point({ prev_pos.x							, prev_pos.y }, prev_origin, prev_rot); // top left corner
-					const sf::Vector2f prev_pointC = vu::rotate_point({ prev_pos.x							, prev_pos.y + _config->boid_size_height }, prev_origin, prev_rot); // bot left corner
+					const sf::Vector2f prev_pointA = vu::rotate_point({ prev_ori.x + (_config->boid_size_width / 2), prev_ori.y										}, prev_ori, prev_rot); // middle right tip
+					const sf::Vector2f prev_pointB = vu::rotate_point({ prev_ori.x - (_config->boid_size_width / 2), prev_ori.y - (_config->boid_size_height / 2)	}, prev_ori, prev_rot); // top left corner
+					const sf::Vector2f prev_pointC = vu::rotate_point({ prev_ori.x - (_config->boid_size_width / 2), prev_ori.y + (_config->boid_size_height / 2)	}, prev_ori, prev_rot); // bot left corner
 
 					const sf::Vector2f p0 = pointA * interp + prev_pointA * (1.0f - interp);
 					const sf::Vector2f p1 = pointB * interp + prev_pointB * (1.0f - interp);

@@ -24,34 +24,42 @@ public:
 	void flock(const std::vector<Boid>& boids, const std::vector<int>& sorted_boids);
 	
 public: // Properties
-	constexpr sf::Vector2f get_position() const noexcept { return _position; }
-	constexpr sf::Vector2f get_prev_position() const noexcept { return _prev_position; }
-	constexpr sf::Vector2f get_velocity() const noexcept { return _velocity; }
-	constexpr sf::Vector2f get_prev_velocity() const noexcept { return _prev_velocity; }
-	constexpr sf::Vector3f get_color() const noexcept { return _color; }
-	constexpr int get_cell_index() const noexcept { return _cell_index; }
+	[[nodiscard]] constexpr sf::Vector2f get_position() const noexcept { return _position; }
+	[[nodiscard]] constexpr sf::Vector2f get_prev_position() const noexcept { return _prev_position; }
+	[[nodiscard]] constexpr sf::Vector2f get_relative_position() const noexcept { return _relative_pos; }
+	[[nodiscard]] constexpr sf::Vector2f get_velocity() const noexcept { return _velocity; }
+	[[nodiscard]] constexpr sf::Vector2f get_prev_velocity() const noexcept { return _prev_velocity; }
+	[[nodiscard]] constexpr sf::Vector3f get_color() const noexcept { return _color; }
+	[[nodiscard]] constexpr int get_cell_index() const noexcept { return _cell_index; }
 
-	constexpr sf::Vector2f get_origin() const
+	[[nodiscard]] constexpr sf::Vector2f get_origin() const noexcept
 	{
 		return _position + sf::Vector2f(
 			_config->boid_size_width,
 			_config->boid_size_height) / 2.0f;
 	}
-	constexpr sf::Vector2f get_prev_origin() const
+	[[nodiscard]] constexpr sf::Vector2f get_prev_origin() const noexcept
 	{
 		return _prev_position + sf::Vector2f(
 			_config->boid_size_width,
 			_config->boid_size_height) / 2.0f;
 	}
 
-	void set_cell_index() 
+	void pre_update() noexcept
 	{ 
 		_prev_position = _position;
 		_prev_velocity = _velocity;
 
-		_cell_index = _grid->at_pos(get_origin());
+		const sf::Vector2f origin = get_origin();
+
+		const sf::Vector2f grid_cell_raw = _grid->relative_pos(origin);
+		const sf::Vector2i grid_cell = sf::Vector2i(grid_cell_raw);
+
+		_relative_pos = grid_cell_raw - sf::Vector2f(grid_cell);
+		_cell_index = _grid->at_pos(grid_cell);
 	}
-	void set_cycle_time(const float val) 
+
+	void set_cycle_time(const float val) noexcept
 	{ 
 		_cycle_time = val;
 	}
@@ -72,19 +80,20 @@ private:
 	sf::Vector3f impulse_color(const std::vector<Impulse>& impulses) const;
 
 private:
-	Grid*				_grid;
-	Config*				_config;
-	const AudioMeter*	_audio_meter;
-	const RectInt*		_border;
+	Grid*				_grid						{nullptr};
+	Config*				_config						{nullptr};
+	const AudioMeter*	_audio_meter				{nullptr};
+	const RectInt*		_border						{nullptr};
 
-	sf::Vector2f		_position, _prev_position;
+	sf::Vector2f		_position, _prev_position, _relative_pos;
 	sf::Vector2f		_velocity, _prev_velocity;
+
 	sf::Vector3f		_color;
 
-	float				_cycle_time{0.0f};
-	float				_density_time{0.0f};
+	float				_cycle_time					{0.0f};
+	float				_density_time				{0.0f};
 
-	int					_density{0};
-	int					_cell_index{0};
+	int					_density					{0};
+	int					_cell_index					{0};
 };
 

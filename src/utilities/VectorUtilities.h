@@ -69,12 +69,12 @@ namespace vu
 	template<Arithmetic T>
 	static constexpr float angle(const sf::Vector2<T>& vector)
 	{
-		return atan2f(vector.y, vector.x);
+		return std::atan2f(vector.y, vector.x);
 	}
 	template<Arithmetic T>
 	static constexpr float angle(const sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs, const float lhs_length, const float rhs_length)
 	{
-		return acosf(dot(lhs, rhs) / (lhs_length * rhs_length));
+		return std::acosf(dot(lhs, rhs) / (lhs_length * rhs_length));
 	}
 	template<Arithmetic T>
 	static constexpr float angle(const sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs)
@@ -134,8 +134,8 @@ namespace vu
 	{
 		const sf::Vector2<T> dir = direction(center, point);
 
-		float s = sinf(angle);
-		float c = cosf(angle);
+		float s = std::sinf(angle);
+		float c = std::cosf(angle);
 
 		return sf::Vector2<T>(
 			(dir.x * c - dir.y * s) + center.x,
@@ -147,6 +147,7 @@ namespace vu
 	{
 		vector.x = std::fabsf(vector.x);
 		vector.y = std::fabsf(vector.y);
+
 		return vector;
 	}
 	template<Arithmetic T>
@@ -154,6 +155,7 @@ namespace vu
 	{
 		vector.x = std::floorf(vector.x);
 		vector.y = std::floorf(vector.y);
+
 		return vector;
 	}
 

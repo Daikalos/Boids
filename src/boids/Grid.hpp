@@ -41,20 +41,20 @@ public:
 		memset(_cells_end_indices, -1, sizeof(int) * _count);
 	}
 
-	sf::Vector2f relative_pos(sf::Vector2f position) const
+	[[nodiscard]] constexpr sf::Vector2f relative_pos(const sf::Vector2f& position) const
 	{
 		return (position - _rect.top_left) / _cont_dims;
 	}
 
-	int at_pos(sf::Vector2f position) const
+	[[nodiscard]] constexpr int at_pos(const sf::Vector2f& position) const
 	{
 		return at_pos(sf::Vector2i(relative_pos(position)));
 	}
-	int at_pos(sf::Vector2i position) const
+	[[nodiscard]] constexpr int at_pos(const sf::Vector2i& position) const noexcept
 	{
 		return at_pos(position.x, position.y);
 	}
-	int at_pos(int x, int y) const
+	[[nodiscard]] constexpr int at_pos(int x, int y) const noexcept
 	{
 		x = util::wrap(x, 0, _width);
 		y = util::wrap(y, 0, _height);
@@ -62,7 +62,7 @@ public:
 		return x + y * _width;
 	}
 
-	sf::Vector2i at_pos(int i) const
+	[[nodiscard]] constexpr sf::Vector2i at_pos(int i) const
 	{
 		return sf::Vector2i(i % _width, i / _width);
 	}

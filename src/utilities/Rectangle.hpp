@@ -17,10 +17,10 @@ struct Rect
 		top_left(sf::Vector2<T>(rect.top_left)), 
 		bot_right(sf::Vector2<T>(rect.bot_right)) { };
 
-	constexpr T width() const { return (right - left); }
-	constexpr T height() const { return (bot - top); }
+	constexpr T width() const noexcept { return (right - left); }
+	constexpr T height() const noexcept { return (bot - top); }
 
-	constexpr sf::Vector2<T> size() const { return sf::Vector2<T>(width(), height()); }
+	constexpr sf::Vector2<T> size() const noexcept { return sf::Vector2<T>(width(), height()); }
 	constexpr T count() const { return width() * height(); }
 
 	Rect<T>& operator+=(const Rect<T>& rhs)

@@ -13,6 +13,8 @@ Boid::Boid(Grid& grid, Config& config, const AudioMeter& audio_meter, const Rect
 
 void Boid::update(const std::vector<Impulse>& impulses, float dt)
 {
+	_velocity = vu::clamp(_velocity, _config->boid_max_speed, _config->boid_min_speed);
+
 	_position += _velocity * dt;
 
 	if (outside_border(dt))
@@ -45,11 +47,9 @@ void Boid::flock(const std::vector<Boid>& boids, const std::vector<int>& sorted_
 	sf::Vector2f ali;
 	sf::Vector2f coh;
 
-	int sepCount = 0;
-	int aliCount = 0;
-	int cohCount = 0;
-
-	const float min_distance = std::fminf(_config->coh_distance, _config->ali_distance);
+	int sep_count = 0;
+	int ali_count = 0;
+	int coh_count = 0;
 
 	const sf::Vector2f origin = get_origin();
 	const float vel_length = vu::distance(_velocity);
@@ -88,75 +88,56 @@ void Boid::flock(const std::vector<Boid>& boids, const std::vector<int>& sorted_
 
 		for (int j = _grid->_cells_start_indices[grid_cell_index]; j <= _grid->_cells_end_indices[grid_cell_index] && j > -1; ++j) // do in one loop
 		{
-			const Boid* b = &boids[sorted_boids[j]];
+			const int index = sorted_boids[j];
+			const Boid* b = &boids[index];
 
 			if (b == this)
 				continue;
 
-			const sf::Vector2f other_origin = b->get_origin();
+			const sf::Vector2f other_relative_pos = 
+				_grid->_cont_dims * (sf::Vector2f(neighbour_cell) + b->get_relative_position()); // need to get relative to this boid
 
-			const sf::Vector2f other_grid_cell_raw = _grid->relative_pos(other_origin);
-			const sf::Vector2i other_grid_cell = sf::Vector2i(other_grid_cell_raw);
-			const sf::Vector2f other_grid_cell_overflow = other_grid_cell_raw - sf::Vector2f(other_grid_cell);
+			const sf::Vector2f dir	= vu::direction(relative_pos, other_relative_pos);
+			const float temp		= dir.lengthSq(), distance_sq = (temp > 0.0f ? temp : FLT_EPSILON);
+			const float angle		= vu::angle(_prev_velocity, dir, vel_length, std::sqrtf(distance_sq));
 
-			sf::Vector2f other_relative_pos = other_grid_cell_overflow * sf::Vector2f(_grid->_cont_dims); // other _grid cell should be relative
-
-			other_relative_pos.x += (_grid->_cont_dims.x * neighbour_cell.x);
-			other_relative_pos.y += (_grid->_cont_dims.y * neighbour_cell.y);
-
-			const sf::Vector2f dir = vu::direction(relative_pos, other_relative_pos);
-			const float distance = vu::distance_sq(dir);
-
-			if (distance <= FLT_EPSILON)
-				continue;
-
-			if (distance <= min_distance)
+			if (angle <= _config->boid_view_angle) // angle only effects cohesion and alignment
 			{
-				const float angle = vu::angle(_prev_velocity, dir, vel_length, std::sqrtf(distance));
-
-				if (angle <= _config->boid_view_angle)
+				if (distance_sq <= _config->coh_distance)
 				{
-					if (distance <= _config->coh_distance)
-					{
-						coh += origin + dir; // Head towards center of boids
-						++cohCount;
-					}
-					if (distance <= _config->ali_distance)
-					{
-						ali += b->get_prev_velocity(); // Align with every boids _velocity
-						++aliCount;
-					}
+					coh += origin + dir; // Head towards center of boids
+					++coh_count;
+				}
+				if (distance_sq <= _config->ali_distance)
+				{
+					ali += b->get_prev_velocity(); // Align with every boids velocity
+					++ali_count;
 				}
 			}
-			if (distance <= _config->sep_distance)
+
+			if (distance_sq <= _config->sep_distance)
 			{
-				sep += -dir / distance;
-				++sepCount;
+				sep += -dir / distance_sq;
+				++sep_count;
 			}
 		}
 	}
 
-	_density = std::max(std::max(cohCount, aliCount), sepCount);
+	if (ali_count) ali = vu::normalize(ali / (float)ali_count, _config->boid_max_speed);
+	if (sep_count) sep = vu::normalize(sep / (float)sep_count, _config->boid_max_speed);
 
-	if (sepCount > 0) // separation
+	if (coh_count)
 	{
-		sep = vu::normalize(sep / (float)sepCount, _config->boid_max_speed);
-		_velocity += steer_at(sep) * _config->sep_weight;
-	}
-	if (aliCount > 0) // alignment
-	{
-		ali = vu::normalize(ali / (float)aliCount, _config->boid_max_speed);
-		_velocity += steer_at(ali) * _config->ali_weight;
-	}
-	if (cohCount > 0) // cohesion
-	{
-		coh = vu::direction(origin, coh / (float)cohCount);
+		coh = vu::direction(origin, coh / (float)coh_count);
 		coh = vu::normalize(coh, _config->boid_max_speed);
-
-		_velocity += steer_at(coh) * _config->coh_weight;
 	}
 
-	_velocity = vu::clamp(_velocity, _config->boid_max_speed, _config->boid_min_speed);
+	_velocity +=
+		steer_at(coh) * _config->coh_weight +
+		steer_at(ali) * _config->ali_weight +
+		steer_at(sep) * _config->sep_weight;
+
+	_density = std::max(std::max(coh_count, ali_count), sep_count);
 }
 
 sf::Vector2f Boid::steer_at(const sf::Vector2f& steer_direction) const
@@ -179,13 +160,7 @@ void Boid::steer_towards(const sf::Vector2f& point, float weight)
 
 bool Boid::outside_border(float dt)
 {
-	switch (_config->turn_at_border)
-	{
-	case true:
-		return turn_at_border(dt);
-	default:
-		return teleport_at_border();
-	}
+	return _config->turn_at_border ? turn_at_border(dt) : teleport_at_border();
 }
 bool Boid::turn_at_border(float dt)
 {
