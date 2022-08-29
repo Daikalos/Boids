@@ -1,13 +1,20 @@
 #include "MainState.h"
 
 MainState::MainState(StateStack& stack, Context context, Config& config) : 
-	State(stack, context), _config(&config), _debug(*_config), _audio_meter(*_config, 1.0f)
+	State(stack, context), _config(&config), _debug(*_config)
 {
     context.texture_holder->load(TextureID::Background, _config->background_texture);
     context.font_holder->load(FontID::F8Bit, "font_8bit.ttf");
 
+#if defined(_WIN32)
+	_audio_meter = AudioMeterInfoBase::ptr(new AudioMeterWin(*_config, 1.0f));
+#else
+	_audio_meter = AudioMeterInfoBase::ptr(new AudioMeterInfoBase());
+#endif
+
+	_audio_meter->initialize();
+
     _debug.load(*context.font_holder);
-    _audio_meter.initialize();
 
     _background.load_texture(*context.texture_holder);
     _background.load_prop(*_config, sf::Vector2i(context.window->getSize()));
@@ -157,11 +164,11 @@ bool MainState::pre_update(float dt)
 				}
 				break;
 			case Reconstruct::RAudio:
-				_audio_meter.clear();
+				_audio_meter->clear();
 				break;
 			case Reconstruct::RWindow:
-				context().window->setVerticalSyncEnabled(_config->vertical_sync);
-				context().window->setFramerateLimit(_config->vertical_sync ? 0 : _config->max_framerate);
+				context().window->set_framerate(_config->max_framerate);
+				context().window->set_vertical_sync(_config->vertical_sync);
 				break;
 			case Reconstruct::RCamera:
 				context().camera->set_scale(sf::Vector2f(_config->camera_zoom, _config->camera_zoom));
@@ -175,7 +182,7 @@ bool MainState::pre_update(float dt)
 
 bool MainState::update(float dt)
 {
-	_audio_meter.update(dt);
+	_audio_meter->update(dt);
 
 	_mouse_pos = sf::Vector2f(context().camera->
 		get_mouse_world_position(*context().window));

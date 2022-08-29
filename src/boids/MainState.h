@@ -33,10 +33,9 @@ public:
 
 private:
 	Config*						_config;
-
 	Grid						_grid;
 	Debug						_debug;
-	AudioMeter					_audio_meter;
+	AudioMeterInfoBase::ptr		_audio_meter	{nullptr};
 	Background					_background;
 
 	std::vector<Impulse>		_impulses;
@@ -45,11 +44,11 @@ private:
 
 	std::vector<sf::Vector2f>	_vertices;
 	std::vector<sf::Vector3f>	_colors;
-	
+
 	RectInt						_border;
 
 	sf::Vector2f				_mouse_pos;
-	float						_min_distance;
+	float						_min_distance	{0.0f};
 
-	Policy						_policy;
+	Policy						_policy			{Policy::unseq};
 };

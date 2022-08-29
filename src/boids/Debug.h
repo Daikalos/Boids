@@ -37,7 +37,7 @@ private:
 		_debug_text_info.setString(_enabled ? _debug_text_info.getString() : "");
 	}
 
-	inline std::string get_state() const
+	[[nodiscard]] constexpr std::string get_state() const noexcept
 	{
 		return _enabled ? "DEBUG ENABLED" : "DEBUG DISABLED";
 	}
@@ -45,11 +45,11 @@ private:
 private:
 	Config*		_config;
 
-	float		_update_freq_max{0.0f};
-	float		_update_freq{0.0f};
+	float		_update_freq_max	{0.0f};
+	float		_update_freq		{0.0f};
 
-	bool		_enabled{false};
-	bool		_refresh{false};
+	bool		_enabled			{false};
+	bool		_refresh			{false};
 
 	sf::Text	_debug_text_state;
 	sf::Text	_debug_text_info;

@@ -1,6 +1,9 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+
+#ifdef _WIN32
+
 #include <ShObjIdl.h>
 
 static void hide_taskbar_icon(const sf::RenderWindow& window)
@@ -20,3 +23,5 @@ static void hide_taskbar_icon(const sf::RenderWindow& window)
 
 	CoUninitialize();
 }
+
+#endif

@@ -138,7 +138,7 @@ void Boid::flock(std::span<const Boid> boids, std::span<const int> sorted_boids)
 	_density = std::max(std::max(coh_count, ali_count), sep_count);
 }
 
-void Boid::update(const RectInt& border, const AudioMeter& audio_meter, std::span<const Impulse> impulses, float dt)
+void Boid::update(const RectInt& border, const AudioMeterInfoBase::ptr& audio_meter, std::span<const Impulse> impulses, float dt)
 {
 	_velocity = vu::clamp(_velocity, _config->boid_min_speed, _config->boid_max_speed);
 
@@ -322,13 +322,13 @@ sf::Vector3f Boid::rotation_color() const
 
 	return vu::lerp(color1, color2, newT);
 }
-sf::Vector3f Boid::audio_color(const AudioMeter& audio_meter, float dt) const
+sf::Vector3f Boid::audio_color(const AudioMeterInfoBase::ptr& audio_meter, float dt) const
 {
 	if (!_config->audio_responsive_colors.size())
 		return sf::Vector3f();
 
 	const float density_percentage = (_density / (float)_config->audio_responsive_density);
-	const float max_volume = std::fminf(audio_meter.get_volume() * _config->audio_responsive_strength, _config->audio_responsive_limit);
+	const float max_volume = std::fminf(audio_meter->get_volume() * _config->audio_responsive_strength, _config->audio_responsive_limit);
 
 	const float scaled_volume = std::fminf(max_volume * density_percentage, 1.0f) * (float)(_config->audio_responsive_colors.size() - 1);
 

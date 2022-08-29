@@ -23,10 +23,9 @@ void Window::initialize()
 	_camera->set_size(sf::Vector2f(getSize()));
 	_camera->set_position(_camera->get_size() / 2.0f);
 
-	set_framerate(_frame_rate);
-	set_vertical_sync(_vertical_sync);
-
+#ifdef _WIN32
 	hide_taskbar_icon(*this);
+#endif
 
 	if (!setActive(true))
 		throw std::runtime_error("window could not be activated");
@@ -110,6 +109,9 @@ void Window::build(WindowBorder window_border, sf::VideoMode mode, sf::ContextSe
 		create(sf::VideoMode(mode.size, sf::VideoMode::getDesktopMode().bitsPerPixel), _name, sf::Style::None, settings);
 		break;
 	}
+
+	setFramerateLimit(_vertical_sync ? 0 : _frame_rate);
+	setVerticalSyncEnabled(_vertical_sync);
 }
 
 void Window::set_border(WindowBorder border)

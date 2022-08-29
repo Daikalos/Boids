@@ -1,12 +1,11 @@
 #include "AudioMeter.h"
 
-AudioMeter::AudioMeter(Config& config, float refresh_freq)
-	: _config(&config), _refresh_freq_max(refresh_freq), _refresh_freq(_refresh_freq_max)
-{
+#if defined(_WIN32)
 
-}
+AudioMeterWin::AudioMeterWin(Config& config, float refresh_freq)
+	: _config(&config), _refresh_freq_max(refresh_freq), _refresh_freq(_refresh_freq_max) {}
 
-AudioMeter::~AudioMeter()
+AudioMeterWin::~AudioMeterWin()
 {
 	SAFE_RELEASE(_meter_info);
 	SAFE_RELEASE(_session_manager);
@@ -22,7 +21,7 @@ AudioMeter::~AudioMeter()
 	CoUninitialize();
 }
 
-void AudioMeter::initialize()
+void AudioMeterWin::initialize()
 {
 	IMMDeviceEnumerator* enumerator = NULL;
 
@@ -55,7 +54,7 @@ void AudioMeter::initialize()
 	SAFE_RELEASE(_device);
 }
 
-void AudioMeter::update(float dt)
+void AudioMeterWin::update(float dt)
 {
 	_volume = 0.0f;
 
@@ -109,7 +108,7 @@ void AudioMeter::update(float dt)
 	}
 }
 
-void AudioMeter::clear()
+void AudioMeterWin::clear()
 {
 	for (std::pair<const std::wstring, std::pair<IAudioSessionControl*, IAudioMeterInformation*>>& element : _processes_session_control)
 	{
@@ -119,7 +118,7 @@ void AudioMeter::clear()
 	_processes_session_control.clear();
 }
 
-void AudioMeter::refresh(std::wstring* comp)
+void AudioMeterWin::refresh(std::wstring* comp)
 {
 	IAudioSessionEnumerator* pSessionEnumerator = NULL;
 
@@ -178,3 +177,5 @@ void AudioMeter::refresh(std::wstring* comp)
 
 	SAFE_RELEASE(pSessionEnumerator);
 }
+
+#endif

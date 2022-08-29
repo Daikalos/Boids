@@ -25,7 +25,7 @@ public:
 
 	void update_grid_cells(std::span<const Boid> boids, std::span<const int> sorted_boids, const int index) const;
 	void flock(std::span<const Boid> boids, std::span<const int> sorted_boids);
-	void update(const RectInt& border, const AudioMeter& audio_meter, std::span<const Impulse> impulses, float dt);
+	void update(const RectInt& border, const AudioMeterInfoBase::ptr& audio_meter, std::span<const Impulse> impulses, float dt);
 	
 public: // Properties
 	[[nodiscard]] constexpr sf::Vector2f get_position() const noexcept { return _position; }
@@ -66,7 +66,7 @@ private:
 	sf::Vector3f density_color(float dt);
 	sf::Vector3f velocity_color() const;
 	sf::Vector3f rotation_color() const;
-	sf::Vector3f audio_color(const AudioMeter& audio_meter, float dt) const;
+	sf::Vector3f audio_color(const AudioMeterInfoBase::ptr& audio_meter, float dt) const;
 	sf::Vector3f impulse_color(std::span<const Impulse> impulses) const;
 
 private:
