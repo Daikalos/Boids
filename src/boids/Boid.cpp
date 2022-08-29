@@ -1,7 +1,7 @@
 #include "Boid.h"
 
-Boid::Boid(Grid& grid, Config& config, const AudioMeter& audio_meter, const RectInt& border, const sf::Vector2f& pos)
-	: _grid(&grid), _config(&config), _audio_meter(&audio_meter), _border(&border), _position(pos)
+Boid::Boid(Grid& grid, Config& config, const sf::Vector2f& pos)
+	: _grid(&grid), _config(&config), _position(pos)
 {
 	_velocity = vu::normalize(sf::Vector2f(
 		util::random(-1.0f, 1.0f),
@@ -11,37 +11,40 @@ Boid::Boid(Grid& grid, Config& config, const AudioMeter& audio_meter, const Rect
 		_cycle_time = util::random(0.0f, 1.0f);
 }
 
-void Boid::update(const std::vector<Impulse>& impulses, float dt)
+void Boid::pre_update() noexcept
 {
-	_velocity = vu::clamp(_velocity, _config->boid_min_speed, _config->boid_max_speed);
+	_prev_position = _position;
+	_prev_velocity = _velocity;
 
-	_position += _velocity * dt;
+	const sf::Vector2f grid_cell_raw = _grid->relative_pos(get_origin());
+	const sf::Vector2i grid_cell = sf::Vector2i(grid_cell_raw);
+	const sf::Vector2f grid_cell_overflow = grid_cell_raw - sf::Vector2f(grid_cell);
 
-	if (outside_border(dt))
-		_prev_position = _position;
+	_relative_pos = grid_cell_overflow * _grid->_cont_dims;
+	_cell_index = _grid->at_pos(grid_cell);
+}
 
-	// draw-info
+void Boid::update_grid_cells(std::span<const Boid> boids, std::span<const int> sorted_boids, const int index) const
+{
+	if (index == 0)
 	{
-		_color = sf::Vector3f();
+		_grid->_cells_start_indices[_cell_index] = index;
+		return;
+	}
 
-		if (_config->color_flags & ColorFlags::Positional)
-			_color += position_color() * _config->color_positional_weight;
-		if (_config->color_flags & ColorFlags::Cycle)
-			_color += cycle_color(dt) * _config->color_cycle_weight;
-		if (_config->color_flags & ColorFlags::Density)
-			_color += density_color(dt) * _config->color_density_weight;
-		if (_config->color_flags & ColorFlags::Velocity)
-			_color += velocity_color() * _config->color_velocity_weight;
-		if (_config->color_flags & ColorFlags::Rotation)
-			_color += rotation_color() * _config->color_rotation_weight;
-		if (_config->color_flags & ColorFlags::Audio)
-			_color += audio_color(dt) * _config->color_audio_weight;
+	if (index == _config->boid_count - 1)
+		_grid->_cells_end_indices[_cell_index] = index;
 
-		_color = impulse_color(impulses);
+	const int other_index = boids[sorted_boids[index - 1]].get_cell_index();
+
+	if (other_index != _cell_index)
+	{
+		_grid->_cells_start_indices[_cell_index] = index;
+		_grid->_cells_end_indices[other_index] = index - 1;
 	}
 }
 
-void Boid::flock(const std::vector<Boid>& boids, const std::vector<int>& sorted_boids)
+void Boid::flock(std::span<const Boid> boids, std::span<const int> sorted_boids)
 {
 	sf::Vector2f sep;
 	sf::Vector2f ali;
@@ -54,9 +57,9 @@ void Boid::flock(const std::vector<Boid>& boids, const std::vector<int>& sorted_
 	const sf::Vector2f origin = get_origin();
 	const float vel_length = vu::distance(_velocity);
 
-	const int neighbours = 4;
+	const int neighbours = 4; // max 4 neighbours at a time
 
-	int neighbour_indicies[neighbours];
+	int neighbour_indicies[neighbours] {0};
 	sf::Vector2f neighbour[neighbours];
 
 	const sf::Vector2f grid_cell_raw = _grid->relative_pos(origin);
@@ -98,7 +101,7 @@ void Boid::flock(const std::vector<Boid>& boids, const std::vector<int>& sorted_
 				neighbour_cell + b->get_relative_position(); // need to get relative to this boid
 
 			const sf::Vector2f dir	= vu::direction(relative_pos, other_relative_pos);
-			const float temp		= vu::distance_sq(dir), distance_sq = (temp > 0.0f ? temp : FLT_EPSILON);
+			const float distance_sq = std::fmaxf(vu::distance_sq(dir), FLT_EPSILON);
 			const float angle		= vu::angle(_prev_velocity, dir, vel_length, std::sqrtf(distance_sq));
 
 			if (angle <= _config->boid_view_angle) // angle only effects cohesion and alignment
@@ -123,14 +126,9 @@ void Boid::flock(const std::vector<Boid>& boids, const std::vector<int>& sorted_
 		}
 	}
 
+	if (coh_count) coh = vu::normalize(vu::direction(origin, coh / (float)coh_count), _config->boid_max_speed);
 	if (ali_count) ali = vu::normalize(ali / (float)ali_count, _config->boid_max_speed);
 	if (sep_count) sep = vu::normalize(sep / (float)sep_count, _config->boid_max_speed);
-
-	if (coh_count)
-	{
-		coh = vu::direction(origin, coh / (float)coh_count);
-		coh = vu::normalize(coh, _config->boid_max_speed);
-	}
 
 	_velocity +=
 		steer_at(coh) * _config->coh_weight +
@@ -138,6 +136,36 @@ void Boid::flock(const std::vector<Boid>& boids, const std::vector<int>& sorted_
 		steer_at(sep) * _config->sep_weight;
 
 	_density = std::max(std::max(coh_count, ali_count), sep_count);
+}
+
+void Boid::update(const RectInt& border, const AudioMeter& audio_meter, std::span<const Impulse> impulses, float dt)
+{
+	_velocity = vu::clamp(_velocity, _config->boid_min_speed, _config->boid_max_speed);
+
+	_position += _velocity * dt;
+
+	if (outside_border(border, dt))
+		_prev_position = _position;
+
+	// draw-info
+	{
+		_color = sf::Vector3f();
+
+		if (_config->color_flags & ColorFlags::Positional)
+			_color += position_color(border) * _config->color_positional_weight;
+		if (_config->color_flags & ColorFlags::Cycle)
+			_color += cycle_color(dt) * _config->color_cycle_weight;
+		if (_config->color_flags & ColorFlags::Density)
+			_color += density_color(dt) * _config->color_density_weight;
+		if (_config->color_flags & ColorFlags::Velocity)
+			_color += velocity_color() * _config->color_velocity_weight;
+		if (_config->color_flags & ColorFlags::Rotation)
+			_color += rotation_color() * _config->color_rotation_weight;
+		if (_config->color_flags & ColorFlags::Audio)
+			_color += audio_color(audio_meter, dt) * _config->color_audio_weight;
+
+		_color = impulse_color(impulses);
+	}
 }
 
 sf::Vector2f Boid::steer_at(const sf::Vector2f& steer_direction) const
@@ -151,6 +179,7 @@ void Boid::steer_towards(const sf::Vector2f& direction, float length, float weig
 		return;
 
 	const sf::Vector2f steer = vu::normalize(direction, length, _config->boid_max_speed);
+
 	_velocity += steer_at(steer) * weight;
 }
 void Boid::steer_towards(const sf::Vector2f& point, float weight)
@@ -158,19 +187,19 @@ void Boid::steer_towards(const sf::Vector2f& point, float weight)
 	steer_towards(point, vu::distance(point), weight);
 }
 
-bool Boid::outside_border(float dt)
+bool Boid::outside_border(const RectInt& border, float dt)
 {
-	return _config->turn_at_border ? turn_at_border(dt) : teleport_at_border();
+	return _config->turn_at_border ? turn_at_border(border, dt) : teleport_at_border(border);
 }
-bool Boid::turn_at_border(float dt)
+bool Boid::turn_at_border(const RectInt& border, float dt)
 {
-	const float width_margin = _border->width() - _border->width() * _config->turn_margin_factor;
-	const float height_margin = _border->height() - _border->height() * _config->turn_margin_factor;
+	const float width_margin = border.width() - border.width() * _config->turn_margin_factor;
+	const float height_margin = border.height() - border.height() * _config->turn_margin_factor;
 
-	const float left_margin = _border->left + width_margin;
-	const float top_margin = _border->top + height_margin;
-	const float right_margin = _border->right - width_margin;
-	const float bot_margin = _border->bot - height_margin;
+	const float left_margin = border.left + width_margin;
+	const float top_margin = border.top + height_margin;
+	const float right_margin = border.right - width_margin;
+	const float bot_margin = border.bot - height_margin;
 
 	if (_position.x + _config->boid_size_width < left_margin)
 		_velocity.x += _config->turn_factor * dt * (1.0f + std::powf(std::abs(_position.x - left_margin) / width_margin, 2.0f)) * (1.0f / (_density + 1.0f));
@@ -186,29 +215,29 @@ bool Boid::turn_at_border(float dt)
 
 	return false;
 }
-bool Boid::teleport_at_border()
+bool Boid::teleport_at_border(const RectInt& border)
 {
 	const sf::Vector2f current = _position;
 
-	if (_position.x + _config->boid_size_width < _border->left)
-		_position.x = (float)_border->right;
+	if (_position.x + _config->boid_size_width < border.left)
+		_position.x = (float)border.right;
 
-	if (_position.x > _border->right)
-		_position.x = _border->left - _config->boid_size_width;
+	if (_position.x > border.right)
+		_position.x = border.left - _config->boid_size_width;
 
-	if (_position.y + _config->boid_size_height < _border->top)
-		_position.y = (float)_border->bot;
+	if (_position.y + _config->boid_size_height < border.top)
+		_position.y = (float)border.bot;
 
-	if (_position.y > _border->bot)
-		_position.y = _border->top - _config->boid_size_height;
+	if (_position.y > border.bot)
+		_position.y = border.top - _config->boid_size_height;
 
 	return (current != _position);
 }
 
-sf::Vector3f Boid::position_color() const
+sf::Vector3f Boid::position_color(const RectInt& border) const
 {
-	const float t = _position.x / _border->width();
-	const float s = _position.y / _border->height();
+	const float t = _position.x / border.width();
+	const float s = _position.y / border.height();
 
 	return sf::Vector3f(
 		util::interpolate(_config->boid_color_top_left.x * 255, _config->boid_color_top_right.x * 255, _config->boid_color_bot_left.x * 255, _config->boid_color_bot_right.x * 255, t, s) / 255.0f,
@@ -293,13 +322,13 @@ sf::Vector3f Boid::rotation_color() const
 
 	return vu::lerp(color1, color2, newT);
 }
-sf::Vector3f Boid::audio_color(float dt) const
+sf::Vector3f Boid::audio_color(const AudioMeter& audio_meter, float dt) const
 {
 	if (!_config->audio_responsive_colors.size())
 		return sf::Vector3f();
 
 	const float density_percentage = (_density / (float)_config->audio_responsive_density);
-	const float max_volume = std::fminf(_audio_meter->get_volume() * _config->audio_responsive_strength, _config->audio_responsive_limit);
+	const float max_volume = std::fminf(audio_meter.get_volume() * _config->audio_responsive_strength, _config->audio_responsive_limit);
 
 	const float scaled_volume = std::fminf(max_volume * density_percentage, 1.0f) * (float)(_config->audio_responsive_colors.size() - 1);
 
@@ -313,7 +342,7 @@ sf::Vector3f Boid::audio_color(float dt) const
 
 	return vu::lerp(color1, color2, newT);
 }
-sf::Vector3f Boid::impulse_color(const std::vector<Impulse>& impulses) const
+sf::Vector3f Boid::impulse_color(std::span<const Impulse> impulses) const
 {
 	if (!_config->impulse_colors.size())
 		return sf::Vector3f();
@@ -346,24 +375,4 @@ sf::Vector3f Boid::impulse_color(const std::vector<Impulse>& impulses) const
 	}
 
 	return _color;
-}
-
-void Boid::update_grid_cells(const std::vector<Boid>& boids, const std::vector<int>& sorted_boids, const int index) const
-{
-	if (index == 0)
-	{
-		_grid->_cells_start_indices[_cell_index] = index;
-		return;
-	}
-
-	if (index == _config->boid_count - 1)
-		_grid->_cells_end_indices[_cell_index] = index;
-
-	const int other_index = boids[sorted_boids[index - 1]].get_cell_index();
-
-	if (other_index != _cell_index)
-	{
-		_grid->_cells_start_indices[_cell_index] = index;
-		_grid->_cells_end_indices[other_index] = index - 1;
-	}
 }

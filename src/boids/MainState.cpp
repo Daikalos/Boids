@@ -34,7 +34,7 @@ MainState::MainState(StateStack& stack, Context context, Config& config) :
             util::random(0, _border.width()) - _border.left,
             util::random(0, _border.height()) - _border.top);
 
-        _boids.emplace_back(_grid, *_config, _audio_meter, _border, pos);
+        _boids.emplace_back(_grid, *_config, pos);
         _sorted_boids.emplace_back(i);
     }
 
@@ -44,7 +44,7 @@ MainState::MainState(StateStack& stack, Context context, Config& config) :
 	glVertexPointer(2, GL_FLOAT, 0, _vertices.data());
 	glColorPointer(3, GL_FLOAT, 0, _colors.data());
 
-    _policy = _config->boid_count <= 1500 ? Policy::unseq : Policy::par_unseq;
+    _policy = _config->boid_count <= 2500 ? Policy::unseq : Policy::par_unseq;
 }
 
 bool MainState::handle_event(const sf::Event& event)
@@ -98,7 +98,7 @@ bool MainState::pre_update(float dt)
 				break;
 			case Reconstruct::RBoids:
 				{
-					_policy = _config->boid_count <= 1500 ? Policy::unseq : Policy::par_unseq;
+					_policy = _config->boid_count <= 2500 ? Policy::unseq : Policy::par_unseq;
 
 					_vertices.resize(_config->boid_count * 3);
 					_colors.resize(_vertices.size());
@@ -117,7 +117,7 @@ bool MainState::pre_update(float dt)
 								util::random(0, _border.width()) - _border.left,
 								util::random(0, _border.height()) - _border.top);
 
-							_boids.emplace_back(_grid, *_config, _audio_meter, _border, pos);
+							_boids.emplace_back(_grid, *_config, pos);
 							_sorted_boids.emplace_back(i);
 						}
 					}
@@ -215,9 +215,9 @@ bool MainState::fixed_update(float dt)
 				});
 
 			std::for_each(pol, _sorted_boids.begin(), _sorted_boids.end(),
-				[this, &_sorted_boids = std::as_const(_sorted_boids)](const int& index) 
+				[this](const int& index) 
 				{ 
-					_boids[index].update_grid_cells(_boids, _sorted_boids, std::distance(_sorted_boids.data(), &index));
+					_boids[index].update_grid_cells(_boids, _sorted_boids, &index - _sorted_boids.data());
 				});
 
 			std::for_each(pol, _boids.begin(), _boids.end(),
@@ -226,35 +226,26 @@ bool MainState::fixed_update(float dt)
 					bool hold_left = context().input_handler->get_button_held(sf::Mouse::Button::Left);
 					bool hold_right = context().input_handler->get_button_held(sf::Mouse::Button::Right);
 
-					if (_config->steer_enabled || _config->predator_enabled)
+					if (_config->steer_enabled && (hold_left || hold_right))
 					{
 						sf::Vector2f dir = vu::direction(boid.get_position(), _mouse_pos);
 
-						if (_config->steer_enabled)
+						const float factor = hold_left ? 1.0f : (hold_right ? -1.0f : 0.0f);
+
+						const float length_opt = vu::distance_opt(dir);
+						const float weight = 15.0f / std::sqrtf(length_opt); // hard coded because cant update _config->.. 
+
+						boid.steer_towards(dir, length_opt, _config->steer_towards_factor * weight * factor);
+					}
+					else if (_config->predator_enabled)
+					{
+						sf::Vector2f dir = vu::direction(boid.get_position(), _mouse_pos);
+
+						float length_sq = vu::distance_sq(dir);
+						if (length_sq <= _config->predator_distance)
 						{
-							float weight = 0.0f;
-							float length_opt = 0.0f;
-
-							if (hold_left || hold_right)
-							{
-								length_opt = vu::distance_opt(dir);
-								weight = 15.0f / std::sqrtf(length_opt); // hard coded because cant update _config->.. 
-							}
-
-							if (hold_left)
-								boid.steer_towards(dir, length_opt, _config->steer_towards_factor * weight);
-							if (hold_right)
-								boid.steer_towards(dir, length_opt, -_config->steer_away_factor * weight);
-						}
-
-						if (_config->predator_enabled && !(_config->steer_enabled && (hold_left || hold_right)))
-						{
-							float length_sq = vu::distance_sq(dir);
-							if (length_sq <= _config->predator_distance)
-							{
-								float weight = std::sqrtf(length_sq / _config->predator_distance);
-								boid.steer_towards(dir, -_config->predator_factor / weight);
-							}
+							float weight = std::sqrtf(length_sq / _config->predator_distance);
+							boid.steer_towards(dir, -_config->predator_factor / weight);
 						}
 					}
 
@@ -264,7 +255,7 @@ bool MainState::fixed_update(float dt)
 			std::for_each(pol, _boids.begin(), _boids.end(),
 				[&dt, this](Boid& boid)
 				{
-					boid.update(_impulses, dt);
+					boid.update(_border, _audio_meter, _impulses, dt);
 				});
 
 		}, _policy);

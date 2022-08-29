@@ -62,7 +62,7 @@ public:
 		return x + y * _width;
 	}
 
-	[[nodiscard]] constexpr sf::Vector2i at_pos(int i) const
+	[[nodiscard]] constexpr sf::Vector2i at_pos(const int i) const
 	{
 		return sf::Vector2i(i % _width, i / _width);
 	}
