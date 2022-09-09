@@ -26,48 +26,82 @@ public:
 		return sf::Vector2<T>(get_view_matrix() * position);
 	}
 
-	const float* get_world_matrix() const
+	[[nodiscard]] const float* get_world_matrix() const
 	{
-		return sf::Transform()
-			.translate(_size / 2.0f)
-			.scale(_scale)
-			.translate(-_position).getMatrix();
+		if (_update_world)
+		{
+			_world_transform = sf::Transform()
+				.translate(_size / 2.0f)
+				.scale(_scale)
+				.translate(-_position);
+
+			_world_matrix = _world_transform.getMatrix();
+
+			_update_world = true;
+		}
+
+		return _world_matrix;
 	}
 
-	sf::Transform get_view_matrix() const
+	[[nodiscard]] const sf::Transform& get_view_matrix() const
 	{
-		return sf::Transform()
-			.translate(_position)
-			.scale(1.0f / _scale)
-			.translate(_size / -2.0f);
+		if (_update_view)
+		{
+			_view_transform = sf::Transform()
+				.translate(_position)
+				.scale(1.0f / _scale)
+				.translate(_size / -2.0f);
+
+			_update_view = false;
+		}
+
+		return _view_transform;
 	}
 
-	sf::Vector2f get_mouse_world_position(const sf::RenderWindow& window) const { return view_to_world(sf::Vector2f(sf::Mouse::getPosition(window))); }
+	[[nodiscard]] sf::Vector2f get_mouse_world_position(const sf::RenderWindow& window) const 
+	{ 
+		return view_to_world(sf::Vector2f(sf::Mouse::getPosition(window)));
+	}
 
-	sf::Vector2f get_position() const { return _position; }
-	sf::Vector2f get_scale() const { return _scale; }
-	sf::Vector2f get_size() const { return _size; }
+	[[nodiscard]] constexpr sf::Vector2f get_position() const { return _position; }
+	[[nodiscard]] constexpr sf::Vector2f get_scale() const { return _scale; }
+	[[nodiscard]] constexpr sf::Vector2f get_size() const { return _size; }
 
 	void set_position(const sf::Vector2f& position)
 	{
-		_position = position;
 		setCenter(position);
+		_position = position;
+
+		_update_view = true;
+		_update_world = true;
 	}
 	void set_scale(const sf::Vector2f& scale)
 	{
-		_scale = scale;
 		setSize(_size * (1.0f / scale));
+		_scale = scale;
+
+		_update_view = true;
+		_update_world = true;
 	}
 	void set_size(const sf::Vector2f& size) 
 	{ 
-		_size = size;
 		setSize(size * (1.0f / _scale));
+		_size = size;
+
+		_update_view = true;
+		_update_world = true;
 	}
 
 private:
 	sf::Vector2f _position;
 	sf::Vector2f _scale;
 	sf::Vector2f _size;
+
+	mutable sf::Transform _view_transform;
+	mutable sf::Transform _world_transform;
+	mutable const float* _world_matrix{nullptr};
+	mutable bool _update_view{true};
+	mutable bool _update_world{true};
 
 	sf::Vector2f _drag_pos;
 };
