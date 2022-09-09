@@ -35,12 +35,10 @@ public:
 				.scale(_scale)
 				.translate(-_position);
 
-			_world_matrix = _world_transform.getMatrix();
-
 			_update_world = true;
 		}
 
-		return _world_matrix;
+		return _world_transform.getMatrix();
 	}
 
 	[[nodiscard]] const sf::Transform& get_view_matrix() const
@@ -99,7 +97,6 @@ private:
 
 	mutable sf::Transform _view_transform;
 	mutable sf::Transform _world_transform;
-	mutable const float* _world_matrix{nullptr};
 	mutable bool _update_view{true};
 	mutable bool _update_world{true};
 
