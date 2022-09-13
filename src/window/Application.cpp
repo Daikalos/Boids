@@ -9,8 +9,6 @@ Application::Application(const std::string& name) :
 	register_states();
 	_state_stack.push(States::ID::Main);
 
-	_input_handler.set_button_binding(Binding::Button::Drag, sf::Mouse::Button::Middle);
-
 	_camera.set_scale({ _config.camera_zoom, _config.camera_zoom });
 
 	sf::Vector3f vc = _config.background_color * 255.0f;

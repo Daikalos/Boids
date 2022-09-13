@@ -1,50 +1,51 @@
 #include "Boid.h"
+#include "Wrapper.h"
 
-Boid::Boid(Grid& grid, Config& config, const sf::Vector2f& pos)
-	: _grid(&grid), _config(&config), _position(pos)
+Boid::Boid(Config& config, const sf::Vector2f& pos)
+	:  _config(&config), _position(pos)
 {
 	_velocity = vu::normalize(sf::Vector2f(
 		util::random(-1.0f, 1.0f),
-		util::random(-1.0f, 1.0f)), config.boid_max_speed);
+		util::random(-1.0f, 1.0f)), _config->boid_max_speed);
 
-	if (config.boid_cycle_colors_random)
+	if (_config->boid_cycle_colors_random)
 		_cycle_time = util::random(0.0f, 1.0f);
 }
 
-void Boid::pre_update() noexcept
+void Boid::pre_update(const Grid& grid) noexcept
 {
 	_prev_position = _position;
 	_prev_velocity = _velocity;
 
-	const sf::Vector2f grid_cell_raw = _grid->relative_pos(get_origin());
+	const sf::Vector2f grid_cell_raw = grid.relative_pos(get_origin());
 	const sf::Vector2i grid_cell = sf::Vector2i(grid_cell_raw);
 	const sf::Vector2f grid_cell_overflow = grid_cell_raw - sf::Vector2f(grid_cell);
 
-	_relative_pos = grid_cell_overflow * _grid->_cont_dims;
-	_cell_index = _grid->at_pos(grid_cell);
+	_relative_pos = grid_cell_overflow * grid._cont_dims;
+	_cell_index = grid.at_pos(grid_cell);
 }
 
-void Boid::update_grid_cells(std::span<const Boid> boids, std::span<const int> sorted_boids, const int index) const
+void Boid::update_grid_cells(Grid& grid, std::span<Wrapper> boids, const int index) const
 {
 	if (index == 0)
 	{
-		_grid->_cells_start_indices[_cell_index] = index;
+		grid._cells_start_indices[_cell_index] = index;
 		return;
 	}
 
 	if (index == _config->boid_count - 1)
-		_grid->_cells_end_indices[_cell_index] = index;
+		grid._cells_end_indices[_cell_index] = index;
 
-	const int other_index = boids[sorted_boids[index - 1]].get_cell_index();
+	const int other_index = boids[index - 1].boid->get_cell_index();
 
 	if (other_index != _cell_index)
 	{
-		_grid->_cells_start_indices[_cell_index] = index;
-		_grid->_cells_end_indices[other_index] = index - 1;
+		grid._cells_start_indices[_cell_index] = index;
+		grid._cells_end_indices[other_index] = index - 1;
 	}
 }
 
-void Boid::flock(std::span<const Boid> boids, std::span<const int> sorted_boids)
+void Boid::flock(const Grid& grid, std::span<Wrapper> boids)
 {
 	sf::Vector2f sep;
 	sf::Vector2f ali;
@@ -62,11 +63,9 @@ void Boid::flock(std::span<const Boid> boids, std::span<const int> sorted_boids)
 	int neighbour_indicies[neighbours] {0};
 	sf::Vector2f neighbour[neighbours];
 
-	const sf::Vector2f grid_cell_raw = _grid->relative_pos(origin);
+	const sf::Vector2f grid_cell_raw = grid.relative_pos(origin);
 	const sf::Vector2i grid_cell = sf::Vector2i(grid_cell_raw);
 	const sf::Vector2f grid_cell_overflow = grid_cell_raw - sf::Vector2f(grid_cell);
-
-	const sf::Vector2f relative_pos = grid_cell_overflow * _grid->_cont_dims;
 
 	const int x = (grid_cell_overflow.x > 0.5f ? 1 : -1);
 	const int y = (grid_cell_overflow.y > 0.5f ? 1 : -1);
@@ -74,33 +73,38 @@ void Boid::flock(std::span<const Boid> boids, std::span<const int> sorted_boids)
 	const int x_neighbor = grid_cell.x + x;
 	const int y_neighbor = grid_cell.y + y;
 
-	neighbour[0] = _grid->_cont_dims * sf::Vector2f(0, 0);
-	neighbour[1] = _grid->_cont_dims * sf::Vector2f(x, 0);
-	neighbour[2] = _grid->_cont_dims * sf::Vector2f(0, y);
-	neighbour[3] = _grid->_cont_dims * sf::Vector2f(x, y);
+	neighbour[0] = grid._cont_dims * sf::Vector2f(0, 0);
+	neighbour[1] = grid._cont_dims * sf::Vector2f(x, 0);
+	neighbour[2] = grid._cont_dims * sf::Vector2f(0, y);
+	neighbour[3] = grid._cont_dims * sf::Vector2f(x, y);
 
-	neighbour_indicies[0] = _grid->at_pos(grid_cell.x, grid_cell.y);	// current
-	neighbour_indicies[1] = _grid->at_pos(x_neighbor, grid_cell.y);		// left or right of current
-	neighbour_indicies[2] = _grid->at_pos(grid_cell.x, y_neighbor);		// top or bot of current
-	neighbour_indicies[3] = _grid->at_pos(x_neighbor, y_neighbor);		// top left/right bot left/right of current
+	neighbour_indicies[0] = grid.at_pos(grid_cell.x, grid_cell.y);	// current
+	neighbour_indicies[1] = grid.at_pos(x_neighbor, grid_cell.y);		// left or right of current
+	neighbour_indicies[2] = grid.at_pos(grid_cell.x, y_neighbor);		// top or bot of current
+	neighbour_indicies[3] = grid.at_pos(x_neighbor, y_neighbor);		// top left/right bot left/right of current
 
 	for (int i = 0; i < neighbours; ++i)
 	{
 		const int grid_cell_index = neighbour_indicies[i];
+		const int start = grid._cells_start_indices[grid_cell_index];
+
+		if (start < 0)
+			continue;
+
 		const sf::Vector2f neighbour_cell = neighbour[i];
+		const int end = grid._cells_end_indices[grid_cell_index];
 
-		for (int j = _grid->_cells_start_indices[grid_cell_index]; j <= _grid->_cells_end_indices[grid_cell_index] && j > -1; ++j) // do in one loop
+		for (int j = start; j <= end; ++j) // do in one loop
 		{
-			const int index = sorted_boids[j];
-			const Boid* b = &boids[index];
+			const Boid& b = *boids[j].boid;
 
-			if (b == this)
+			if (&b == this)
 				continue;
 
 			const sf::Vector2f other_relative_pos = 
-				neighbour_cell + b->get_relative_position(); // need to get relative to this boid
+				neighbour_cell + b.get_relative_position(); // need to get relative to this boid
 
-			const sf::Vector2f dir	= vu::direction(relative_pos, other_relative_pos);
+			const sf::Vector2f dir	= vu::direction(_relative_pos, other_relative_pos);
 			const float distance_sq = std::fmaxf(vu::distance_sq(dir), FLT_EPSILON);
 			const float angle		= vu::angle(_prev_velocity, dir, vel_length, std::sqrtf(distance_sq));
 
@@ -113,7 +117,7 @@ void Boid::flock(std::span<const Boid> boids, std::span<const int> sorted_boids)
 				}
 				if (distance_sq <= _config->ali_distance)
 				{
-					ali += b->get_prev_velocity(); // Align with every boids velocity
+					ali += b.get_prev_velocity(); // Align with every boids velocity
 					++ali_count;
 				}
 			}

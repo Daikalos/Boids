@@ -70,56 +70,19 @@ public:
 		return !get_key_pressed(key);
 	}
 
-	inline bool get_button_held(const Binding::Button& bind) const { return _button_bindings.contains(bind) && get_button_held(_button_bindings.at(bind)); }
-	inline bool get_button_pressed(const Binding::Button& bind) const { return _button_bindings.contains(bind) && get_button_pressed(_button_bindings.at(bind)); }
-	inline bool get_button_released(const Binding::Button& bind) const { return _button_bindings.contains(bind) && get_button_released(_button_bindings.at(bind)); }
-
-	inline bool get_key_held(const Binding::Key& bind) const { return _key_bindings.contains(bind) && get_key_held(_key_bindings.at(bind)); }
-	inline bool get_key_pressed(const Binding::Key& bind) const { return _key_bindings.contains(bind) && get_key_pressed(_key_bindings.at(bind)); }
-	inline bool get_key_released(const Binding::Key& bind) const { return _key_bindings.contains(bind) && get_key_released(_key_bindings.at(bind)); }
-
-	void set_key_binding(const Binding::Key& name, const sf::Keyboard::Key& key)
-	{
-		_key_bindings[name] = key;
-	}
-	void set_button_binding(const Binding::Button& name, const sf::Mouse::Button& button)
-	{
-		_button_bindings[name] = button;
-	}
-
 	//////////////////////
 
-	void set_keyboard_enabled(bool flag)
-	{
-		_keyboard_enabled = flag;
-	}
-	void set_mouse_enabled(bool flag)
-	{
-		_mouse_enabled = flag;
-	}
-	void set_joystick_enabled(bool flag)
-	{
-		_joystick_enabled = flag;
-	}
-
 private: // VARIABLES
-	bool	_keyboard_enabled;
-	bool	_mouse_enabled;
-	bool	_joystick_enabled;
+	float	_held_threshold{0.0f};
 
-	float	_held_threshold;
+	float	_scroll_delta{0.0f};
 
-	float	_scroll_delta;
+	bool	_current_button_state	[sf::Mouse::ButtonCount] = {false};
+	bool	_previous_button_state	[sf::Mouse::ButtonCount] = {false};
+	float	_button_held_timer		[sf::Mouse::ButtonCount] = {0.0f};
 
-	bool	_current_button_state[sf::Mouse::ButtonCount];
-	bool	_previous_button_state[sf::Mouse::ButtonCount];
-	float	_button_held_timer[sf::Mouse::ButtonCount];
-
-	bool	_current_key_state[sf::Keyboard::KeyCount];
-	bool	_previous_key_state[sf::Keyboard::KeyCount];
-	float	_key_held_timer[sf::Keyboard::KeyCount];
-
-	std::unordered_map<Binding::Key, sf::Keyboard::Key> _key_bindings;
-	std::unordered_map<Binding::Button, sf::Mouse::Button> _button_bindings;
+	bool	_current_key_state		[sf::Keyboard::KeyCount] = {false};
+	bool	_previous_key_state		[sf::Keyboard::KeyCount] = {false};
+	float	_key_held_timer			[sf::Keyboard::KeyCount] = {0.0f};
 };
 

@@ -15,7 +15,7 @@
 
         "boid" :
         {
-            "boid_count" : 2000,
+            "boid_count" : 2500,
             "boid_size_width" : 22.0,
             "boid_size_height" : 11.0,
             "boid_max_speed" : 370.0,
@@ -163,7 +163,7 @@
             "max_framerate" : 200,
             "physics_update_freq" : 60,
 
-            "debug_enabled" : false,
+            "debug_enabled" : true,
             "debug_update_freq" : 0.5,
             "debug_toggle_key" : 85
         }

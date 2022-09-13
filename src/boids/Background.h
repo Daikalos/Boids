@@ -18,6 +18,7 @@ public:
 		else
 			_background.setTexture(sf::Texture(), true);
 	}
+
 	void load_prop(Config& config, const sf::Vector2i& size)
 	{
 		sf::Vector2f desired_scale = sf::Vector2f(1.0f, 1.0f);

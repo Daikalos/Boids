@@ -2,7 +2,7 @@
 
 #include <SFML/Graphics.hpp>
 
-class Impulse
+class Impulse final
 {
 public:
 	Impulse(sf::Vector2f position, float speed, float size, float length)
@@ -15,9 +15,18 @@ public:
 		return *this;
 	}
 
-	[[nodiscard]] constexpr sf::Vector2f get_position() const noexcept { return _position; }
-	[[nodiscard]] constexpr float get_length() const noexcept { return _length; }
-	[[nodiscard]] constexpr float get_size() const noexcept { return _size; }
+	[[nodiscard]] constexpr sf::Vector2f get_position() const noexcept 
+	{ 
+		return _position; 
+	}
+	[[nodiscard]] constexpr float get_length() const noexcept 
+	{ 
+		return _length; 
+	}
+	[[nodiscard]] constexpr float get_size() const noexcept 
+	{
+		return _size; 
+	}
 
 	void update(float dt)
 	{

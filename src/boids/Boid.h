@@ -13,18 +13,19 @@
 #include "../utilities/VectorUtilities.h"
 #include "../utilities/Utilities.h"
 
+struct Wrapper;
+
 class Boid
 {
 public:
-	Boid(Grid& grid, Config& config, const sf::Vector2f& pos);
+	Boid(Config& config, const sf::Vector2f& pos);
 
 	void steer_towards(const sf::Vector2f& direction, const float length, const float weight);
 	void steer_towards(const sf::Vector2f& point, const float weight);
 
-	void pre_update() noexcept;
-
-	void update_grid_cells(std::span<const Boid> boids, std::span<const int> sorted_boids, const int index) const;
-	void flock(std::span<const Boid> boids, std::span<const int> sorted_boids);
+	void pre_update(const Grid& grid) noexcept;
+	void update_grid_cells(Grid& grid, std::span<Wrapper> boids, const int index) const;
+	void flock(const Grid& grid, std::span<Wrapper> boids);
 	void update(const RectInt& border, const AudioMeterInfoBase::ptr& audio_meter, std::span<const Impulse> impulses, float dt);
 	
 public: // Properties
@@ -70,17 +71,16 @@ private:
 	sf::Vector3f impulse_color(std::span<const Impulse> impulses) const;
 
 private:
-	Grid*				_grid						{nullptr};
-	Config*				_config						{nullptr};
+	Config*				_config			{nullptr};
 
 	sf::Vector2f		_position, _prev_position, _relative_pos;
 	sf::Vector2f		_velocity, _prev_velocity;
 
 	sf::Vector3f		_color;
-	float				_cycle_time					{0.0f};
-	float				_density_time				{0.0f};
+	float				_cycle_time		{0.0f};
+	float				_density_time	{0.0f};
 
-	int					_density					{0};
-	int					_cell_index					{0};
+	std::uint8_t		_density		{0};
+	std::uint8_t		_cell_index		{0};
 };
 

@@ -16,8 +16,9 @@
 #include "Grid.hpp"
 #include "Impulse.hpp"
 #include "Boid.h"
+#include "Wrapper.h"
 
-class MainState : public State
+class MainState final : public State
 {
 public:
 	MainState(StateStack& stack, Context context, Config& config);
@@ -40,7 +41,7 @@ private:
 
 	std::vector<Impulse>		_impulses;
 	std::vector<Boid>			_boids;
-	std::vector<int>			_sorted_boids;
+	std::vector<Wrapper>		_proxy;
 
 	std::vector<sf::Vector2f>	_vertices;
 	std::vector<sf::Vector3f>	_colors;

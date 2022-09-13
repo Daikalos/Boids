@@ -35,7 +35,7 @@ public:
 				.scale(_scale)
 				.translate(-_position);
 
-			_update_world = true;
+			_update_world = false;
 		}
 
 		return _world_transform.getMatrix();

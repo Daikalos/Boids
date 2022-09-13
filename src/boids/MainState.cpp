@@ -33,7 +33,7 @@ MainState::MainState(StateStack& stack, Context context, Config& config) :
     _grid = Grid(*_config, grid_border, sf::Vector2f(_min_distance, _min_distance) * 2.0f);
 
     _boids.reserve(_config->boid_count);
-    _sorted_boids.reserve(_config->boid_count);
+	_proxy.reserve(_config->boid_count);
 
     for (int i = 0; i < _config->boid_count; ++i)
     {
@@ -41,8 +41,7 @@ MainState::MainState(StateStack& stack, Context context, Config& config) :
             util::random(0, _border.width()) - _border.left,
             util::random(0, _border.height()) - _border.top);
 
-        _boids.emplace_back(_grid, *_config, pos);
-        _sorted_boids.emplace_back(i);
+		_proxy.emplace_back(_boids.emplace_back(*_config, pos));
     }
 
 	_vertices.resize(_config->boid_count * 3);
@@ -51,7 +50,7 @@ MainState::MainState(StateStack& stack, Context context, Config& config) :
 	glVertexPointer(2, GL_FLOAT, 0, _vertices.data());
 	glColorPointer(3, GL_FLOAT, 0, _colors.data());
 
-    _policy = _config->boid_count <= 2500 ? Policy::unseq : Policy::par_unseq;
+    _policy = _config->boid_count <= 1500 ? Policy::unseq : Policy::par_unseq;
 }
 
 bool MainState::handle_event(const sf::Event& event)
@@ -105,7 +104,7 @@ bool MainState::pre_update(float dt)
 				break;
 			case Reconstruct::RBoids:
 				{
-					_policy = _config->boid_count <= 2500 ? Policy::unseq : Policy::par_unseq;
+					_policy = _config->boid_count <= 1500 ? Policy::unseq : Policy::par_unseq;
 
 					_vertices.resize(_config->boid_count * 3);
 					_colors.resize(_vertices.size());
@@ -115,8 +114,16 @@ bool MainState::pre_update(float dt)
 
 					if (_config->boid_count > prev.boid_count) // new is larger
 					{
+						std::size_t prev_capacity = _boids.capacity();
+
 						_boids.reserve(_config->boid_count);
-						_sorted_boids.reserve(_config->boid_count);
+						_proxy.reserve(_config->boid_count);
+
+						if (_boids.capacity() != prev_capacity) // reallocation has occured, we need to reset pointers
+						{
+							for (std::size_t i = 0; i < _proxy.size(); ++i)
+								_proxy[i].boid = &_boids[i];
+						}
 
 						for (int i = prev.boid_count; i < _config->boid_count; ++i)
 						{
@@ -124,20 +131,20 @@ bool MainState::pre_update(float dt)
 								util::random(0, _border.width()) - _border.left,
 								util::random(0, _border.height()) - _border.top);
 
-							_boids.emplace_back(_grid, *_config, pos);
-							_sorted_boids.emplace_back(i);
+							_proxy.emplace_back(_boids.emplace_back(*_config, pos));
 						}
 					}
 					else
 					{
-						_boids.erase(_boids.begin() + _config->boid_count, _boids.end());
+						const std::size_t size_diff = _boids.size() - _config->boid_count;
 
-						_sorted_boids.erase(std::remove_if(
-							_sorted_boids.begin(), _sorted_boids.end(),
-							[this](const int index)
-							{
-								return index >= _config->boid_count;
-							}), _sorted_boids.end());
+						for (int i = 0; i < size_diff; ++i)
+							_boids.pop_back();
+
+						_proxy.resize(_boids.size());
+
+						for (std::size_t i = 0; i < _proxy.size(); ++i)
+							_proxy[i].boid = &_boids[i];
 					}
 				}
 				break;
@@ -210,21 +217,17 @@ bool MainState::fixed_update(float dt)
 		[&dt, this](auto& pol)
 		{
 			std::for_each(pol, _boids.begin(), _boids.end(),
-				[](Boid& boid) 
+				[this](Boid& boid) 
 				{ 
-					boid.pre_update(); 
+					boid.pre_update(_grid);
 				});
 
-			std::sort(pol, _sorted_boids.begin(), _sorted_boids.end(),
-				[this](const int& i0, const int& i1)
-				{ 
-					return _boids[i0].get_cell_index() < _boids[i1].get_cell_index(); 
-				});
+			std::sort(pol, _proxy.begin(), _proxy.end());
 
-			std::for_each(pol, _sorted_boids.begin(), _sorted_boids.end(),
-				[this](const int& index) 
+			std::for_each(pol, _proxy.begin(), _proxy.end(),
+				[this](Wrapper& wrap) 
 				{ 
-					_boids[index].update_grid_cells(_boids, _sorted_boids, &index - _sorted_boids.data());
+					wrap.boid->update_grid_cells(_grid, _proxy, &wrap - _proxy.data());
 				});
 
 			std::for_each(pol, _boids.begin(), _boids.end(),
@@ -256,7 +259,7 @@ bool MainState::fixed_update(float dt)
 						}
 					}
 
-					boid.flock(_boids, _sorted_boids);
+					boid.flock(_grid, _proxy);
 				});
 
 			std::for_each(pol, _boids.begin(), _boids.end(),
@@ -281,7 +284,7 @@ bool MainState::post_update(float dt, float interp)
 				{
 					const auto v = (&boid - _boids.data()) * 3;
 
-					sf::Vector3f color = boid.get_color();
+					const sf::Vector3f color = boid.get_color();
 
 					const sf::Vector2f ori = boid.get_origin();
 					const sf::Vector2f prev_ori = boid.get_prev_origin();

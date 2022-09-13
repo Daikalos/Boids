@@ -11,48 +11,32 @@
 class Debug : public NonCopyable
 {
 public:
-	Debug(Config& config)
-		: _config(&config), _update_freq_max(config.debug_update_freq) { }
+	Debug(Config& config);
 
+	void set_update_freq(float value);
+
+	[[nodiscard]] bool get_refresh() const noexcept;
+	[[nodiscard]] std::string get_state() const noexcept;
+
+public:
 	void load(const FontHolder& _font_holder);
 	void update(const InputHandler& input_handler, float dt);
 	void draw(sf::RenderWindow& window) const;
 
-	void set_update_freq(float value)
-	{
-		_update_freq_max = value;
-	}
-
-	inline bool get_refresh() const
-	{
-		return _refresh;
-	}
+private:
+	void toggle();
 
 private:
-	void toggle()
-	{
-		_enabled = !_enabled;
+	const Config*	_config				{nullptr};
 
-		_debug_text_state.setString(get_state());
-		_debug_text_info.setString(_enabled ? _debug_text_info.getString() : "");
-	}
+	float			_update_freq_max	{0.0f};
+	float			_update_freq		{0.0f};
 
-	[[nodiscard]] constexpr std::string get_state() const noexcept
-	{
-		return _enabled ? "DEBUG ENABLED" : "DEBUG DISABLED";
-	}
+	bool			_enabled			{false};
+	bool			_refresh			{false};
 
-private:
-	Config*		_config;
-
-	float		_update_freq_max	{0.0f};
-	float		_update_freq		{0.0f};
-
-	bool		_enabled			{false};
-	bool		_refresh			{false};
-
-	sf::Text	_debug_text_state;
-	sf::Text	_debug_text_info;
-	std::string _debug_info;
+	sf::Text		_debug_text_state;
+	sf::Text		_debug_text_info;
+	std::string		_debug_info;
 };
 

@@ -1,5 +1,25 @@
 #include "Debug.h"
 
+Debug::Debug(Config& config) : _config(&config), _update_freq_max(config.debug_update_freq) 
+{ 
+
+}
+
+void Debug::set_update_freq(float value)
+{
+	_update_freq_max = value;
+}
+
+bool Debug::get_refresh() const noexcept
+{
+	return _refresh;
+}
+
+std::string Debug::get_state() const noexcept
+{
+	return _enabled ? "DEBUG ENABLED" : "DEBUG DISABLED";
+}
+
 void Debug::load(const FontHolder& _font_holder)
 {
 	if (_font_holder.exists(FontID::F8Bit))
@@ -58,4 +78,12 @@ void Debug::draw(sf::RenderWindow& window) const
 	window.draw(_debug_text_info);
 
 	window.popGLStates();
+}
+
+void Debug::toggle()
+{
+	_enabled = !_enabled;
+
+	_debug_text_state.setString(get_state());
+	_debug_text_info.setString(_enabled ? _debug_text_info.getString() : "");
 }
