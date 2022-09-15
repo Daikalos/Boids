@@ -23,7 +23,7 @@ MainState::MainState(StateStack& stack, Context context, Config& config) :
 
     _border = context.window->get_border();
 
-    RectFloat grid_border = (RectFloat)_border + (_config->turn_at_border ?
+    RectFloat grid_border = _border + (_config->turn_at_border ?
         RectFloat(
             -_min_distance * _config->grid_extra_cells,
             -_min_distance * _config->grid_extra_cells,
@@ -38,8 +38,8 @@ MainState::MainState(StateStack& stack, Context context, Config& config) :
     for (int i = 0; i < _config->boid_count; ++i)
     {
         sf::Vector2f pos = sf::Vector2f(
-            util::random(0, _border.width()) - _border.left,
-            util::random(0, _border.height()) - _border.top);
+            util::random(0.0f, _border.width()) - _border.left,
+            util::random(0.0f, _border.height()) - _border.top);
 
 		_proxy.emplace_back(_boids.emplace_back(*_config, pos));
     }
@@ -61,7 +61,7 @@ bool MainState::handle_event(const sf::Event& event)
         {
 			_border = context().window->get_border();
 
-            RectFloat grid_border = (RectFloat)_border + (_config->turn_at_border ?
+            RectFloat grid_border = _border + (_config->turn_at_border ?
                 RectFloat(
                     -_min_distance * _config->grid_extra_cells,
                     -_min_distance * _config->grid_extra_cells,
@@ -92,7 +92,7 @@ bool MainState::pre_update(float dt)
 				{
 					_min_distance = std::sqrtf(std::fmaxf(std::fmaxf(_config->sep_distance, _config->ali_distance), _config->coh_distance));
 
-					RectFloat grid_border = (RectFloat)_border + (_config->turn_at_border ?
+					RectFloat grid_border = _border + (_config->turn_at_border ?
 						RectFloat(
 							-_min_distance * _config->grid_extra_cells,
 							-_min_distance * _config->grid_extra_cells,
@@ -128,8 +128,8 @@ bool MainState::pre_update(float dt)
 						for (int i = prev.boid_count; i < _config->boid_count; ++i)
 						{
 							sf::Vector2f pos = sf::Vector2f(
-								util::random(0, _border.width()) - _border.left,
-								util::random(0, _border.height()) - _border.top);
+								util::random(0.0f, _border.width()) - _border.left,
+								util::random(0.0f, _border.height()) - _border.top);
 
 							_proxy.emplace_back(_boids.emplace_back(*_config, pos));
 						}
@@ -213,25 +213,25 @@ bool MainState::fixed_update(float dt)
 {
 	_grid.reset_buffers();
 
+	std::for_each(_boids.begin(), _boids.end(),
+		[this](Boid& boid)
+		{
+			boid.pre_update(_grid);
+		});
+
+	std::sort(_proxy.begin(), _proxy.end());
+
+	std::for_each(_proxy.begin(), _proxy.end(),
+		[this](Wrapper& wrap)
+		{
+			wrap.boid->update_grid_cells(_grid, _proxy, &wrap - _proxy.data());
+		});
+
 	policy_select(
-		[&dt, this](auto& pol)
+		[this](auto& pol)
 		{
 			std::for_each(pol, _boids.begin(), _boids.end(),
-				[this](Boid& boid) 
-				{ 
-					boid.pre_update(_grid);
-				});
-
-			std::sort(pol, _proxy.begin(), _proxy.end());
-
-			std::for_each(pol, _proxy.begin(), _proxy.end(),
-				[this](Wrapper& wrap) 
-				{ 
-					wrap.boid->update_grid_cells(_grid, _proxy, &wrap - _proxy.data());
-				});
-
-			std::for_each(pol, _boids.begin(), _boids.end(),
-				[&dt, this](Boid& boid)
+				[this](Boid& boid)
 				{
 					bool hold_left = context().input_handler->get_button_held(sf::Mouse::Button::Left);
 					bool hold_right = context().input_handler->get_button_held(sf::Mouse::Button::Right);
@@ -261,14 +261,14 @@ bool MainState::fixed_update(float dt)
 
 					boid.flock(_grid, _proxy);
 				});
-
-			std::for_each(pol, _boids.begin(), _boids.end(),
-				[&dt, this](Boid& boid)
-				{
-					boid.update(_border, _audio_meter, _impulses, dt);
-				});
-
 		}, _policy);
+
+
+	std::for_each(_boids.begin(), _boids.end(),
+		[&dt, this](Boid& boid)
+		{
+			boid.update(_border, _audio_meter, _impulses, dt);
+		});
 
     return true;
 }
@@ -278,8 +278,7 @@ bool MainState::post_update(float dt, float interp)
 	policy_select(
 		[&interp, this](auto& pol)
 		{
-			std::for_each(
-				pol, _boids.begin(), _boids.end(),
+			std::for_each(pol, _boids.begin(), _boids.end(),
 				[&interp, this](const Boid& boid)
 				{
 					const auto v = (&boid - _boids.data()) * 3;

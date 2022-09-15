@@ -4,7 +4,7 @@
 
 #include <span>
 
-#include "Grid.hpp"
+#include "Grid.h"
 #include "Config.h"
 #include "AudioMeter.h"
 #include "Impulse.hpp"
@@ -26,7 +26,7 @@ public:
 	void pre_update(const Grid& grid) noexcept;
 	void update_grid_cells(Grid& grid, std::span<Wrapper> boids, const int index) const;
 	void flock(const Grid& grid, std::span<Wrapper> boids);
-	void update(const RectInt& border, const AudioMeterInfoBase::ptr& audio_meter, std::span<const Impulse> impulses, float dt);
+	void update(const RectFloat& border, const AudioMeterInfoBase::ptr& audio_meter, std::span<const Impulse> impulses, float dt);
 	
 public: // Properties
 	[[nodiscard]] constexpr sf::Vector2f get_position() const noexcept { return _position; }
@@ -58,11 +58,11 @@ public: // Properties
 private:
 	sf::Vector2f steer_at(const sf::Vector2f& steer_direction) const;
 
-	bool outside_border(const RectInt& border, float dt);
-	bool turn_at_border(const RectInt& border, float dt);
-	bool teleport_at_border(const RectInt& border);
+	bool outside_border(const RectFloat& border, float dt);
+	bool turn_at_border(const RectFloat& border, float dt);
+	bool teleport_at_border(const RectFloat& border);
 
-	sf::Vector3f position_color(const RectInt& border) const;
+	sf::Vector3f position_color(const RectFloat& border) const;
 	sf::Vector3f cycle_color(float dt);
 	sf::Vector3f density_color(float dt);
 	sf::Vector3f velocity_color() const;
@@ -80,7 +80,7 @@ private:
 	float				_cycle_time		{0.0f};
 	float				_density_time	{0.0f};
 
-	std::uint8_t		_density		{0};
-	std::uint8_t		_cell_index		{0};
+	std::uint32_t		_density		{0};
+	std::uint32_t		_cell_index		{0};
 };
 

@@ -1,23 +1,12 @@
 #include "Window.h"
 
 Window::Window(std::string name, sf::VideoMode mode, WindowBorder window_border, sf::ContextSettings settings, bool vertical_sync, int frame_rate, Camera& _camera)
-	: _name(name), _mode(mode), _border(window_border), _settings(settings), _vertical_sync(vertical_sync), _frame_rate(frame_rate), _camera(&_camera)
-{
-	std::vector<sf::VideoMode> modes = get_modes();
-
-	if (!modes.size())
-		throw std::runtime_error("unable to retrieve supported video modes");
-
-	_mode = modes.front();
-}
-
-Window::~Window()
-{
-
-}
+	: _name(name), _mode(mode), _border(window_border), _settings(settings), _vertical_sync(vertical_sync), _frame_rate(frame_rate), _camera(&_camera) {}
 
 void Window::initialize()
 {
+	_mode = sf::VideoMode::getDesktopMode();
+
 	build(_border, _mode, _settings);
 
 	_camera->set_size(sf::Vector2f(getSize()));
@@ -81,16 +70,6 @@ void Window::set_vertical_sync(bool flag)
 	setVerticalSyncEnabled(_vertical_sync);
 }
 
-void Window::set_resolution(int index)
-{
-	std::vector<sf::VideoMode> modes = get_modes();
-
-	if (index >= modes.size())
-		throw std::runtime_error("index is out of range");
-
-	set_mode(modes[index]);
-}
-
 void Window::build(WindowBorder window_border, sf::VideoMode mode, sf::ContextSettings settings)
 {
 	_border = window_border;
@@ -143,27 +122,7 @@ void Window::set_cursor_state(bool flag)
 	setMouseCursorGrabbed(!flag);
 }
 
-RectInt Window::get_border() const
+RectFloat Window::get_border() const
 {
-	return RectInt(0, 0, getSize().x, getSize().y);
-}
-
-std::vector<sf::VideoMode> Window::get_modes() const
-{
-	sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
-	float desktop_ratio = desktop.size.x / (float)desktop.size.y;
-
-	std::vector<sf::VideoMode> fullscreen_modes = sf::VideoMode::getFullscreenModes();
-
-	std::vector<sf::VideoMode> valid_modes;
-	valid_modes.reserve(fullscreen_modes.size());
-
-	for (const sf::VideoMode& mode : fullscreen_modes)
-	{
-		float ratio = mode.size.x / (float)mode.size.y;
-		if (std::fabsf(desktop_ratio - ratio) <= FLT_EPSILON)
-			valid_modes.push_back(mode);
-	}
-
-	return valid_modes;
+	return RectFloat(0, 0, getSize().x, getSize().y);
 }

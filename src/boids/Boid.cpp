@@ -33,7 +33,7 @@ void Boid::update_grid_cells(Grid& grid, std::span<Wrapper> boids, const int ind
 		return;
 	}
 
-	if (index == _config->boid_count - 1)
+	if (index == boids.size() - 1)
 		grid._cells_end_indices[_cell_index] = index;
 
 	const int other_index = boids[index - 1].boid->get_cell_index();
@@ -58,7 +58,7 @@ void Boid::flock(const Grid& grid, std::span<Wrapper> boids)
 	const sf::Vector2f origin = get_origin();
 	const float vel_length = vu::distance(_velocity);
 
-	const int neighbours = 4; // max 4 neighbours at a time
+	constexpr int neighbours = 4; // max 4 neighbours at a time
 
 	int neighbour_indicies[neighbours] {0};
 	sf::Vector2f neighbour[neighbours];
@@ -79,9 +79,9 @@ void Boid::flock(const Grid& grid, std::span<Wrapper> boids)
 	neighbour[3] = grid._cont_dims * sf::Vector2f(x, y);
 
 	neighbour_indicies[0] = grid.at_pos(grid_cell.x, grid_cell.y);	// current
-	neighbour_indicies[1] = grid.at_pos(x_neighbor, grid_cell.y);		// left or right of current
-	neighbour_indicies[2] = grid.at_pos(grid_cell.x, y_neighbor);		// top or bot of current
-	neighbour_indicies[3] = grid.at_pos(x_neighbor, y_neighbor);		// top left/right bot left/right of current
+	neighbour_indicies[1] = grid.at_pos(x_neighbor, grid_cell.y);	// left or right of current
+	neighbour_indicies[2] = grid.at_pos(grid_cell.x, y_neighbor);	// top or bot of current
+	neighbour_indicies[3] = grid.at_pos(x_neighbor, y_neighbor);	// top left/right bot left/right of current
 
 	for (int i = 0; i < neighbours; ++i)
 	{
@@ -142,7 +142,7 @@ void Boid::flock(const Grid& grid, std::span<Wrapper> boids)
 	_density = std::max(std::max(coh_count, ali_count), sep_count);
 }
 
-void Boid::update(const RectInt& border, const AudioMeterInfoBase::ptr& audio_meter, std::span<const Impulse> impulses, float dt)
+void Boid::update(const RectFloat& border, const AudioMeterInfoBase::ptr& audio_meter, std::span<const Impulse> impulses, float dt)
 {
 	_velocity = vu::clamp(_velocity, _config->boid_min_speed, _config->boid_max_speed);
 
@@ -191,11 +191,11 @@ void Boid::steer_towards(const sf::Vector2f& point, float weight)
 	steer_towards(point, vu::distance(point), weight);
 }
 
-bool Boid::outside_border(const RectInt& border, float dt)
+bool Boid::outside_border(const RectFloat& border, float dt)
 {
 	return _config->turn_at_border ? turn_at_border(border, dt) : teleport_at_border(border);
 }
-bool Boid::turn_at_border(const RectInt& border, float dt)
+bool Boid::turn_at_border(const RectFloat& border, float dt)
 {
 	const float width_margin = border.width() - border.width() * _config->turn_margin_factor;
 	const float height_margin = border.height() - border.height() * _config->turn_margin_factor;
@@ -219,7 +219,7 @@ bool Boid::turn_at_border(const RectInt& border, float dt)
 
 	return false;
 }
-bool Boid::teleport_at_border(const RectInt& border)
+bool Boid::teleport_at_border(const RectFloat& border)
 {
 	const sf::Vector2f current = _position;
 
@@ -238,7 +238,7 @@ bool Boid::teleport_at_border(const RectInt& border)
 	return (current != _position);
 }
 
-sf::Vector3f Boid::position_color(const RectInt& border) const
+sf::Vector3f Boid::position_color(const RectFloat& border) const
 {
 	const float t = _position.x / border.width();
 	const float s = _position.y / border.height();

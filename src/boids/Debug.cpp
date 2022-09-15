@@ -1,6 +1,7 @@
 #include "Debug.h"
 
-Debug::Debug(Config& config) : _config(&config), _update_freq_max(config.debug_update_freq) 
+Debug::Debug(Config& config) 
+	: _config(&config), _update_freq_max(_config->debug_update_freq) 
 { 
 
 }

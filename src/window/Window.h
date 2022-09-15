@@ -21,7 +21,6 @@ class Window : public sf::RenderWindow, NonCopyable
 {
 public:
 	Window(std::string name, sf::VideoMode mode, WindowBorder window_border, sf::ContextSettings settings, bool vertical_sync, int frame_rate, Camera& camera);
-	~Window();
 
 	void initialize();
 	void handle_event(const sf::Event& event);
@@ -32,8 +31,6 @@ public:
 
 	void set_framerate(int frame_rate);
 	void set_vertical_sync(bool flag);
-
-	void set_resolution(int index);
 
 	void build(WindowBorder window_border, sf::VideoMode mode, sf::ContextSettings settings);
 
@@ -48,12 +45,7 @@ public:
 	//
 	void set_cursor_state(bool flag);
 
-	RectInt get_border() const;
-
-public:
-	// only gets modes that match the aspect ratio of the desktop
-	//
-	std::vector<sf::VideoMode> get_modes() const;
+	RectFloat get_border() const;
 
 private:
 	std::string				_name;

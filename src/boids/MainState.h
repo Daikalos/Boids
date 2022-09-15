@@ -13,7 +13,7 @@
 #include "Debug.h"
 #include "AudioMeter.h"
 #include "Background.h"
-#include "Grid.hpp"
+#include "Grid.h"
 #include "Impulse.hpp"
 #include "Boid.h"
 #include "Wrapper.h"
@@ -46,7 +46,7 @@ private:
 	std::vector<sf::Vector2f>	_vertices;
 	std::vector<sf::Vector3f>	_colors;
 
-	RectInt						_border;
+	RectFloat					_border;
 
 	sf::Vector2f				_mouse_pos;
 	float						_min_distance	{0.0f};

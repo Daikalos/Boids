@@ -23,6 +23,7 @@
     <ClCompile Include="boids\Boid.cpp" />
     <ClCompile Include="boids\Config.cpp" />
     <ClCompile Include="boids\Debug.cpp" />
+    <ClCompile Include="boids\Grid.cpp" />
     <ClCompile Include="boids\MainState.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="window\Application.cpp" />
@@ -38,7 +39,7 @@
     <ClInclude Include="boids\Boid.h" />
     <ClInclude Include="boids\Config.h" />
     <ClInclude Include="boids\Debug.h" />
-    <ClInclude Include="boids\Grid.hpp" />
+    <ClInclude Include="boids\Grid.h" />
     <ClInclude Include="boids\Impulse.hpp" />
     <ClInclude Include="boids\Wrapper.h" />
     <ClInclude Include="utilities\PolicySelect.h" />

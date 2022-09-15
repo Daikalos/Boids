@@ -51,6 +51,9 @@
     <ClCompile Include="boids\MainState.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="boids\Grid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="window\Application.h">
@@ -101,7 +104,7 @@
     <ClInclude Include="boids\Debug.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="boids\Grid.hpp">
+    <ClInclude Include="boids\Grid.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="boids\Impulse.hpp">
