@@ -16,7 +16,6 @@
 #include "Grid.h"
 #include "Impulse.hpp"
 #include "Boid.h"
-#include "Wrapper.h"
 
 class MainState final : public State
 {
@@ -41,7 +40,7 @@ private:
 
 	std::vector<Impulse>		_impulses;
 	std::vector<Boid>			_boids;
-	std::vector<Wrapper>		_proxy;
+	std::vector<std::uint32_t>	_proxy;
 
 	std::vector<sf::Vector2f>	_vertices;
 	std::vector<sf::Vector3f>	_colors;

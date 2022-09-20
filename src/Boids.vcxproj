@@ -41,7 +41,6 @@
     <ClInclude Include="boids\Debug.h" />
     <ClInclude Include="boids\Grid.h" />
     <ClInclude Include="boids\Impulse.hpp" />
-    <ClInclude Include="boids\Wrapper.h" />
     <ClInclude Include="utilities\PolicySelect.h" />
     <ClInclude Include="utilities\Rectangle.hpp" />
     <ClInclude Include="utilities\VectorUtilities.h" />

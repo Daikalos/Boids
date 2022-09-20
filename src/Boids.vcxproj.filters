@@ -122,9 +122,6 @@
     <ClInclude Include="utilities\VectorUtilities.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="boids\Wrapper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="config.json" />

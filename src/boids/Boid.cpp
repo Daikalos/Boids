@@ -1,5 +1,4 @@
 #include "Boid.h"
-#include "Wrapper.h"
 
 Boid::Boid(Config& config, const sf::Vector2f& pos)
 	:  _config(&config), _position(pos)
@@ -25,7 +24,7 @@ void Boid::pre_update(const Grid& grid) noexcept
 	_cell_index = grid.at_pos(grid_cell);
 }
 
-void Boid::update_grid_cells(Grid& grid, std::span<Wrapper> boids, const int index) const
+void Boid::update_grid_cells(Grid& grid, std::span<const Boid> boids, std::span<const std::uint32_t> proxy, const int index) const
 {
 	if (index == 0)
 	{
@@ -36,7 +35,7 @@ void Boid::update_grid_cells(Grid& grid, std::span<Wrapper> boids, const int ind
 	if (index == boids.size() - 1)
 		grid._cells_end_indices[_cell_index] = index;
 
-	const int other_index = boids[index - 1].boid->get_cell_index();
+	const int other_index = boids[proxy[index - 1]].get_cell_index();
 
 	if (other_index != _cell_index)
 	{
@@ -45,7 +44,7 @@ void Boid::update_grid_cells(Grid& grid, std::span<Wrapper> boids, const int ind
 	}
 }
 
-void Boid::flock(const Grid& grid, std::span<Wrapper> boids)
+void Boid::flock(const Grid& grid, std::span<const Boid> boids, std::span<const std::uint32_t> proxy)
 {
 	sf::Vector2f sep;
 	sf::Vector2f ali;
@@ -83,6 +82,9 @@ void Boid::flock(const Grid& grid, std::span<Wrapper> boids)
 	neighbour_indicies[2] = grid.at_pos(grid_cell.x, y_neighbor);	// top or bot of current
 	neighbour_indicies[3] = grid.at_pos(x_neighbor, y_neighbor);	// top left/right bot left/right of current
 
+	std::string a = std::to_string(sizeof(Boid));
+	std::puts(a.c_str());
+
 	for (int i = 0; i < neighbours; ++i)
 	{
 		const int grid_cell_index = neighbour_indicies[i];
@@ -96,13 +98,14 @@ void Boid::flock(const Grid& grid, std::span<Wrapper> boids)
 
 		for (int j = start; j <= end; ++j) // do in one loop
 		{
-			const Boid& b = *boids[j].boid;
+			const std::uint16_t& index = proxy[j];
+			const Boid* b = &boids[index];
 
-			if (&b == this)
+			if (b == this) [[unlikely]]
 				continue;
 
 			const sf::Vector2f other_relative_pos = 
-				neighbour_cell + b.get_relative_position(); // need to get relative to this boid
+				neighbour_cell + b->get_relative_position(); // need to get relative to this boid
 
 			const sf::Vector2f dir	= vu::direction(_relative_pos, other_relative_pos);
 			const float distance_sq = std::fmaxf(vu::distance_sq(dir), FLT_EPSILON);
@@ -117,7 +120,7 @@ void Boid::flock(const Grid& grid, std::span<Wrapper> boids)
 				}
 				if (distance_sq <= _config->ali_distance)
 				{
-					ali += b.get_prev_velocity(); // Align with every boids velocity
+					ali += b->get_prev_velocity(); // Align with every boids velocity
 					++ali_count;
 				}
 			}
@@ -191,6 +194,53 @@ void Boid::steer_towards(const sf::Vector2f& point, float weight)
 	steer_towards(point, vu::distance(point), weight);
 }
 
+const sf::Vector2f& Boid::get_position() const noexcept
+{
+	return _position; 
+}
+const sf::Vector2f& Boid::get_prev_position() const noexcept
+{ 
+	return _prev_position; 
+}
+const sf::Vector2f& Boid::get_relative_position() const noexcept
+{ 
+	return _relative_pos; 
+}
+const sf::Vector2f& Boid::get_velocity() const noexcept
+{ 
+	return _velocity; 
+}
+const sf::Vector2f& Boid::get_prev_velocity() const noexcept
+{ 
+	return _prev_velocity; 
+}
+const sf::Vector3f& Boid::get_color() const noexcept
+{ 
+	return _color; 
+}
+const std::uint16_t& Boid::get_cell_index() const noexcept
+{ 
+	return _cell_index; 
+}
+
+sf::Vector2f Boid::get_origin() const noexcept
+{
+	return get_position() + sf::Vector2f(
+		_config->boid_size_width,
+		_config->boid_size_height) / 2.0f;
+}
+sf::Vector2f Boid::get_prev_origin() const noexcept
+{
+	return get_prev_position() + sf::Vector2f(
+		_config->boid_size_width,
+		_config->boid_size_height) / 2.0f;
+}
+
+void Boid::set_cycle_time(const float val) noexcept
+{
+	_cycle_time = val;
+}
+
 bool Boid::outside_border(const RectFloat& border, float dt)
 {
 	return _config->turn_at_border ? turn_at_border(border, dt) : teleport_at_border(border);
@@ -250,7 +300,7 @@ sf::Vector3f Boid::position_color(const RectFloat& border) const
 }
 sf::Vector3f Boid::cycle_color(float dt)
 {
-	if (!_config->boid_cycle_colors.size())
+	if (!_config->boid_cycle_colors.size()) [[unlikely]]
 		return sf::Vector3f();
 
 	_cycle_time = std::fmodf(_cycle_time + dt * _config->boid_cycle_colors_speed, 1.0f);
@@ -269,7 +319,7 @@ sf::Vector3f Boid::cycle_color(float dt)
 }
 sf::Vector3f Boid::density_color(float dt)
 {
-	if (!_config->boid_density_colors.size())
+	if (!_config->boid_density_colors.size()) [[unlikely]]
 		return sf::Vector3f();
 
 	_density_time = (_config->boid_density_cycle_enabled) ? std::fmodf(_density_time + dt * _config->boid_density_cycle_speed, 1.0f) : 0.0f;
@@ -290,7 +340,7 @@ sf::Vector3f Boid::density_color(float dt)
 }
 sf::Vector3f Boid::velocity_color() const
 {
-	if (!_config->boid_velocity_colors.size())
+	if (!_config->boid_velocity_colors.size()) [[unlikely]]
 		return sf::Vector3f();
 
 	const float velocity_percentage = std::clamp((vu::distance(_velocity) - _config->boid_min_speed) / (_config->boid_max_speed - _config->boid_min_speed), 0.0f, 1.0f);
@@ -309,7 +359,7 @@ sf::Vector3f Boid::velocity_color() const
 }
 sf::Vector3f Boid::rotation_color() const
 {
-	if (!_config->boid_rotation_colors.size())
+	if (!_config->boid_rotation_colors.size()) [[unlikely]]
 		return sf::Vector3f();
 
 	const float rotation_percentage = (vu::angle(_velocity) + float(M_PI)) / (2.0f * float(M_PI));
@@ -328,7 +378,7 @@ sf::Vector3f Boid::rotation_color() const
 }
 sf::Vector3f Boid::audio_color(const AudioMeterInfoBase::ptr& audio_meter, float dt) const
 {
-	if (!_config->audio_responsive_colors.size())
+	if (!_config->audio_responsive_colors.size()) [[unlikely]]
 		return sf::Vector3f();
 
 	const float density_percentage = (_density / (float)_config->audio_responsive_density);
@@ -348,7 +398,7 @@ sf::Vector3f Boid::audio_color(const AudioMeterInfoBase::ptr& audio_meter, float
 }
 sf::Vector3f Boid::impulse_color(std::span<const Impulse> impulses) const
 {
-	if (!_config->impulse_colors.size())
+	if (!_config->impulse_colors.size()) [[unlikely]]
 		return sf::Vector3f();
 
 	for (const Impulse& impulse : impulses)

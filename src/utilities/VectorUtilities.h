@@ -185,14 +185,14 @@ namespace vu
 // operator overloads that SFML is missing
 
 template <Arithmetic T>
-static constexpr sf::Vector2<T> operator /=(sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs)
+static constexpr sf::Vector2<T>& operator /=(sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs)
 {
 	lhs.x /= rhs.x;
 	lhs.y /= rhs.y;
 	return lhs;
 }
 template <Arithmetic T>
-static constexpr sf::Vector2<T> operator /(float lhs, const sf::Vector2<T>& rhs)
+static constexpr sf::Vector2<T> operator/(float lhs, const sf::Vector2<T>& rhs)
 {
 	sf::Vector2<T> result = { lhs, lhs };
 	result.x /= rhs.x;
@@ -200,7 +200,7 @@ static constexpr sf::Vector2<T> operator /(float lhs, const sf::Vector2<T>& rhs)
 	return result;
 }
 template <Arithmetic T>
-static constexpr sf::Vector2<T> operator /(sf::Vector2<T> lhs, const sf::Vector2<T>& rhs)
+static constexpr sf::Vector2<T> operator/(sf::Vector2<T> lhs, const sf::Vector2<T>& rhs)
 {
 	lhs.x /= rhs.x;
 	lhs.y /= rhs.y;
@@ -208,7 +208,7 @@ static constexpr sf::Vector2<T> operator /(sf::Vector2<T> lhs, const sf::Vector2
 }
 
 template <Arithmetic T>
-static constexpr sf::Vector2<T> operator *(sf::Vector2<T> lhs, const sf::Vector2<T>& rhs)
+static constexpr sf::Vector2<T> operator*(sf::Vector2<T> lhs, const sf::Vector2<T>& rhs)
 {
 	lhs.x *= rhs.x;
 	lhs.y *= rhs.y;
@@ -216,7 +216,7 @@ static constexpr sf::Vector2<T> operator *(sf::Vector2<T> lhs, const sf::Vector2
 }
 
 template <Arithmetic T>
-static constexpr sf::Vector3<T> operator *(sf::Vector3<T> lhs, const sf::Vector3<T>& rhs)
+static constexpr sf::Vector3<T> operator*(sf::Vector3<T> lhs, const sf::Vector3<T>& rhs)
 {
 	lhs.x *= rhs.x;
 	lhs.y *= rhs.y;

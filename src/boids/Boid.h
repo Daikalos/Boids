@@ -13,8 +13,6 @@
 #include "../utilities/VectorUtilities.h"
 #include "../utilities/Utilities.h"
 
-struct Wrapper;
-
 class Boid
 {
 public:
@@ -24,36 +22,23 @@ public:
 	void steer_towards(const sf::Vector2f& point, const float weight);
 
 	void pre_update(const Grid& grid) noexcept;
-	void update_grid_cells(Grid& grid, std::span<Wrapper> boids, const int index) const;
-	void flock(const Grid& grid, std::span<Wrapper> boids);
+	void update_grid_cells(Grid& grid, std::span<const Boid> boids, std::span<const std::uint32_t> proxy, const int index) const;
+	void flock(const Grid& grid, std::span<const Boid> boids, std::span<const std::uint32_t> proxy);
 	void update(const RectFloat& border, const AudioMeterInfoBase::ptr& audio_meter, std::span<const Impulse> impulses, float dt);
 	
 public: // Properties
-	[[nodiscard]] constexpr sf::Vector2f get_position() const noexcept { return _position; }
-	[[nodiscard]] constexpr sf::Vector2f get_prev_position() const noexcept { return _prev_position; }
-	[[nodiscard]] constexpr sf::Vector2f get_relative_position() const noexcept { return _relative_pos; }
-	[[nodiscard]] constexpr sf::Vector2f get_velocity() const noexcept { return _velocity; }
-	[[nodiscard]] constexpr sf::Vector2f get_prev_velocity() const noexcept { return _prev_velocity; }
-	[[nodiscard]] constexpr sf::Vector3f get_color() const noexcept { return _color; }
-	[[nodiscard]] constexpr int get_cell_index() const noexcept { return _cell_index; }
+	[[nodiscard]] const sf::Vector2f& get_position() const noexcept;
+	[[nodiscard]] const sf::Vector2f& get_prev_position() const noexcept;
+	[[nodiscard]] const sf::Vector2f& get_relative_position() const noexcept;
+	[[nodiscard]] const sf::Vector2f& get_velocity() const noexcept;
+	[[nodiscard]] const sf::Vector2f& get_prev_velocity() const noexcept;
+	[[nodiscard]] const sf::Vector3f& get_color() const noexcept;
+	[[nodiscard]] const std::uint16_t& get_cell_index() const noexcept;
 
-	[[nodiscard]] constexpr sf::Vector2f get_origin() const noexcept
-	{
-		return _position + sf::Vector2f(
-			_config->boid_size_width,
-			_config->boid_size_height) / 2.0f;
-	}
-	[[nodiscard]] constexpr sf::Vector2f get_prev_origin() const noexcept
-	{
-		return _prev_position + sf::Vector2f(
-			_config->boid_size_width,
-			_config->boid_size_height) / 2.0f;
-	}
+	[[nodiscard]] sf::Vector2f get_origin() const noexcept;
+	[[nodiscard]] sf::Vector2f get_prev_origin() const noexcept;
 
-	void set_cycle_time(const float val) noexcept
-	{ 
-		_cycle_time = val;
-	}
+	void set_cycle_time(const float val) noexcept;
 
 private:
 	sf::Vector2f steer_at(const sf::Vector2f& steer_direction) const;
@@ -71,16 +56,16 @@ private:
 	sf::Vector3f impulse_color(std::span<const Impulse> impulses) const;
 
 private:
-	Config*				_config			{nullptr};
+	Config*			_config			{nullptr};
 
-	sf::Vector2f		_position, _prev_position, _relative_pos;
-	sf::Vector2f		_velocity, _prev_velocity;
+	sf::Vector2f	_position, _prev_position, _relative_pos;
+	sf::Vector2f	_velocity, _prev_velocity;
 
-	sf::Vector3f		_color;
-	float				_cycle_time		{0.0f};
-	float				_density_time	{0.0f};
+	sf::Vector3f	_color;
+	float			_cycle_time		{0.0f};
+	float			_density_time	{0.0f};
 
-	std::uint32_t		_density		{0};
-	std::uint32_t		_cell_index		{0};
+	std::uint16_t	_density		{0};
+	std::uint16_t	_cell_index		{0};
 };
 

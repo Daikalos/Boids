@@ -41,7 +41,8 @@ MainState::MainState(StateStack& stack, Context context, Config& config) :
             util::random(0.0f, _border.width()) - _border.left,
             util::random(0.0f, _border.height()) - _border.top);
 
-		_proxy.emplace_back(_boids.emplace_back(*_config, pos));
+		_boids.emplace_back(*_config, pos);
+		_proxy.emplace_back(i);
     }
 
 	_vertices.resize(_config->boid_count * 3);
@@ -114,16 +115,8 @@ bool MainState::pre_update(float dt)
 
 					if (_config->boid_count > prev.boid_count) // new is larger
 					{
-						std::size_t prev_capacity = _boids.capacity();
-
 						_boids.reserve(_config->boid_count);
 						_proxy.reserve(_config->boid_count);
-
-						if (_boids.capacity() != prev_capacity) // reallocation has occured, we need to reset pointers
-						{
-							for (std::size_t i = 0; i < _proxy.size(); ++i)
-								_proxy[i].boid = &_boids[i];
-						}
 
 						for (int i = prev.boid_count; i < _config->boid_count; ++i)
 						{
@@ -131,20 +124,20 @@ bool MainState::pre_update(float dt)
 								util::random(0.0f, _border.width()) - _border.left,
 								util::random(0.0f, _border.height()) - _border.top);
 
-							_proxy.emplace_back(_boids.emplace_back(*_config, pos));
+							_boids.emplace_back(*_config, pos);
+							_proxy.emplace_back(i);
 						}
 					}
 					else
 					{
-						const std::size_t size_diff = _boids.size() - _config->boid_count;
+						_boids.erase(_boids.begin() + _config->boid_count, _boids.end());
 
-						for (int i = 0; i < size_diff; ++i)
-							_boids.pop_back();
-
-						_proxy.resize(_boids.size());
-
-						for (std::size_t i = 0; i < _proxy.size(); ++i)
-							_proxy[i].boid = &_boids[i];
+						_proxy.erase(std::remove_if(
+							_proxy.begin(), _proxy.end(),
+							[this](const int index)
+							{
+								return index >= _config->boid_count;
+							}), _proxy.end());
 					}
 				}
 				break;
@@ -219,12 +212,16 @@ bool MainState::fixed_update(float dt)
 			boid.pre_update(_grid);
 		});
 
-	std::sort(_proxy.begin(), _proxy.end());
+	std::sort(_proxy.begin(), _proxy.end(),
+		[this](const std::uint32_t& i0, const std::uint32_t& i1)
+		{
+			return _boids[i0].get_cell_index() < _boids[i1].get_cell_index();
+		});
 
 	std::for_each(_proxy.begin(), _proxy.end(),
-		[this](Wrapper& wrap)
+		[this](const std::uint32_t& index)
 		{
-			wrap.boid->update_grid_cells(_grid, _proxy, &wrap - _proxy.data());
+			_boids[index].update_grid_cells(_grid, _boids, _proxy, &index - _proxy.data());
 		});
 
 	policy_select(
@@ -259,7 +256,7 @@ bool MainState::fixed_update(float dt)
 						}
 					}
 
-					boid.flock(_grid, _proxy);
+					boid.flock(_grid, _boids, _proxy);
 				});
 		}, _policy);
 
