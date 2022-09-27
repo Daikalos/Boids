@@ -22,7 +22,7 @@ public:
 	void steer_towards(const sf::Vector2f& point, const float weight);
 
 	void pre_update(const Grid& grid) noexcept;
-	void update_grid_cells(Grid& grid, std::span<const Boid> boids, std::span<const std::uint32_t> proxy, const int index) const;
+	void update_grid_cells(Grid& grid, std::span<const Boid> boids, std::span<const std::uint32_t> proxy, const std::uint32_t index) const;
 	void flock(const Grid& grid, std::span<const Boid> boids, std::span<const std::uint32_t> proxy);
 	void update(const RectFloat& border, const AudioMeterInfoBase::ptr& audio_meter, std::span<const Impulse> impulses, float dt);
 	

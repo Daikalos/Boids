@@ -15,7 +15,7 @@ void Camera::handle_event(const sf::Event& event)
 	switch (event.type)
 	{
 	case sf::Event::Resized:
-		set_size(sf::Vector2f(event.size.width, event.size.height));
+		set_size(sf::Vector2f((float)event.size.width, (float)event.size.height));
 		set_position(get_size() / 2.0f);
 		break;
 	}

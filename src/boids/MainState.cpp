@@ -213,7 +213,7 @@ bool MainState::fixed_update(float dt)
 		});
 
 	std::sort(_proxy.begin(), _proxy.end(),
-		[this](const std::uint32_t& i0, const std::uint32_t& i1)
+		[this](const std::uint32_t i0, const std::uint32_t i1)
 		{
 			return _boids[i0].get_cell_index() < _boids[i1].get_cell_index();
 		});
@@ -221,7 +221,7 @@ bool MainState::fixed_update(float dt)
 	std::for_each(_proxy.begin(), _proxy.end(),
 		[this](const std::uint32_t& index)
 		{
-			_boids[index].update_grid_cells(_grid, _boids, _proxy, &index - _proxy.data());
+			_boids[index].update_grid_cells(_grid, _boids, _proxy, (std::uint32_t)(&index - _proxy.data()));
 		});
 
 	policy_select(
@@ -319,7 +319,7 @@ void MainState::draw()
 
 	glPushMatrix();
 	glLoadMatrixf(context().camera->get_world_matrix());
-	glDrawArrays(GL_TRIANGLES, 0, _vertices.size());
+	glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(_vertices.size()));
 	glPopMatrix();
 
 	_debug.draw(*context().window);

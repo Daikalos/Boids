@@ -59,7 +59,7 @@ constexpr Time::Time(Int64 microseconds) : m_microseconds(microseconds)
 ////////////////////////////////////////////////////////////
 constexpr Time seconds(float amount)
 {
-    return Time(static_cast<Int64>(amount * 1000000));
+    return Time(static_cast<Int64>(amount) * 1000000);
 }
 
 

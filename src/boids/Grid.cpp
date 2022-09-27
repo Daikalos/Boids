@@ -12,8 +12,8 @@ Grid::Grid(Config& config, const RectFloat& rect, const sf::Vector2f& cont_dims)
 	_cont_dims.x = _rect.width() / std::floorf(a);
 	_cont_dims.y = _rect.height() / std::floorf(b);
 
-	_width = _rect.width() / _cont_dims.x;
-	_height = _rect.height() / _cont_dims.y;
+	_width = (int)(_rect.width() / _cont_dims.x);
+	_height = (int)(_rect.height() / _cont_dims.y);
 
 	_count = _width * _height;
 

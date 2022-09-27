@@ -24,7 +24,7 @@ void Boid::pre_update(const Grid& grid) noexcept
 	_cell_index = grid.at_pos(grid_cell);
 }
 
-void Boid::update_grid_cells(Grid& grid, std::span<const Boid> boids, std::span<const std::uint32_t> proxy, const int index) const
+void Boid::update_grid_cells(Grid& grid, std::span<const Boid> boids, std::span<const std::uint32_t> proxy, const uint32_t index) const
 {
 	if (index == 0)
 	{
@@ -98,14 +98,14 @@ void Boid::flock(const Grid& grid, std::span<const Boid> boids, std::span<const 
 
 		for (int j = start; j <= end; ++j) // do in one loop
 		{
-			const std::uint16_t& index = proxy[j];
-			const Boid* b = &boids[index];
+			const std::uint32_t index = proxy[j];
+			const Boid& b = boids[index];
 
-			if (b == this) [[unlikely]]
+			if (&b == this) [[unlikely]]
 				continue;
 
 			const sf::Vector2f other_relative_pos = 
-				neighbour_cell + b->get_relative_position(); // need to get relative to this boid
+				neighbour_cell + b.get_relative_position(); // need to get relative to this boid
 
 			const sf::Vector2f dir	= vu::direction(_relative_pos, other_relative_pos);
 			const float distance_sq = std::fmaxf(vu::distance_sq(dir), FLT_EPSILON);
@@ -120,7 +120,7 @@ void Boid::flock(const Grid& grid, std::span<const Boid> boids, std::span<const 
 				}
 				if (distance_sq <= _config->ali_distance)
 				{
-					ali += b->get_prev_velocity(); // Align with every boids velocity
+					ali += b.get_prev_velocity(); // Align with every boids velocity
 					++ali_count;
 				}
 			}

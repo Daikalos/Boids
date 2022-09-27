@@ -80,13 +80,13 @@ std::vector<Reconstruct> Config::refresh(Config& prev)
 
 void Config::load_var(nlohmann::json& json)
 {
-	auto config = json[FILE_NAME];
+	auto& config = json[FILE_NAME];
 
-	auto background = config[BACKGROUND];
-	auto boid = config[BOID];
-	auto rules = config[RULES];
-	auto color = config[COLOR];
-	auto misc = config[MISC];
+	auto& background = config[BACKGROUND];
+	auto& boid = config[BOID];
+	auto& rules = config[RULES];
+	auto& color = config[COLOR];
+	auto& misc = config[MISC];
 
 	background_color			= str_to_color(background["background_color"]);
 	background_texture			= background["background_texture"];
@@ -116,7 +116,7 @@ void Config::load_var(nlohmann::json& json)
 	std::vector<int> temp_color_options = color["color_options"];
 	color_flags = (temp_color_options.size()) ? ColorFlags::None : ColorFlags::Cycle;
 	for (int i = 0; i < temp_color_options.size(); ++i)
-		color_flags |= static_cast<ColorFlags>((int)std::powf(2, temp_color_options[i] - 1));
+		color_flags |= static_cast<ColorFlags>((int)std::powf(2.0f, (float)temp_color_options[i] - 1.0f));
 
 	color_positional_weight		= color["color_positional_weight"];
 	color_cycle_weight			= color["color_cycle_weight"];
