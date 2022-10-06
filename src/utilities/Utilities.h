@@ -44,9 +44,9 @@ namespace util
 		const auto range_size = max - min;
 
 		if (val < min)
-			return max - std::fmod(min - val, max - min);
+			return max - std::fmod(min - val, range_size);
 
-		return min + std::fmod(val - min, max - min);
+		return min + std::fmod(val - min, range_size);
 	}
 
 	template<typename T>

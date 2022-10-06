@@ -160,9 +160,9 @@ namespace vu
 	}
 
 	template<Arithmetic T>
-	static constexpr auto lerp(const T a, const T b, const double f)
+	static constexpr auto lerp(const T a, const T b, const float f)
 	{
-		return (a * (1.0 - f)) + (b * f);
+		return (a * (1.0f - f)) + (b * f);
 	}
 
 	template<Arithmetic T>

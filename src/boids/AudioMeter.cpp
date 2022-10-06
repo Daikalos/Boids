@@ -21,6 +21,11 @@ AudioMeterWin::~AudioMeterWin()
 	CoUninitialize();
 }
 
+float AudioMeterWin::get_volume() const noexcept
+{
+	return _volume;
+}
+
 void AudioMeterWin::initialize()
 {
 	IMMDeviceEnumerator* enumerator = NULL;

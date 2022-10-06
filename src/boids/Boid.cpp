@@ -145,7 +145,7 @@ void Boid::flock(const Grid& grid, std::span<const Boid> boids, std::span<const 
 	_density = std::max(std::max(coh_count, ali_count), sep_count);
 }
 
-void Boid::update(const RectFloat& border, const AudioMeterInfoBase::ptr& audio_meter, std::span<const Impulse> impulses, float dt)
+void Boid::update(const RectFloat& border, const IAudioMeterInfo* audio_meter, std::span<const Impulse> impulses, float dt)
 {
 	_velocity = vu::clamp(_velocity, _config->boid_min_speed, _config->boid_max_speed);
 
@@ -172,6 +172,10 @@ void Boid::update(const RectFloat& border, const AudioMeterInfoBase::ptr& audio_
 			_color += audio_color(audio_meter, dt) * _config->color_audio_weight;
 
 		_color = impulse_color(impulses);
+
+		_color.x = std::clamp(_color.x, 0.0f, 1.0f);
+		_color.y = std::clamp(_color.y, 0.0f, 1.0f);
+		_color.z = std::clamp(_color.z, 0.0f, 1.0f);
 	}
 }
 
@@ -300,15 +304,15 @@ sf::Vector3f Boid::position_color(const RectFloat& border) const
 }
 sf::Vector3f Boid::cycle_color(float dt)
 {
-	if (!_config->boid_cycle_colors.size()) [[unlikely]]
+	if (_config->boid_cycle_colors.empty()) [[unlikely]]
 		return sf::Vector3f();
 
 	_cycle_time = std::fmodf(_cycle_time + dt * _config->boid_cycle_colors_speed, 1.0f);
 
 	float scaled_time = _cycle_time * (float)(_config->boid_cycle_colors.size() - 1);
 
-	const int index1 = (int)scaled_time;
-	const int index2 = ((int)scaled_time + 1) % _config->boid_cycle_colors.size();
+	const auto index1 = (int)scaled_time;
+	const auto index2 = ((int)scaled_time + 1) % _config->boid_cycle_colors.size();
 
 	const sf::Vector3f color1 = _config->boid_cycle_colors[index1];
 	const sf::Vector3f color2 = _config->boid_cycle_colors[index2];
@@ -319,7 +323,7 @@ sf::Vector3f Boid::cycle_color(float dt)
 }
 sf::Vector3f Boid::density_color(float dt)
 {
-	if (!_config->boid_density_colors.size()) [[unlikely]]
+	if (_config->boid_density_colors.empty() || !_config->boid_density) [[unlikely]]
 		return sf::Vector3f();
 
 	_density_time = (_config->boid_density_cycle_enabled) ? std::fmodf(_density_time + dt * _config->boid_density_cycle_speed, 1.0f) : 0.0f;
@@ -328,8 +332,8 @@ sf::Vector3f Boid::density_color(float dt)
 
 	const float scaled_density = std::fmodf(density_percentage + _density_time, 1.0f) * (float)(_config->boid_density_colors.size() - 1);
 
-	const int index1 = (int)scaled_density;
-	const int index2 = ((int)scaled_density + 1) % _config->boid_density_colors.size();
+	const auto index1 = (int)scaled_density;
+	const auto index2 = ((int)scaled_density + 1) % _config->boid_density_colors.size();
 
 	const sf::Vector3f color1 = _config->boid_density_colors[index1];
 	const sf::Vector3f color2 = _config->boid_density_colors[index2];
@@ -340,15 +344,15 @@ sf::Vector3f Boid::density_color(float dt)
 }
 sf::Vector3f Boid::velocity_color() const
 {
-	if (!_config->boid_velocity_colors.size()) [[unlikely]]
+	if (_config->boid_velocity_colors.empty() || (_config->boid_max_speed == _config->boid_min_speed)) [[unlikely]]
 		return sf::Vector3f();
 
 	const float velocity_percentage = std::clamp((vu::distance(_velocity) - _config->boid_min_speed) / (_config->boid_max_speed - _config->boid_min_speed), 0.0f, 1.0f);
 
 	const float scaled_velocity = velocity_percentage * (float)(_config->boid_velocity_colors.size() - 1);
 
-	const int index1 = (int)scaled_velocity;
-	const int index2 = ((int)scaled_velocity + 1) % _config->boid_velocity_colors.size();
+	const auto index1 = (int)scaled_velocity;
+	const auto index2 = ((int)scaled_velocity + 1) % _config->boid_velocity_colors.size();
 
 	const sf::Vector3f color1 = _config->boid_velocity_colors[index1];
 	const sf::Vector3f color2 = _config->boid_velocity_colors[index2];
@@ -359,15 +363,15 @@ sf::Vector3f Boid::velocity_color() const
 }
 sf::Vector3f Boid::rotation_color() const
 {
-	if (!_config->boid_rotation_colors.size()) [[unlikely]]
+	if (_config->boid_rotation_colors.empty()) [[unlikely]]
 		return sf::Vector3f();
 
 	const float rotation_percentage = (vu::angle(_velocity) + float(M_PI)) / (2.0f * float(M_PI));
 
 	const float scaled_rotation = rotation_percentage * (float)(_config->boid_rotation_colors.size() - 1);
 
-	const int index1 = (int)scaled_rotation;
-	const int index2 = ((int)scaled_rotation + 1) % _config->boid_rotation_colors.size();
+	const auto index1 = (int)scaled_rotation;
+	const auto index2 = ((int)scaled_rotation + 1) % _config->boid_rotation_colors.size();
 
 	const sf::Vector3f color1 = _config->boid_rotation_colors[index1];
 	const sf::Vector3f color2 = _config->boid_rotation_colors[index2];
@@ -376,9 +380,9 @@ sf::Vector3f Boid::rotation_color() const
 
 	return vu::lerp(color1, color2, newT);
 }
-sf::Vector3f Boid::audio_color(const AudioMeterInfoBase::ptr& audio_meter, float dt) const
+sf::Vector3f Boid::audio_color(const IAudioMeterInfo* audio_meter, float dt) const
 {
-	if (!_config->audio_responsive_colors.size()) [[unlikely]]
+	if (_config->audio_responsive_colors.empty()) [[unlikely]]
 		return sf::Vector3f();
 
 	const float density_percentage = (_density / (float)_config->audio_responsive_density);
@@ -386,8 +390,8 @@ sf::Vector3f Boid::audio_color(const AudioMeterInfoBase::ptr& audio_meter, float
 
 	const float scaled_volume = std::fminf(max_volume * density_percentage, 1.0f) * (float)(_config->audio_responsive_colors.size() - 1);
 
-	const int index1 = (int)scaled_volume;
-	const int index2 = ((int)scaled_volume + 1) % _config->audio_responsive_colors.size();
+	const auto index1 = (int)scaled_volume;
+	const auto index2 = ((int)scaled_volume + 1) % _config->audio_responsive_colors.size();
 
 	const sf::Vector3f color1 = _config->audio_responsive_colors[index1];
 	const sf::Vector3f color2 = _config->audio_responsive_colors[index2];
@@ -398,7 +402,7 @@ sf::Vector3f Boid::audio_color(const AudioMeterInfoBase::ptr& audio_meter, float
 }
 sf::Vector3f Boid::impulse_color(std::span<const Impulse> impulses) const
 {
-	if (!_config->impulse_colors.size()) [[unlikely]]
+	if (_config->impulse_colors.empty()) [[unlikely]]
 		return sf::Vector3f();
 
 	for (const Impulse& impulse : impulses)
@@ -416,8 +420,8 @@ sf::Vector3f Boid::impulse_color(std::span<const Impulse> impulses) const
 		{
 			const float scaled_length = std::fmodf(percentage, 1.0f) * (float)(_config->impulse_colors.size() - 1);
 
-			const int index1 = (int)scaled_length;
-			const int index2 = ((int)scaled_length + 1) % _config->impulse_colors.size();
+			const auto index1 = (int)scaled_length;
+			const auto index2 = ((int)scaled_length + 1) % _config->impulse_colors.size();
 
 			const sf::Vector3f color1 = _config->impulse_colors[index1];
 			const sf::Vector3f color2 = _config->impulse_colors[index2];

@@ -24,7 +24,7 @@ public:
 	void pre_update(const Grid& grid) noexcept;
 	void update_grid_cells(Grid& grid, std::span<const Boid> boids, std::span<const std::uint32_t> proxy, const std::uint32_t index) const;
 	void flock(const Grid& grid, std::span<const Boid> boids, std::span<const std::uint32_t> proxy);
-	void update(const RectFloat& border, const AudioMeterInfoBase::ptr& audio_meter, std::span<const Impulse> impulses, float dt);
+	void update(const RectFloat& border, const IAudioMeterInfo* audio_meter, std::span<const Impulse> impulses, float dt);
 	
 public: // Properties
 	[[nodiscard]] const sf::Vector2f& get_position() const noexcept;
@@ -52,7 +52,7 @@ private:
 	sf::Vector3f density_color(float dt);
 	sf::Vector3f velocity_color() const;
 	sf::Vector3f rotation_color() const;
-	sf::Vector3f audio_color(const AudioMeterInfoBase::ptr& audio_meter, float dt) const;
+	sf::Vector3f audio_color(const IAudioMeterInfo* audio_meter, float dt) const;
 	sf::Vector3f impulse_color(std::span<const Impulse> impulses) const;
 
 private:

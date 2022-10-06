@@ -1,15 +1,15 @@
 #include "MainState.h"
 
 MainState::MainState(StateStack& stack, Context context, Config& config) : 
-	State(stack, context), _config(&config), _debug(*_config)
+	State(stack, context), _window(context.window), _config(&config), _debug(*_config)
 {
     context.texture_holder->load(TextureID::Background, _config->background_texture);
     context.font_holder->load(FontID::F8Bit, "font_8bit.ttf");
 
 #if defined(_WIN32)
-	_audio_meter = AudioMeterInfoBase::ptr(new AudioMeterWin(*_config, 1.0f));
+	_audio_meter = std::make_unique<AudioMeterWin>(*_config, 1.0f);
 #else
-	_audio_meter = AudioMeterInfoBase::ptr(new AudioMeterInfoBase());
+	_audio_meter = std::make_unique<AudioMeterEmpty>();
 #endif
 
 	_audio_meter->initialize();
@@ -17,11 +17,11 @@ MainState::MainState(StateStack& stack, Context context, Config& config) :
     _debug.load(*context.font_holder);
 
     _background.load_texture(*context.texture_holder);
-    _background.load_prop(*_config, sf::Vector2i(context.window->getSize()));
+    _background.load_prop(*_config, sf::Vector2i(_window->getSize()));
 
     _min_distance = std::sqrtf(std::fmaxf(std::fmaxf(_config->sep_distance, _config->ali_distance), _config->coh_distance));
 
-    _border = context.window->get_border();
+    _border = _window->get_border();
 
     RectFloat grid_border = _border + (_config->turn_at_border ?
         RectFloat(
@@ -46,10 +46,7 @@ MainState::MainState(StateStack& stack, Context context, Config& config) :
     }
 
 	_vertices.resize(_config->boid_count * 3);
-	_colors.resize(_vertices.size());
-
-	glVertexPointer(2, GL_FLOAT, 0, _vertices.data());
-	glColorPointer(3, GL_FLOAT, 0, _colors.data());
+	_vertices.setPrimitiveType(sf::Triangles);
 
     _policy = _config->boid_count <= 1500 ? Policy::unseq : Policy::par_unseq;
 }
@@ -60,7 +57,7 @@ bool MainState::handle_event(const sf::Event& event)
     {
     case sf::Event::Resized:
         {
-			_border = context().window->get_border();
+			_border = _window->get_border();
 
             RectFloat grid_border = _border + (_config->turn_at_border ?
                 RectFloat(
@@ -71,7 +68,7 @@ bool MainState::handle_event(const sf::Event& event)
 
             _grid = Grid(*_config, grid_border, sf::Vector2f(_min_distance, _min_distance) * 2.0f);
 
-            _background.load_prop(*_config, sf::Vector2i(context().window->getSize()));
+            _background.load_prop(*_config, sf::Vector2i(_window->getSize()));
         }
         break;
     }
@@ -108,10 +105,6 @@ bool MainState::pre_update(float dt)
 					_policy = _config->boid_count <= 1500 ? Policy::unseq : Policy::par_unseq;
 
 					_vertices.resize(_config->boid_count * 3);
-					_colors.resize(_vertices.size());
-
-					glVertexPointer(2, GL_FLOAT, 0, _vertices.data()); // attach pointers again in case of reallocation
-					glColorPointer(3, GL_FLOAT, 0, _colors.data());
 
 					if (_config->boid_count > prev.boid_count) // new is larger
 					{
@@ -144,7 +137,10 @@ bool MainState::pre_update(float dt)
 			case Reconstruct::RBoidsCycle:	
 				{
 					for (Boid& boid : _boids)
-						boid.set_cycle_time(_config->boid_cycle_colors_random ? util::random(0.0f, 1.0f) : 0.0f);
+					{
+						boid.set_cycle_time(_config->boid_cycle_colors_random ?
+							util::random(0.0f, 1.0f) : 0.0f);
+					}
 				}
 				break;
 			case Reconstruct::RBackgroundTex:
@@ -152,23 +148,23 @@ bool MainState::pre_update(float dt)
 					context().texture_holder->load(TextureID::Background, _config->background_texture);
 
 					_background.load_texture(*context().texture_holder);
-					_background.load_prop(*_config, sf::Vector2i(context().window->getSize()));
+					_background.load_prop(*_config, sf::Vector2i(_window->getSize()));
 				}
 				break;
 			case Reconstruct::RBackgroundProp:
 				{
-					_background.load_prop(*_config, sf::Vector2i(context().window->getSize()));
+					_background.load_prop(*_config, sf::Vector2i(_window->getSize()));
 
 					sf::Vector3f vc = _config->background_color * 255.0f;
-					context().window->set_clear_color(sf::Color(vc.x, vc.y, vc.z, 255.0f));
+					_window->set_clear_color(sf::Color(vc.x, vc.y, vc.z, 255.0f));
 				}
 				break;
 			case Reconstruct::RAudio:
 				_audio_meter->clear();
 				break;
 			case Reconstruct::RWindow:
-				context().window->set_framerate(_config->max_framerate);
-				context().window->set_vertical_sync(_config->vertical_sync);
+				_window->set_framerate(_config->max_framerate);
+				_window->set_vertical_sync(_config->vertical_sync);
 				break;
 			case Reconstruct::RCamera:
 				context().camera->set_scale(sf::Vector2f(_config->camera_zoom, _config->camera_zoom));
@@ -185,7 +181,7 @@ bool MainState::update(float dt)
 	_audio_meter->update(dt);
 
 	_mouse_pos = sf::Vector2f(context().camera->
-		get_mouse_world_position(*context().window));
+		get_mouse_world_position(*_window));
 
 	if (_config->impulse_enabled && context().input_handler->get_button_pressed(sf::Mouse::Button::Left))
 		_impulses.push_back(Impulse(_mouse_pos, _config->impulse_speed, _config->impulse_size, -_config->impulse_size));
@@ -237,10 +233,11 @@ bool MainState::fixed_update(float dt)
 					{
 						sf::Vector2f dir = vu::direction(boid.get_position(), _mouse_pos);
 
-						const float factor = hold_left ? 1.0f : (hold_right ? -1.0f : 0.0f);
+						const float factor = hold_left ? 1.0f : 
+							(hold_right ? -1.0f : 0.0f);
 
 						const float length_opt = vu::distance_opt(dir);
-						const float weight = 15.0f / std::sqrtf(length_opt); // hard coded because cant update _config->.. 
+						const float weight = 15.0f / std::sqrtf(length_opt); // hard coded because cant update config.. 
 
 						boid.steer_towards(dir, length_opt, _config->steer_towards_factor * weight * factor);
 					}
@@ -264,7 +261,7 @@ bool MainState::fixed_update(float dt)
 	std::for_each(_boids.begin(), _boids.end(),
 		[&dt, this](Boid& boid)
 		{
-			boid.update(_border, _audio_meter, _impulses, dt);
+			boid.update(_border, _audio_meter.get(), _impulses, dt);
 		});
 
     return true;
@@ -278,9 +275,9 @@ bool MainState::post_update(float dt, float interp)
 			std::for_each(pol, _boids.begin(), _boids.end(),
 				[&interp, this](const Boid& boid)
 				{
-					const auto v = (&boid - _boids.data()) * 3;
-
-					const sf::Vector3f color = boid.get_color();
+					const sf::Vector3f bc = boid.get_color();
+					const sf::Color color = sf::Color(
+						bc.x * 255, bc.y * 255, bc.z * 255);
 
 					const sf::Vector2f ori = boid.get_origin();
 					const sf::Vector2f prev_ori = boid.get_prev_origin();
@@ -300,13 +297,15 @@ bool MainState::post_update(float dt, float interp)
 					const sf::Vector2f p1 = pointB * interp + prev_pointB * (1.0f - interp);
 					const sf::Vector2f p2 = pointC * interp + prev_pointC * (1.0f - interp);
 
-					_vertices[v + 0] = p0;
-					_vertices[v + 1] = p1;
-					_vertices[v + 2] = p2;
+					const auto v = (&boid - _boids.data()) * 3;
 
-					_colors[v + 0] = color;
-					_colors[v + 1] = color;
-					_colors[v + 2] = color;
+					_vertices[v + 0].position = p0;
+					_vertices[v + 1].position = p1;
+					_vertices[v + 2].position = p2;
+
+					_vertices[v + 0].color = color;
+					_vertices[v + 1].color = color;
+					_vertices[v + 2].color = color;
 				});
 		}, _policy);
 
@@ -315,12 +314,7 @@ bool MainState::post_update(float dt, float interp)
 
 void MainState::draw()
 {
-	_background.draw(*context().window);
-
-	glPushMatrix();
-	glLoadMatrixf(context().camera->get_world_matrix());
-	glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(_vertices.size()));
-	glPopMatrix();
-
-	_debug.draw(*context().window);
+	_background.draw(*_window);
+	_window->draw(_vertices);
+	_debug.draw(*_window);
 }

@@ -5,25 +5,19 @@
 #include "../utilities/NonCopyable.h"
 #include "Config.h"
 
-class AudioMeterInfoBase : public NonCopyable
+class IAudioMeterInfo : public NonCopyable
 {
 public:
-	using ptr = std::unique_ptr<AudioMeterInfoBase>;
+	using ptr = std::unique_ptr<IAudioMeterInfo>;
 
 public:
-	virtual ~AudioMeterInfoBase()   {};
+	virtual ~IAudioMeterInfo() {};
 
-	virtual void initialize()		{};
-	virtual void update(float dt)	{};
-	virtual void clear()			{};
+	virtual void initialize() = 0;
+	virtual void update(float dt) = 0;
+	virtual void clear() = 0;
 
-	[[nodiscard]] constexpr float get_volume() const noexcept
-	{
-		return _volume;
-	}
-
-protected:
-	float _volume{0.0f};
+	virtual float get_volume() const noexcept = 0;
 };
 
 #if defined(_WIN32)
@@ -37,7 +31,17 @@ protected:
 
 #define SAFE_RELEASE(p) { if ((p)) { (p)->Release(); (p) = NULL; } }
 
-class AudioMeterWin final : public AudioMeterInfoBase
+class AudioMeterEmpty final : public IAudioMeterInfo
+{
+public:
+	void initialize() override {}
+	void update(float dt) override {}
+	void clear() override {}
+
+	float get_volume() const noexcept { return 0.0f; }
+};
+
+class AudioMeterWin final : public IAudioMeterInfo
 {
 private:
 	using ProcessInfo = typename std::pair<IAudioSessionControl*, IAudioMeterInformation*>;
@@ -46,15 +50,20 @@ public:
 	AudioMeterWin(Config& config, float refresh_freq);
 	~AudioMeterWin();
 
+public:
 	void initialize() override;
 	void update(float dt) override;
 	void clear() override;
+
+	[[nodiscard]] float get_volume() const noexcept override;
 
 private:
 	void refresh(std::wstring* comp);
 
 private:
 	Config*					_config				{nullptr};
+
+	float					_volume				{0.0f};
 
 	float					_refresh_freq_max	{0.0f};
 	float					_refresh_freq		{0.0f};

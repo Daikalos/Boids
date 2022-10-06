@@ -51,9 +51,7 @@ public:
 		if (!_background.getTexture()->getMaximumSize())
 			return;
 
-		window.pushGLStates();
 		window.draw(_background);
-		window.popGLStates();
 	}
 
 private:

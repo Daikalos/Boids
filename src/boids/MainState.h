@@ -32,18 +32,19 @@ public:
 	void draw() override;
 
 private:
+	Window*						_window;
+
 	Config*						_config;
 	Grid						_grid;
 	Debug						_debug;
-	AudioMeterInfoBase::ptr		_audio_meter	{nullptr};
+	IAudioMeterInfo::ptr		_audio_meter	{nullptr};
 	Background					_background;
 
 	std::vector<Impulse>		_impulses;
 	std::vector<Boid>			_boids;
 	std::vector<std::uint32_t>	_proxy;
 
-	std::vector<sf::Vector2f>	_vertices;
-	std::vector<sf::Vector3f>	_colors;
+	sf::VertexArray				_vertices;
 
 	RectFloat					_border;
 

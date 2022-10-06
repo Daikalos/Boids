@@ -73,12 +73,8 @@ void Debug::draw(sf::RenderWindow& window) const
 	if (!_config->debug_enabled)
 		return;
 
-	window.pushGLStates();
-
 	window.draw(_debug_text_state);
 	window.draw(_debug_text_info);
-
-	window.popGLStates();
 }
 
 void Debug::toggle()
