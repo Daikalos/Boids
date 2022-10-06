@@ -203,17 +203,20 @@ bool MainState::update(float dt)
 				_impulses.erase(_impulses.begin() + (&impulse - _impulses.data()));
 		});
 
-	_fluid_mouse_pos = sf::Vector2i(_mouse_pos / (float)_config->fluid_scale);
-	const sf::Vector2i amount = vu::abs(_fluid_mouse_pos - _fluid_mouse_pos_prev);
+	if (_config->color_flags & CF_Fluid)
+	{
+		_fluid_mouse_pos = sf::Vector2i(_mouse_pos / (float)_config->fluid_scale);
+		const sf::Vector2i amount = vu::abs(_fluid_mouse_pos - _fluid_mouse_pos_prev);
 
-	_fluid.step_line(
-		_fluid_mouse_pos_prev.x, _fluid_mouse_pos_prev.y,
-		_fluid_mouse_pos.x, _fluid_mouse_pos.y,
-		amount.x, amount.y, _config->fluid_mouse_strength);
+		_fluid.step_line(
+			_fluid_mouse_pos_prev.x, _fluid_mouse_pos_prev.y,
+			_fluid_mouse_pos.x, _fluid_mouse_pos.y,
+			amount.x, amount.y, _config->fluid_mouse_strength);
 
-	_fluid_mouse_pos_prev = _fluid_mouse_pos;
+		_fluid_mouse_pos_prev = _fluid_mouse_pos;
 
-	_fluid.update(dt);
+		_fluid.update(dt);
+	}
 
     return true;
 }
@@ -313,32 +316,35 @@ bool MainState::post_update(float dt, float interp)
 					const sf::Vector2f p1 = pointB * interp + prev_pointB * (1.0f - interp);
 					const sf::Vector2f p2 = pointC * interp + prev_pointC * (1.0f - interp);
 
-					const sf::Vector3f bc0 = boid.get_color();
-					const sf::Vector3f bc1 = boid.get_color();
-					const sf::Vector3f bc2 = boid.get_color();
+					sf::Vector3f bc0 = boid.get_color();
+					sf::Vector3f bc1 = boid.get_color();
+					sf::Vector3f bc2 = boid.get_color();
 
-					sf::Vector3f fc0 = bc0 + _fluid.get_color(p0);
-					sf::Vector3f fc1 = bc1 + _fluid.get_color(p1);
-					sf::Vector3f fc2 = bc2 + _fluid.get_color(p2);
+					if (_config->color_flags & CF_Fluid)
+					{
+						bc0 += _fluid.get_color(p0);
+						bc1 += _fluid.get_color(p1);
+						bc2 += _fluid.get_color(p2);
+					}
 
-					fc0.x = std::clamp(fc0.x, 0.0f, 1.0f);
-					fc0.y = std::clamp(fc0.y, 0.0f, 1.0f);
-					fc0.z = std::clamp(fc0.z, 0.0f, 1.0f);
+					bc0.x = std::clamp(bc0.x, 0.0f, 1.0f);
+					bc0.y = std::clamp(bc0.y, 0.0f, 1.0f);
+					bc0.z = std::clamp(bc0.z, 0.0f, 1.0f);
 
-					fc1.x = std::clamp(fc1.x, 0.0f, 1.0f);
-					fc1.y = std::clamp(fc1.y, 0.0f, 1.0f);
-					fc1.z = std::clamp(fc1.z, 0.0f, 1.0f);
+					bc1.x = std::clamp(bc1.x, 0.0f, 1.0f);
+					bc1.y = std::clamp(bc1.y, 0.0f, 1.0f);
+					bc1.z = std::clamp(bc1.z, 0.0f, 1.0f);
 
-					fc2.x = std::clamp(fc2.x, 0.0f, 1.0f);
-					fc2.y = std::clamp(fc2.y, 0.0f, 1.0f);
-					fc2.z = std::clamp(fc2.z, 0.0f, 1.0f);
+					bc2.x = std::clamp(bc2.x, 0.0f, 1.0f);
+					bc2.y = std::clamp(bc2.y, 0.0f, 1.0f);
+					bc2.z = std::clamp(bc2.z, 0.0f, 1.0f);
 
 					const sf::Color c0 = sf::Color(
-						fc0.x * 255, fc0.y * 255, fc0.z * 255);
+						bc0.x * 255, bc0.y * 255, bc0.z * 255);
 					const sf::Color c1 = sf::Color(
-						fc1.x * 255, fc1.y * 255, fc1.z * 255);
+						bc1.x * 255, bc1.y * 255, bc1.z * 255);
 					const sf::Color c2 = sf::Color(
-						fc2.x * 255, fc2.y * 255, fc2.z * 255);
+						bc2.x * 255, bc2.y * 255, bc2.z * 255);
 
 					const auto v = (&boid - _boids.data()) * 3;
 
