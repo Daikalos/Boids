@@ -63,7 +63,7 @@ void AudioMeterWin::update(float dt)
 {
 	_volume = 0.0f;
 
-	if (!(_config->color_flags & ColorFlags::Audio))
+	if (!(_config->color_flags & CF_Audio))
 		return;
 
 	if (_config->audio_responsive_apps.size() == 0)

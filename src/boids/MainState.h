@@ -16,6 +16,7 @@
 #include "Grid.h"
 #include "Impulse.hpp"
 #include "Boid.h"
+#include "Fluid.h"
 
 class MainState final : public State
 {
@@ -39,17 +40,19 @@ private:
 	Debug						_debug;
 	IAudioMeterInfo::ptr		_audio_meter	{nullptr};
 	Background					_background;
+	Fluid						_fluid;
 
 	std::vector<Impulse>		_impulses;
 	std::vector<Boid>			_boids;
 	std::vector<std::uint32_t>	_proxy;
-
 	sf::VertexArray				_vertices;
-
 	RectFloat					_border;
 
 	sf::Vector2f				_mouse_pos;
-	float						_min_distance	{0.0f};
 
+	sf::Vector2i				_fluid_mouse_pos;
+	sf::Vector2i				_fluid_mouse_pos_prev;
+
+	float						_min_distance	{0.0f};
 	Policy						_policy			{Policy::unseq};
 };

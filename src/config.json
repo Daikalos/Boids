@@ -16,7 +16,7 @@
         "boid" :
         {
             "boid_count" : 2500,
-            "boid_size_width" : 22.0,
+            "boid_size_width" : 25.0,
             "boid_size_height" : 11.0,
             "boid_max_speed" : 370.0,
             "boid_min_speed" : 160.0,
@@ -37,7 +37,7 @@
 
         "color" : 
         {
-            "color_options" : [ 2, 3, 4, 5 ],
+            "color_options" : [ 2, 3, 4, 5, 7 ],
 
             "color_positional_weight" : 1.0,
             "color_cycle_weight" : 0.5,
@@ -139,7 +139,12 @@
                 "150 0 255",
                 "150 0 255", 
                 "90 0 90"
-            ]
+            ],
+
+            "fluid_scale" : 10,
+            "fluid_strength" : 1.0,
+            "fluid_diffusion" : 0.0,
+            "fluid_viscosity" : 0.00001
         },
 
         "misc" : 

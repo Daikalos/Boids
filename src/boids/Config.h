@@ -16,13 +16,14 @@ static const std::string MISC = "misc";
 
 enum ColorFlags
 {
-	None		= 0,
-	Positional	= 1 << 0,
-	Cycle		= 1 << 1,
-	Density		= 1 << 2,
-	Velocity	= 1 << 3,
-	Rotation	= 1 << 4,
-	Audio		= 1 << 5
+	CF_None			= 0,
+	CF_Positional	= 1 << 0,
+	CF_Cycle		= 1 << 1,
+	CF_Density		= 1 << 2,
+	CF_Velocity		= 1 << 3,
+	CF_Rotation		= 1 << 4,
+	CF_Audio		= 1 << 5,
+	CF_Fluid		= 1 << 6,
 };
 
 inline ColorFlags operator|(ColorFlags a, ColorFlags b)
@@ -34,18 +35,19 @@ inline ColorFlags operator|=(ColorFlags& a, ColorFlags b)
 	return a = a | b;
 }
 
-enum class Reconstruct : int
+enum Rebuild : int
 {
-	RGrid,
-	RBoids,
-	RBoidsCycle,
-	RBackgroundTex,
-	RBackgroundProp,
-	RAudio,
-	RWindow,
-	RCamera,
+	RB_Grid,
+	RB_Boids,
+	RB_BoidsCycle,
+	RB_BackgroundTex,
+	RB_BackgroundProp,
+	RB_Audio,
+	RB_Window,
+	RB_Camera,
+	RB_Fluid,
 	
-	RCount
+	RB_Count
 };
 
 struct Config
@@ -75,7 +77,7 @@ struct Config
 	float ali_weight									{1.5f};
 	float coh_weight									{1.8f};
 
-	ColorFlags color_flags								{ColorFlags::Cycle | ColorFlags::Density | ColorFlags::Velocity | ColorFlags::Rotation};
+	ColorFlags color_flags								{CF_Cycle | CF_Density | CF_Velocity | CF_Rotation};
 
 	float color_positional_weight						{1.0f};
 	float color_cycle_weight							{0.5f};
@@ -179,6 +181,11 @@ struct Config
 		sf::Vector3f(0.35f, 0.0f, 0.35f)
 	};
 
+	int fluid_scale										{10};
+	float fluid_mouse_strength							{0.2f};
+	float fluid_diffusion								{0.0f};
+	float fluid_viscosity								{0.00001f};
+
 	bool steer_enabled									{true};
 	float steer_towards_factor							{0.9f};
 	float steer_away_factor								{0.9f};
@@ -210,7 +217,7 @@ public:
 	Config();
 
 	void load();
-	std::vector<Reconstruct> refresh(Config& prev);
+	std::vector<Rebuild> refresh(Config& prev);
 
 private:
 	void load_var(nlohmann::json& json);

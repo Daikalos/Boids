@@ -14,7 +14,6 @@ class Application
 {
 public:
 	Application(const std::string& name);
-	~Application();
 
 	void run();
 

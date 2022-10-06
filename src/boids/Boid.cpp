@@ -158,24 +158,20 @@ void Boid::update(const RectFloat& border, const IAudioMeterInfo* audio_meter, s
 	{
 		_color = sf::Vector3f();
 
-		if (_config->color_flags & ColorFlags::Positional)
+		if (_config->color_flags & CF_Positional)
 			_color += position_color(border) * _config->color_positional_weight;
-		if (_config->color_flags & ColorFlags::Cycle)
+		if (_config->color_flags & CF_Cycle)
 			_color += cycle_color(dt) * _config->color_cycle_weight;
-		if (_config->color_flags & ColorFlags::Density)
+		if (_config->color_flags & CF_Density)
 			_color += density_color(dt) * _config->color_density_weight;
-		if (_config->color_flags & ColorFlags::Velocity)
+		if (_config->color_flags & CF_Velocity)
 			_color += velocity_color() * _config->color_velocity_weight;
-		if (_config->color_flags & ColorFlags::Rotation)
+		if (_config->color_flags & CF_Rotation)
 			_color += rotation_color() * _config->color_rotation_weight;
-		if (_config->color_flags & ColorFlags::Audio)
+		if (_config->color_flags & CF_Audio)
 			_color += audio_color(audio_meter, dt) * _config->color_audio_weight;
 
 		_color = impulse_color(impulses);
-
-		_color.x = std::clamp(_color.x, 0.0f, 1.0f);
-		_color.y = std::clamp(_color.y, 0.0f, 1.0f);
-		_color.z = std::clamp(_color.z, 0.0f, 1.0f);
 	}
 }
 

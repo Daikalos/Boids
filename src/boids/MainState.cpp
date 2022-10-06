@@ -1,7 +1,7 @@
 #include "MainState.h"
 
 MainState::MainState(StateStack& stack, Context context, Config& config) : 
-	State(stack, context), _window(context.window), _config(&config), _debug(*_config)
+	State(stack, context), _window(context.window), _config(&config), _debug(*_config), _fluid(*_config, _window->getSize(), _config->fluid_diffusion, _config->fluid_viscosity)
 {
     context.texture_holder->load(TextureID::Background, _config->background_texture);
     context.font_holder->load(FontID::F8Bit, "font_8bit.ttf");
@@ -48,6 +48,10 @@ MainState::MainState(StateStack& stack, Context context, Config& config) :
 	_vertices.resize(_config->boid_count * 3);
 	_vertices.setPrimitiveType(sf::Triangles);
 
+	_fluid_mouse_pos = sf::Vector2i(context.camera->
+		get_mouse_world_position(*_window)) / _config->fluid_scale;
+	_fluid_mouse_pos_prev = _fluid_mouse_pos;
+
     _policy = _config->boid_count <= 1500 ? Policy::unseq : Policy::par_unseq;
 }
 
@@ -57,6 +61,8 @@ bool MainState::handle_event(const sf::Event& event)
     {
     case sf::Event::Resized:
         {
+			_background.load_prop(*_config, sf::Vector2i(_window->getSize()));
+
 			_border = _window->get_border();
 
             RectFloat grid_border = _border + (_config->turn_at_border ?
@@ -67,8 +73,7 @@ bool MainState::handle_event(const sf::Event& event)
                     +_min_distance * _config->grid_extra_cells) : RectFloat());
 
             _grid = Grid(*_config, grid_border, sf::Vector2f(_min_distance, _min_distance) * 2.0f);
-
-            _background.load_prop(*_config, sf::Vector2i(_window->getSize()));
+			_fluid = Fluid(*_config, _window->getSize(), _config->fluid_diffusion, _config->fluid_viscosity);
         }
         break;
     }
@@ -82,11 +87,11 @@ bool MainState::pre_update(float dt)
 	if (_debug.get_refresh()) // time to refresh data
 	{
 		Config prev = *_config;
-		for (const Reconstruct& reconstruct : _config->refresh(prev)) // not very clean, but it does not matter much for small project
+		for (const Rebuild& rebuild : _config->refresh(prev)) // not very clean, but it does not matter much for small project
 		{
-			switch (reconstruct)
+			switch (rebuild)
 			{
-			case Reconstruct::RGrid:
+			case RB_Grid:
 				{
 					_min_distance = std::sqrtf(std::fmaxf(std::fmaxf(_config->sep_distance, _config->ali_distance), _config->coh_distance));
 
@@ -100,7 +105,7 @@ bool MainState::pre_update(float dt)
 					_grid = Grid(*_config, grid_border, sf::Vector2f(_min_distance, _min_distance) * 2.0f);
 				}
 				break;
-			case Reconstruct::RBoids:
+			case RB_Boids:
 				{
 					_policy = _config->boid_count <= 1500 ? Policy::unseq : Policy::par_unseq;
 
@@ -134,7 +139,7 @@ bool MainState::pre_update(float dt)
 					}
 				}
 				break;
-			case Reconstruct::RBoidsCycle:	
+			case RB_BoidsCycle:
 				{
 					for (Boid& boid : _boids)
 					{
@@ -143,7 +148,7 @@ bool MainState::pre_update(float dt)
 					}
 				}
 				break;
-			case Reconstruct::RBackgroundTex:
+			case RB_BackgroundTex:
 				{
 					context().texture_holder->load(TextureID::Background, _config->background_texture);
 
@@ -151,7 +156,7 @@ bool MainState::pre_update(float dt)
 					_background.load_prop(*_config, sf::Vector2i(_window->getSize()));
 				}
 				break;
-			case Reconstruct::RBackgroundProp:
+			case RB_BackgroundProp:
 				{
 					_background.load_prop(*_config, sf::Vector2i(_window->getSize()));
 
@@ -159,15 +164,18 @@ bool MainState::pre_update(float dt)
 					_window->set_clear_color(sf::Color(vc.x, vc.y, vc.z, 255.0f));
 				}
 				break;
-			case Reconstruct::RAudio:
+			case RB_Audio:
 				_audio_meter->clear();
 				break;
-			case Reconstruct::RWindow:
+			case RB_Window:
 				_window->set_framerate(_config->max_framerate);
 				_window->set_vertical_sync(_config->vertical_sync);
 				break;
-			case Reconstruct::RCamera:
+			case RB_Camera:
 				context().camera->set_scale(sf::Vector2f(_config->camera_zoom, _config->camera_zoom));
+				break;
+			case RB_Fluid:
+				_fluid = Fluid(*_config, _window->getSize(), _config->fluid_diffusion, _config->fluid_viscosity);
 				break;
 			}
 		}
@@ -194,6 +202,18 @@ bool MainState::update(float dt)
 			if (impulse.get_length() > _config->impulse_fade_distance)
 				_impulses.erase(_impulses.begin() + (&impulse - _impulses.data()));
 		});
+
+	_fluid_mouse_pos = sf::Vector2i(_mouse_pos / (float)_config->fluid_scale);
+	const sf::Vector2i amount = vu::abs(_fluid_mouse_pos - _fluid_mouse_pos_prev);
+
+	_fluid.step_line(
+		_fluid_mouse_pos_prev.x, _fluid_mouse_pos_prev.y,
+		_fluid_mouse_pos.x, _fluid_mouse_pos.y,
+		amount.x, amount.y, _config->fluid_mouse_strength);
+
+	_fluid_mouse_pos_prev = _fluid_mouse_pos;
+
+	_fluid.update(dt);
 
     return true;
 }
@@ -275,10 +295,6 @@ bool MainState::post_update(float dt, float interp)
 			std::for_each(pol, _boids.begin(), _boids.end(),
 				[&interp, this](const Boid& boid)
 				{
-					const sf::Vector3f bc = boid.get_color();
-					const sf::Color color = sf::Color(
-						bc.x * 255, bc.y * 255, bc.z * 255);
-
 					const sf::Vector2f ori = boid.get_origin();
 					const sf::Vector2f prev_ori = boid.get_prev_origin();
 
@@ -297,15 +313,42 @@ bool MainState::post_update(float dt, float interp)
 					const sf::Vector2f p1 = pointB * interp + prev_pointB * (1.0f - interp);
 					const sf::Vector2f p2 = pointC * interp + prev_pointC * (1.0f - interp);
 
+					const sf::Vector3f bc0 = boid.get_color();
+					const sf::Vector3f bc1 = boid.get_color();
+					const sf::Vector3f bc2 = boid.get_color();
+
+					sf::Vector3f fc0 = bc0 + _fluid.get_color(p0);
+					sf::Vector3f fc1 = bc1 + _fluid.get_color(p1);
+					sf::Vector3f fc2 = bc2 + _fluid.get_color(p2);
+
+					fc0.x = std::clamp(fc0.x, 0.0f, 1.0f);
+					fc0.y = std::clamp(fc0.y, 0.0f, 1.0f);
+					fc0.z = std::clamp(fc0.z, 0.0f, 1.0f);
+
+					fc1.x = std::clamp(fc1.x, 0.0f, 1.0f);
+					fc1.y = std::clamp(fc1.y, 0.0f, 1.0f);
+					fc1.z = std::clamp(fc1.z, 0.0f, 1.0f);
+
+					fc2.x = std::clamp(fc2.x, 0.0f, 1.0f);
+					fc2.y = std::clamp(fc2.y, 0.0f, 1.0f);
+					fc2.z = std::clamp(fc2.z, 0.0f, 1.0f);
+
+					const sf::Color c0 = sf::Color(
+						fc0.x * 255, fc0.y * 255, fc0.z * 255);
+					const sf::Color c1 = sf::Color(
+						fc1.x * 255, fc1.y * 255, fc1.z * 255);
+					const sf::Color c2 = sf::Color(
+						fc2.x * 255, fc2.y * 255, fc2.z * 255);
+
 					const auto v = (&boid - _boids.data()) * 3;
 
 					_vertices[v + 0].position = p0;
 					_vertices[v + 1].position = p1;
 					_vertices[v + 2].position = p2;
 
-					_vertices[v + 0].color = color;
-					_vertices[v + 1].color = color;
-					_vertices[v + 2].color = color;
+					_vertices[v + 0].color = c0;
+					_vertices[v + 1].color = c1;
+					_vertices[v + 2].color = c2;
 				});
 		}, _policy);
 

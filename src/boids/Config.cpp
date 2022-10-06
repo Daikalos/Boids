@@ -42,27 +42,34 @@ void Config::load()
 	}
 }
 
-std::vector<Reconstruct> Config::refresh(Config& prev)
+std::vector<Rebuild> Config::refresh(Config& prev)
 {
-	std::vector<Reconstruct> result;
-	result.reserve((int)Reconstruct::RCount);
+	std::vector<Rebuild> result;
+	result.reserve((int)RB_Count);
 
 	load();
 
 	if (prev.sep_distance != sep_distance || prev.ali_distance != ali_distance || prev.coh_distance != coh_distance || prev.turn_at_border != turn_at_border)
-		result.push_back(Reconstruct::RGrid);
+		result.push_back(RB_Grid);
 	if (prev.boid_count != boid_count)
-		result.push_back(Reconstruct::RBoids);
+		result.push_back(RB_Boids);
 	if (prev.boid_cycle_colors_random != boid_cycle_colors_random)
-		result.push_back(Reconstruct::RBoidsCycle);
+		result.push_back(RB_BoidsCycle);
 	if (prev.background_texture != background_texture)
-		result.push_back(Reconstruct::RBackgroundTex);
+		result.push_back(RB_BackgroundTex);
 	if (prev.vertical_sync != vertical_sync || prev.max_framerate != max_framerate)
-		result.push_back(Reconstruct::RWindow);
+		result.push_back(RB_Window);
 	if (!std::ranges::equal(prev.audio_responsive_apps, audio_responsive_apps))
-		result.push_back(Reconstruct::RAudio);
+		result.push_back(RB_Audio);
 	if (prev.camera_zoom != camera_zoom)
-		result.push_back(Reconstruct::RCamera);
+		result.push_back(RB_Camera);
+
+	if (prev.fluid_scale != fluid_scale ||
+		prev.fluid_diffusion != fluid_diffusion ||
+		prev.fluid_viscosity != fluid_viscosity)
+	{
+		result.push_back(RB_Fluid);
+	}
 
 	if (prev.background_color != background_color ||
 		prev.background_position_x != background_position_x ||
@@ -72,7 +79,7 @@ std::vector<Reconstruct> Config::refresh(Config& prev)
 		prev.background_width != background_width ||
 		prev.background_height != background_height)
 	{
-		result.push_back(Reconstruct::RBackgroundProp);
+		result.push_back(RB_BackgroundProp);
 	}
 
 	return result;
@@ -114,7 +121,7 @@ void Config::load_var(nlohmann::json& json)
 	coh_weight					= rules["coh_weight"];
 
 	std::vector<int> temp_color_options = color["color_options"];
-	color_flags = (temp_color_options.size()) ? ColorFlags::None : ColorFlags::Cycle;
+	color_flags = (temp_color_options.size()) ? CF_None : CF_Cycle;
 	for (int i = 0; i < temp_color_options.size(); ++i)
 		color_flags |= static_cast<ColorFlags>((int)std::powf(2.0f, (float)temp_color_options[i] - 1.0f));
 
@@ -125,21 +132,21 @@ void Config::load_var(nlohmann::json& json)
 	color_rotation_weight		= color["color_rotation_weight"];
 	color_audio_weight			= color["color_audio_weight"];
 
-	if (color_flags & ColorFlags::Positional)
+	if (color_flags & CF_Positional)
 	{
 		boid_color_top_left		= str_to_color(color["boid_color_top_left"]);
 		boid_color_top_right	= str_to_color(color["boid_color_top_right"]);
 		boid_color_bot_left		= str_to_color(color["boid_color_bot_left"]);
 		boid_color_bot_right	= str_to_color(color["boid_color_bot_right"]);
 	}
-	if (color_flags & ColorFlags::Cycle)
+	if (color_flags & CF_Cycle)
 	{
 		boid_cycle_colors_random	= color["boid_cycle_colors_random"];
 		boid_cycle_colors_speed		= color["boid_cycle_colors_speed"];
 
 		convert_to_color(boid_cycle_colors, color["boid_cycle_colors"]);
 	}
-	if (color_flags & ColorFlags::Density)
+	if (color_flags & CF_Density)
 	{
 		boid_density				= color["boid_density"];
 		boid_density_cycle_enabled	= color["boid_density_cycle_enabled"];
@@ -147,15 +154,15 @@ void Config::load_var(nlohmann::json& json)
 
 		convert_to_color(boid_density_colors, color["boid_density_colors"]);
 	}
-	if (color_flags & ColorFlags::Velocity)
+	if (color_flags & CF_Velocity)
 	{
 		convert_to_color(boid_velocity_colors, color["boid_velocity_colors"]);
 	}
-	if (color_flags & ColorFlags::Rotation)
+	if (color_flags & CF_Rotation)
 	{
 		convert_to_color(boid_rotation_colors, color["boid_rotation_colors"]);
 	}
-	if (color_flags & ColorFlags::Audio)
+	if (color_flags & CF_Audio)
 	{
 		std::vector<std::string> temp_processes = color["audio_responsive_apps"];
 		audio_responsive_apps = std::vector<std::wstring>(temp_processes.size());
@@ -171,6 +178,13 @@ void Config::load_var(nlohmann::json& json)
 		audio_responsive_density	= color["audio_responsive_density"];
 
 		convert_to_color(audio_responsive_colors, color["audio_responsive_colors"]);
+	}
+	if (color_flags & CF_Fluid)
+	{
+		fluid_scale				= color["fluid_scale"];
+		fluid_mouse_strength	= color["fluid_strength"];
+		fluid_diffusion			= color["fluid_diffusion"];
+		fluid_viscosity			= color["fluid_viscosity"];
 	}
 
 	impulse_enabled				= color["impulse_enabled"];

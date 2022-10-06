@@ -8,6 +8,7 @@
 #include "Config.h"
 #include "AudioMeter.h"
 #include "Impulse.hpp"
+#include "Fluid.h"
 
 #include "../utilities/Rectangle.hpp"
 #include "../utilities/VectorUtilities.h"

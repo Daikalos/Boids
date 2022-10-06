@@ -15,11 +15,6 @@ Application::Application(const std::string& name) :
 	_window.set_clear_color(sf::Color(vc.x, vc.y, vc.z, 255));
 }
 
-Application::~Application()
-{
-
-}
-
 void Application::run()
 {
 	_window.initialize();
