@@ -15,24 +15,28 @@ Fluid::Fluid(Config& config, const sf::Vector2u& size, const float diff, const f
 
 sf::Vector3f Fluid::get_color(const sf::Vector2f& origin) const
 {
-	const float fx = origin.x / (float)_config->fluid_scale;
-	const float fy = origin.y / (float)_config->fluid_scale;
+	const int x = (int)(origin.x / _config->fluid_scale);
+	const int y = (int)(origin.y / _config->fluid_scale);
 
-	const int x = fx;
-	const int y = fy;
+	const float vel_x = util::map_to_range(vx[safe_IX(x, y)],
+		-_config->fluid_color_vel, _config->fluid_color_vel, -1.0f, 1.0f);
+	const float vel_y = util::map_to_range(vy[safe_IX(x, y)],
+		-_config->fluid_color_vel, _config->fluid_color_vel, -1.0f, 1.0f);
 
-	const float dist = vu::distance(sf::Vector2f(fx - x, fy - y));
-	const float factor = 1.0f / dist;
+	const float bnd = (float)_config->fluid_colors.size() - 1.0f;
 
-	const float vel_x = vx[safe_IX(x, y)];
-	const float vel_y = vy[safe_IX(x, y)];
+	float scaled_speed = vu::distance(sf::Vector2f(vel_x, vel_y)) * bnd;
+	scaled_speed = std::clamp(scaled_speed, 0.0f, bnd);
 
-	const float speed = vu::distance(sf::Vector2f(vel_x, vel_y));
+	const int index1 = (int)scaled_speed;
+	const int index2 = ((int)scaled_speed + 1) % _config->fluid_colors.size();
 
-	const float r = (0.5f - util::map_to_range(vel_x, -0.05f, 0.05f, 0.0f, 1.0f)) * factor;
-	const float b = (0.5f - util::map_to_range(vel_y, -0.05f, 0.05f, 0.0f, 1.0f)) * factor;
+	const sf::Vector3f color1 = _config->fluid_colors[index1];
+	const sf::Vector3f color2 = _config->fluid_colors[index2];
 
-	return sf::Vector3f(r, 0, b);
+	const float newT = scaled_speed - std::floorf(scaled_speed);
+
+	return vu::lerp(color1, color2, newT);
 }
 
 void Fluid::add_density(int x, int y, float amount)
@@ -88,13 +92,13 @@ void Fluid::set_bnd(float* x, const int b)
 {
 	for (int i = 1; i < std::max(H - 1, W - 1); ++i)
 	{
-		if (i < H - 1)
+		if (i < H - 1) [[likely]]
 		{
 			x[IX(0,		i)] = b == 1 ? -x[IX(1,		i)] : x[IX(1,	  i)];
 			x[IX(W - 1, i)] = b == 1 ? -x[IX(W - 2, i)] : x[IX(W - 2, i)];
 		}
 
-		if (i < W - 1)
+		if (i < W - 1) [[likely]]
 		{
 			x[IX(i, 0	 )] = b == 2 ? -x[IX(i, 1	 )] : x[IX(i, 1	   )];
 			x[IX(i, H - 1)] = b == 2 ? -x[IX(i, H - 2)] : x[IX(i, H - 2)];
@@ -192,16 +196,6 @@ void Fluid::project(float* vx, float* vy, float* p, float* div)
 	set_bnd(vy, 2);
 }
 
-void Fluid::fade_density()
-{
-	std::for_each(std::execution::par_unseq,
-		density.get(), density.get() + N,
-		[](float& d)
-		{
-			d = (d - 0.5f < 0.0f) ? 0.0f : d - 0.5f;
-		});
-}
-
 void Fluid::step_line(int x0, int y0, int x1, int y1, int dx, int dy, float a)
 {
 	if (x0 == x1 && y0 == y1)
@@ -289,6 +283,4 @@ void Fluid::update(const float dt)
 		thread2.wait();
 		thread3.wait();
 	}
-
-	fade_density();
 }

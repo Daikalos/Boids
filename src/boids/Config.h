@@ -183,8 +183,21 @@ struct Config
 
 	int fluid_scale										{10};
 	float fluid_mouse_strength							{0.2f};
+	float fluid_color_vel								{0.1f};
 	float fluid_diffusion								{0.0f};
 	float fluid_viscosity								{0.00001f};
+	std::vector<sf::Vector3f> fluid_colors
+	{
+		sf::Vector3f(0.0f, 0.0f, 0.0f),
+		sf::Vector3f(0.0f, 0.0f, 0.0f),
+		sf::Vector3f(0.35f, 0.0f, 0.35f),
+		sf::Vector3f(0.35f, 0.0f, 0.35f),
+		sf::Vector3f(0.35f, 0.0f, 0.35f),
+		sf::Vector3f(0.6f, 0.0f, 1.0f),
+		sf::Vector3f(0.6f, 0.0f, 1.0f),
+		sf::Vector3f(0.6f, 0.0f, 1.0f),
+		sf::Vector3f(1.0f, 0.1f, 1.0f)
+	};
 
 	bool steer_enabled									{true};
 	float steer_towards_factor							{0.9f};

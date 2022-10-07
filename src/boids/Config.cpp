@@ -182,9 +182,12 @@ void Config::load_var(nlohmann::json& json)
 	if (color_flags & CF_Fluid)
 	{
 		fluid_scale				= color["fluid_scale"];
-		fluid_mouse_strength	= color["fluid_strength"];
+		fluid_mouse_strength	= color["fluid_mouse_strength"];
+		fluid_color_vel			= color["fluid_color_vel"];
 		fluid_diffusion			= color["fluid_diffusion"];
 		fluid_viscosity			= color["fluid_viscosity"];
+
+		convert_to_color(fluid_colors, color["fluid_colors"]);
 	}
 
 	impulse_enabled				= color["impulse_enabled"];

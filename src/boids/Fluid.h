@@ -43,8 +43,6 @@ private:
 	void advect(float* d, const float* d0, const float* vx, const float* vy, const int b, const float dt);
 	void project(float* u, float* v, float* p, float* div);
 
-	void fade_density();
-
 private:
 	Config* _config;
 

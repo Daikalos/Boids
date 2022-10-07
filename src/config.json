@@ -142,9 +142,22 @@
             ],
 
             "fluid_scale" : 10,
-            "fluid_strength" : 1.0,
+            "fluid_mouse_strength" : 1.0,
+            "fluid_color_vel" : 0.1,
             "fluid_diffusion" : 0.0,
-            "fluid_viscosity" : 0.00001
+            "fluid_viscosity" : 0.00001,
+            "fluid_colors" :
+            [
+                "0 0 0",
+                "0 0 0",
+                "90 0 90",
+                "90 0 90",
+                "90 0 90",
+                "150 0 255",
+                "150 0 255",
+                "150 0 255",
+                "255 20 255"
+            ]
         },
 
         "misc" : 
