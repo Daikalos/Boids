@@ -46,7 +46,7 @@ private:
 private:
 	Config* _config;
 
-	size_t W, H, N;
+	int W, H, N;
 
 	std::unique_ptr<float[]> vx;
 	std::unique_ptr<float[]> vy;

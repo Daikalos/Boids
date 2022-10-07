@@ -72,10 +72,10 @@ void Boid::flock(const Grid& grid, std::span<const Boid> boids, std::span<const 
 	const int x_neighbor = grid_cell.x + x;
 	const int y_neighbor = grid_cell.y + y;
 
-	neighbour[0] = grid._cont_dims * sf::Vector2f(0, 0);
-	neighbour[1] = grid._cont_dims * sf::Vector2f(x, 0);
-	neighbour[2] = grid._cont_dims * sf::Vector2f(0, y);
-	neighbour[3] = grid._cont_dims * sf::Vector2f(x, y);
+	neighbour[0] = grid._cont_dims * sf::Vector2f(0,		0);
+	neighbour[1] = grid._cont_dims * sf::Vector2f((float)x, 0);
+	neighbour[2] = grid._cont_dims * sf::Vector2f(0,		(float)y);
+	neighbour[3] = grid._cont_dims * sf::Vector2f((float)x, (float)y);
 
 	neighbour_indicies[0] = grid.at_pos(grid_cell.x, grid_cell.y);	// current
 	neighbour_indicies[1] = grid.at_pos(x_neighbor, grid_cell.y);	// left or right of current
@@ -308,7 +308,7 @@ sf::Vector3f Boid::cycle_color(float dt)
 	float scaled_time = _cycle_time * (float)(_config->boid_cycle_colors.size() - 1);
 
 	const auto index1 = (int)scaled_time;
-	const auto index2 = ((int)scaled_time + 1) % _config->boid_cycle_colors.size();
+	const auto index2 = ((int)scaled_time + 1) % (int)_config->boid_cycle_colors.size();
 
 	const sf::Vector3f color1 = _config->boid_cycle_colors[index1];
 	const sf::Vector3f color2 = _config->boid_cycle_colors[index2];
@@ -329,7 +329,7 @@ sf::Vector3f Boid::density_color(float dt)
 	const float scaled_density = std::fmodf(density_percentage + _density_time, 1.0f) * (float)(_config->boid_density_colors.size() - 1);
 
 	const auto index1 = (int)scaled_density;
-	const auto index2 = ((int)scaled_density + 1) % _config->boid_density_colors.size();
+	const auto index2 = ((int)scaled_density + 1) % (int)_config->boid_density_colors.size();
 
 	const sf::Vector3f color1 = _config->boid_density_colors[index1];
 	const sf::Vector3f color2 = _config->boid_density_colors[index2];
@@ -348,7 +348,7 @@ sf::Vector3f Boid::velocity_color() const
 	const float scaled_velocity = velocity_percentage * (float)(_config->boid_velocity_colors.size() - 1);
 
 	const auto index1 = (int)scaled_velocity;
-	const auto index2 = ((int)scaled_velocity + 1) % _config->boid_velocity_colors.size();
+	const auto index2 = ((int)scaled_velocity + 1) % (int)_config->boid_velocity_colors.size();
 
 	const sf::Vector3f color1 = _config->boid_velocity_colors[index1];
 	const sf::Vector3f color2 = _config->boid_velocity_colors[index2];
@@ -367,7 +367,7 @@ sf::Vector3f Boid::rotation_color() const
 	const float scaled_rotation = rotation_percentage * (float)(_config->boid_rotation_colors.size() - 1);
 
 	const auto index1 = (int)scaled_rotation;
-	const auto index2 = ((int)scaled_rotation + 1) % _config->boid_rotation_colors.size();
+	const auto index2 = ((int)scaled_rotation + 1) % (int)_config->boid_rotation_colors.size();
 
 	const sf::Vector3f color1 = _config->boid_rotation_colors[index1];
 	const sf::Vector3f color2 = _config->boid_rotation_colors[index2];
@@ -387,7 +387,7 @@ sf::Vector3f Boid::audio_color(const IAudioMeterInfo* audio_meter, float dt) con
 	const float scaled_volume = std::fminf(max_volume * density_percentage, 1.0f) * (float)(_config->audio_responsive_colors.size() - 1);
 
 	const auto index1 = (int)scaled_volume;
-	const auto index2 = ((int)scaled_volume + 1) % _config->audio_responsive_colors.size();
+	const auto index2 = ((int)scaled_volume + 1) % (int)_config->audio_responsive_colors.size();
 
 	const sf::Vector3f color1 = _config->audio_responsive_colors[index1];
 	const sf::Vector3f color2 = _config->audio_responsive_colors[index2];
@@ -417,7 +417,7 @@ sf::Vector3f Boid::impulse_color(std::span<const Impulse> impulses) const
 			const float scaled_length = std::fmodf(percentage, 1.0f) * (float)(_config->impulse_colors.size() - 1);
 
 			const auto index1 = (int)scaled_length;
-			const auto index2 = ((int)scaled_length + 1) % _config->impulse_colors.size();
+			const auto index2 = ((int)scaled_length + 1) % (int)_config->impulse_colors.size();
 
 			const sf::Vector3f color1 = _config->impulse_colors[index1];
 			const sf::Vector3f color2 = _config->impulse_colors[index2];

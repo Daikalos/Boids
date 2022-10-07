@@ -124,5 +124,5 @@ void Window::set_cursor_state(bool flag)
 
 RectFloat Window::get_border() const
 {
-	return RectFloat(0, 0, getSize().x, getSize().y);
+	return RectFloat(0, 0, (float)getSize().x, (float)getSize().y);
 }

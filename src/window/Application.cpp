@@ -11,8 +11,10 @@ Application::Application(const std::string& name) :
 
 	_camera.set_scale({ _config.camera_zoom, _config.camera_zoom });
 
-	sf::Vector3f vc = _config.background_color * 255.0f;
-	_window.set_clear_color(sf::Color(vc.x, vc.y, vc.z, 255));
+	_window.set_clear_color(sf::Color(
+		(sf::Uint8)(_config.background_color.x * 255),
+		(sf::Uint8)(_config.background_color.y * 255),
+		(sf::Uint8)(_config.background_color.z * 255), 255));
 }
 
 void Application::run()

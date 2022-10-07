@@ -145,11 +145,12 @@ namespace vu
 	template<Arithmetic T>
 	static constexpr sf::Vector2<T> abs(sf::Vector2<T> vector)
 	{
-		vector.x = std::fabsf(vector.x);
-		vector.y = std::fabsf(vector.y);
+		vector.x = std::abs(vector.x);
+		vector.y = std::abs(vector.y);
 
 		return vector;
 	}
+
 	template<Arithmetic T>
 	static constexpr sf::Vector2<T> floor(sf::Vector2<T> vector)
 	{

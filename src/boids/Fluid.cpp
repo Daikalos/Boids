@@ -32,7 +32,7 @@ sf::Vector3f Fluid::get_color(const sf::Vector2f& origin) const
 	scaled_speed = std::clamp(scaled_speed, 0.0f, bnd);
 
 	const int index1 = (int)scaled_speed;
-	const int index2 = ((int)scaled_speed + 1) % _config->fluid_colors.size();
+	const int index2 = ((int)scaled_speed + 1) % (int)_config->fluid_colors.size();
 
 	const sf::Vector3f color1 = _config->fluid_colors[index1];
 	const sf::Vector3f color2 = _config->fluid_colors[index2];
@@ -143,22 +143,27 @@ void Fluid::advect(float* d, const float* d0, const float* vx, const float* vy, 
 			if (x > wf + 0.5f) x = wf + 0.5f;
 
 			i0 = std::floorf(x); 
-			i1 = i0 + 1.0f;
+			i1 = i0 + 1;
 
 			if (y < 0.5f) y = 0.5f;
 			if (y > hf + 0.5f) y = hf + 0.5f;
 			
 			j0 = std::floorf(y);
-			j1 = j0 + 1.0f;
+			j1 = j0 + 1;
 
 			s1 = x - i0; 
 			s0 = 1.0f - s1; 
 			t1 = y - j0; 
 			t0 = 1.0f - t1;
 
+			const int i0i = (int)i0;
+			const int i1i = (int)i1;
+			const int j0i = (int)j0;
+			const int j1i = (int)j1;
+
 			d[IX(j, i)] =
-				s0 * (t0 * d0[safe_IX(i0, j0)] + t1 * d0[safe_IX(i0, j1)]) +
-				s1 * (t0 * d0[safe_IX(i1, j0)] + t1 * d0[safe_IX(i1, j1)]);
+				s0 * (t0 * d0[safe_IX(i0i, j0i)] + t1 * d0[safe_IX(i0i, j1i)]) +
+				s1 * (t0 * d0[safe_IX(i1i, j0i)] + t1 * d0[safe_IX(i1i, j1i)]);
 		}
 	}
 
