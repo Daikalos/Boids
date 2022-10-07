@@ -1,7 +1,7 @@
 #include "Fluid.h"
 
-Fluid::Fluid(Config& config, const sf::Vector2u& size, const float diff, const float visc)
-	: _config(&config), W(size.x / _config->fluid_scale), H(size.y / _config->fluid_scale), N(W * H), diff(diff), visc(visc)
+Fluid::Fluid(Config& config, const sf::Vector2u& size)
+	: _config(&config), W(size.x / _config->fluid_scale), H(size.y / _config->fluid_scale), N(W * H)
 {
 	vx = std::make_unique<float[]>(N);
 	vy = std::make_unique<float[]>(N);
@@ -15,6 +15,9 @@ Fluid::Fluid(Config& config, const sf::Vector2u& size, const float diff, const f
 
 sf::Vector3f Fluid::get_color(const sf::Vector2f& origin) const
 {
+	if (_config->fluid_colors.empty())
+		return sf::Vector3f();
+
 	const int x = (int)(origin.x / _config->fluid_scale);
 	const int y = (int)(origin.y / _config->fluid_scale);
 
@@ -253,8 +256,8 @@ void Fluid::update(const float dt)
 	std::future<void> thread3;
 
 	{
-		thread1 = std::async(std::launch::deferred, diffuseFunc, vx_prev.get(), vx.get(), visc, 1);
-		thread2 = std::async(std::launch::deferred, diffuseFunc, vy_prev.get(), vy.get(), visc, 2);
+		thread1 = std::async(std::launch::deferred, diffuseFunc, vx_prev.get(), vx.get(), _config->fluid_viscosity, 1);
+		thread2 = std::async(std::launch::deferred, diffuseFunc, vy_prev.get(), vy.get(), _config->fluid_viscosity, 2);
 
 		thread1.wait();
 		thread2.wait();
@@ -274,7 +277,7 @@ void Fluid::update(const float dt)
 
 	{
 		thread1 = std::async(std::launch::deferred, projectFunc, vx.get(), vy.get(), vx_prev.get(), vy_prev.get());
-		thread2 = std::async(std::launch::deferred, diffuseFunc, density_prev.get(), density.get(), diff, 0);
+		thread2 = std::async(std::launch::deferred, diffuseFunc, density_prev.get(), density.get(), _config->fluid_diffusion, 0);
 
 		thread1.wait();
 

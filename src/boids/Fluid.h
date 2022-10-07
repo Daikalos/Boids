@@ -17,7 +17,7 @@
 class Fluid final
 {
 public:
-	Fluid(Config& config, const sf::Vector2u& size, const float diff, const float visc);
+	Fluid(Config& config, const sf::Vector2u& size);
 
 	[[nodiscard]] sf::Vector3f get_color(const sf::Vector2f& origin) const;
 
@@ -47,7 +47,6 @@ private:
 	Config* _config;
 
 	size_t W, H, N;
-	float diff, visc;
 
 	std::unique_ptr<float[]> vx;
 	std::unique_ptr<float[]> vy;

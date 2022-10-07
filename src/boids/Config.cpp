@@ -63,13 +63,8 @@ std::vector<Rebuild> Config::refresh(Config& prev)
 		result.push_back(RB_Audio);
 	if (prev.camera_zoom != camera_zoom)
 		result.push_back(RB_Camera);
-
-	if (prev.fluid_scale != fluid_scale ||
-		prev.fluid_diffusion != fluid_diffusion ||
-		prev.fluid_viscosity != fluid_viscosity)
-	{
+	if (prev.fluid_scale != fluid_scale)
 		result.push_back(RB_Fluid);
-	}
 
 	if (prev.background_color != background_color ||
 		prev.background_position_x != background_position_x ||

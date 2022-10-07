@@ -166,7 +166,7 @@
             "steer_towards_factor" : 0.9,
             "steer_away_factor" : 0.9,
 
-            "predator_enabled" : true,
+            "predator_enabled" : false,
             "predator_distance" : 250.0,
             "predator_factor" : 0.6,
 

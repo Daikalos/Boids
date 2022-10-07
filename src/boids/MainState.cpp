@@ -1,7 +1,7 @@
 #include "MainState.h"
 
 MainState::MainState(StateStack& stack, Context context, Config& config) : 
-	State(stack, context), _window(context.window), _config(&config), _debug(*_config), _fluid(*_config, _window->getSize(), _config->fluid_diffusion, _config->fluid_viscosity)
+	State(stack, context), _window(context.window), _config(&config), _debug(*_config), _fluid(*_config, _window->getSize())
 {
     context.texture_holder->load(TextureID::Background, _config->background_texture);
     context.font_holder->load(FontID::F8Bit, "font_8bit.ttf");
@@ -73,7 +73,7 @@ bool MainState::handle_event(const sf::Event& event)
                     +_min_distance * _config->grid_extra_cells) : RectFloat());
 
             _grid = Grid(*_config, grid_border, sf::Vector2f(_min_distance, _min_distance) * 2.0f);
-			_fluid = Fluid(*_config, _window->getSize(), _config->fluid_diffusion, _config->fluid_viscosity);
+			_fluid = Fluid(*_config, _window->getSize());
         }
         break;
     }
@@ -175,7 +175,7 @@ bool MainState::pre_update(float dt)
 				context().camera->set_scale(sf::Vector2f(_config->camera_zoom, _config->camera_zoom));
 				break;
 			case RB_Fluid:
-				_fluid = Fluid(*_config, _window->getSize(), _config->fluid_diffusion, _config->fluid_viscosity);
+				_fluid = Fluid(*_config, _window->getSize());
 				break;
 			}
 		}
