@@ -294,9 +294,9 @@ sf::Vector3f Boid::position_color(const RectFloat& border) const
 	const float s = _position.y / border.height();
 
 	return sf::Vector3f(
-		util::interpolate(_config->boid_color_top_left.x * 255, _config->boid_color_top_right.x * 255, _config->boid_color_bot_left.x * 255, _config->boid_color_bot_right.x * 255, t, s) / 255.0f,
-		util::interpolate(_config->boid_color_top_left.y * 255, _config->boid_color_top_right.y * 255, _config->boid_color_bot_left.y * 255, _config->boid_color_bot_right.y * 255, t, s) / 255.0f,
-		util::interpolate(_config->boid_color_top_left.z * 255, _config->boid_color_top_right.z * 255, _config->boid_color_bot_left.z * 255, _config->boid_color_bot_right.z * 255, t, s) / 255.0f);
+		util::interpolate(_config->boid_color_top_left.x * UINT8_MAX, _config->boid_color_top_right.x * UINT8_MAX, _config->boid_color_bot_left.x * UINT8_MAX, _config->boid_color_bot_right.x * UINT8_MAX, t, s) / 255.0f,
+		util::interpolate(_config->boid_color_top_left.y * UINT8_MAX, _config->boid_color_top_right.y * UINT8_MAX, _config->boid_color_bot_left.y * UINT8_MAX, _config->boid_color_bot_right.y * UINT8_MAX, t, s) / 255.0f,
+		util::interpolate(_config->boid_color_top_left.z * UINT8_MAX, _config->boid_color_top_right.z * UINT8_MAX, _config->boid_color_bot_left.z * UINT8_MAX, _config->boid_color_bot_right.z * UINT8_MAX, t, s) / 255.0f);
 }
 sf::Vector3f Boid::cycle_color(float dt)
 {

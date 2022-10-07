@@ -161,9 +161,9 @@ bool MainState::pre_update(float dt)
 					_background.load_prop(*_config, sf::Vector2i(_window->getSize()));
 
 					_window->set_clear_color(sf::Color(
-						(sf::Uint8)(_config->background_color.x * 255),
-						(sf::Uint8)(_config->background_color.y * 255),
-						(sf::Uint8)(_config->background_color.z * 255), 255));
+						(sf::Uint8)(_config->background_color.x * UINT8_MAX),
+						(sf::Uint8)(_config->background_color.y * UINT8_MAX),
+						(sf::Uint8)(_config->background_color.z * UINT8_MAX), UINT8_MAX));
 				}
 				break;
 			case RB_Audio:
@@ -342,11 +342,11 @@ bool MainState::post_update(float dt, float interp)
 					bc2.z = std::clamp(bc2.z, 0.0f, 1.0f);
 
 					const sf::Color c0 = sf::Color(
-						(sf::Uint8)(bc0.x * 255), (sf::Uint8)(bc0.y * 255), (sf::Uint8)(bc0.z * 255));
+						(sf::Uint8)(bc0.x * UINT8_MAX), (sf::Uint8)(bc0.y * UINT8_MAX), (sf::Uint8)(bc0.z * UINT8_MAX));
 					const sf::Color c1 = sf::Color(
-						(sf::Uint8)(bc1.x * 255), (sf::Uint8)(bc1.y * 255), (sf::Uint8)(bc1.z * 255));
+						(sf::Uint8)(bc1.x * UINT8_MAX), (sf::Uint8)(bc1.y * UINT8_MAX), (sf::Uint8)(bc1.z * UINT8_MAX));
 					const sf::Color c2 = sf::Color(
-						(sf::Uint8)(bc2.x * 255), (sf::Uint8)(bc2.y * 255), (sf::Uint8)(bc2.z * 255));
+						(sf::Uint8)(bc2.x * UINT8_MAX), (sf::Uint8)(bc2.y * UINT8_MAX), (sf::Uint8)(bc2.z * UINT8_MAX));
 
 					const auto v = (&boid - _boids.data()) * 3;
 
