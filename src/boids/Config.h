@@ -85,6 +85,7 @@ struct Config
 	float color_velocity_weight							{0.5f};
 	float color_rotation_weight							{-1.7f};
 	float color_audio_weight							{1.0f};
+	float color_fluid_weight							{1.0f};
 
 	sf::Vector3f boid_color_top_left					{0.73f, 0.33f, 0.82f};
 	sf::Vector3f boid_color_top_right					{1.0f, 0.0f, 1.0f};

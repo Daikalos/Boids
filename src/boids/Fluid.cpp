@@ -39,7 +39,7 @@ sf::Vector3f Fluid::get_color(const sf::Vector2f& origin) const
 
 	const float newT = scaled_speed - std::floorf(scaled_speed);
 
-	return vu::lerp(color1, color2, newT);
+	return vu::lerp(color1, color2, newT) * _config->color_fluid_weight;
 }
 
 void Fluid::add_density(int x, int y, float amount)

@@ -126,6 +126,7 @@ void Config::load_var(nlohmann::json& json)
 	color_velocity_weight		= color["color_velocity_weight"];
 	color_rotation_weight		= color["color_rotation_weight"];
 	color_audio_weight			= color["color_audio_weight"];
+	color_fluid_weight			= color["color_fluid_weight"];
 
 	if (color_flags & CF_Positional)
 	{

@@ -45,6 +45,7 @@
             "color_velocity_weight" : 0.5,
             "color_rotation_weight" : -1.7,
             "color_audio_weight" : 1.0,
+            "color_fluid_weight" : 1.0,
 
             "boid_color_top_left" : "255 20 255",
             "boid_color_top_right" : "150 0 255",
