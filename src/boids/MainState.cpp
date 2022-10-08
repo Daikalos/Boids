@@ -207,12 +207,12 @@ bool MainState::update(float dt)
 			}
 		}
 	}
-	if (context().input_handler->get_scroll_down())
+	if (context().input_handler->get_key_held(sf::Keyboard::Key::Delete))
 	{
 		if (_boids.size() > _config->boid_count)
 		{
-			std::size_t remove_amount = (_boids.size() - _config->boid_count) >= 50 ? 
-				50 : _boids.size() - _config->boid_count;
+			std::size_t remove_amount = (_boids.size() - _config->boid_count) >= _config->boid_remove_amount ? 
+				_config->boid_remove_amount : _boids.size() - _config->boid_count;
 
 			for (std::size_t i = 0; i < remove_amount; ++i)
 				_boids.pop_back();
