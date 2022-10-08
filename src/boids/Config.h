@@ -200,6 +200,10 @@ struct Config
 		sf::Vector3f(1.0f, 0.1f, 1.0f)
 	};
 
+	int boid_add_amount									{5};
+	float boid_add_mouse_diff							{1.0f};
+	int boid_remove_amount								{50};
+
 	bool steer_enabled									{true};
 	float steer_towards_factor							{0.9f};
 	float steer_away_factor								{0.9f};
@@ -218,6 +222,7 @@ struct Config
 	bool vertical_sync									{true};
 	int max_framerate									{200};
 	float physics_update_freq							{60.0f};
+	int policy_threshold								{1500};
 
 	bool debug_enabled									{false};
 	float debug_update_freq								{0.5f};

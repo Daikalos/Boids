@@ -52,7 +52,7 @@ MainState::MainState(StateStack& stack, Context context, Config& config) :
 		get_mouse_world_position(*_window)) / _config->fluid_scale;
 	_fluid_mouse_pos_prev = _fluid_mouse_pos;
 
-    _policy = _config->boid_count <= 1500 ? Policy::unseq : Policy::par_unseq;
+    _policy = _config->boid_count <= _config->policy_threshold ? Policy::unseq : Policy::par_unseq;
 }
 
 bool MainState::handle_event(const sf::Event& event)
@@ -107,10 +107,6 @@ bool MainState::pre_update(float dt)
 				break;
 			case RB_Boids:
 				{
-					_policy = _config->boid_count <= 1500 ? Policy::unseq : Policy::par_unseq;
-
-					_vertices.resize(_config->boid_count * 3);
-
 					if (_config->boid_count > prev.boid_count) // new is larger
 					{
 						_boids.reserve(_config->boid_count);
@@ -134,9 +130,12 @@ bool MainState::pre_update(float dt)
 							_proxy.begin(), _proxy.end(),
 							[this](const int index)
 							{
-								return index >= _config->boid_count;
+								return index >= _boids.size();
 							}), _proxy.end());
 					}
+
+					_vertices.resize(_boids.size() * 3);
+					_policy = _boids.size() <= _config->policy_threshold ? Policy::unseq : Policy::par_unseq;
 				}
 				break;
 			case RB_BoidsCycle:
@@ -192,6 +191,45 @@ bool MainState::update(float dt)
 
 	_mouse_pos = sf::Vector2f(context().camera->
 		get_mouse_world_position(*_window));
+
+	if (context().input_handler->get_button_held(sf::Mouse::Middle))
+	{
+		const sf::Vector2f amount = vu::abs(_mouse_pos - _mouse_pos_prev);
+		if (vu::distance(amount) > _config->boid_add_mouse_diff)
+		{
+			for (int i = 0; i < _config->boid_add_amount; ++i)
+			{
+				_boids.emplace_back(*_config, _mouse_pos);
+				_proxy.push_back(_boids.size() - 1);
+
+				_vertices.resize(_boids.size() * 3);
+				_policy = _boids.size() <= _config->policy_threshold ? Policy::unseq : Policy::par_unseq;
+			}
+		}
+	}
+	if (context().input_handler->get_scroll_down())
+	{
+		if (_boids.size() > _config->boid_count)
+		{
+			std::size_t remove_amount = (_boids.size() - _config->boid_count) >= 50 ? 
+				50 : _boids.size() - _config->boid_count;
+
+			for (std::size_t i = 0; i < remove_amount; ++i)
+				_boids.pop_back();
+
+			_proxy.erase(std::remove_if(
+				_proxy.begin(), _proxy.end(),
+				[this](const int index)
+				{
+					return index >= _boids.size();
+				}), _proxy.end());
+
+			_vertices.resize(_boids.size() * 3);
+			_policy = _boids.size() <= _config->policy_threshold ? Policy::unseq : Policy::par_unseq;
+		}
+	}
+
+	_mouse_pos_prev = _mouse_pos;
 
 	if (_config->impulse_enabled && context().input_handler->get_button_pressed(sf::Mouse::Button::Left))
 		_impulses.push_back(Impulse(_mouse_pos, _config->impulse_speed, _config->impulse_size, -_config->impulse_size));
@@ -262,7 +300,7 @@ bool MainState::fixed_update(float dt)
 							(hold_right ? -1.0f : 0.0f);
 
 						const float length_opt = vu::distance_opt(dir);
-						const float weight = 15.0f / std::sqrtf(length_opt); // hard coded because cant update config.. 
+						const float weight = 15.0f / (std::sqrtf(length_opt) + FLT_EPSILON); // hard coded because cant update config.. 
 
 						boid.steer_towards(dir, length_opt, _config->steer_towards_factor * weight * factor);
 					}
@@ -274,7 +312,7 @@ bool MainState::fixed_update(float dt)
 						if (length_sq <= _config->predator_distance)
 						{
 							float weight = std::sqrtf(length_sq / _config->predator_distance);
-							boid.steer_towards(dir, -_config->predator_factor / weight);
+							boid.steer_towards(dir, -_config->predator_factor / (weight + FLT_EPSILON));
 						}
 					}
 

@@ -85,7 +85,7 @@ namespace vu
 	template<Arithmetic T>
 	static constexpr sf::Vector2<T> normalize(sf::Vector2<T> vector, const float length, const float radius)
 	{
-		if (length < FLT_EPSILON)
+		if (length <= FLT_EPSILON)
 			return vector;
 
 		vector.x *= (radius / length);

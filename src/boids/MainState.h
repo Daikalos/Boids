@@ -49,6 +49,7 @@ private:
 	RectFloat					_border;
 
 	sf::Vector2f				_mouse_pos;
+	sf::Vector2f				_mouse_pos_prev;
 
 	sf::Vector2i				_fluid_mouse_pos;
 	sf::Vector2i				_fluid_mouse_pos_prev;

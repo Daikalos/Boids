@@ -163,6 +163,10 @@
 
         "misc" : 
         {
+            "boid_add_amount" : 5,
+            "boid_add_mouse_diff" : 1.0,
+            "boid_remove_amount" : 50,
+
             "steer_enabled" : true,
             "steer_towards_factor" : 0.9,
             "steer_away_factor" : 0.9,
@@ -181,6 +185,7 @@
             "vertical_sync" : true,
             "max_framerate" : 200,
             "physics_update_freq" : 60,
+            "policy_threshold" : 1500,
 
             "debug_enabled" : false,
             "debug_update_freq" : 0.5,

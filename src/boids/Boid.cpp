@@ -82,9 +82,6 @@ void Boid::flock(const Grid& grid, std::span<const Boid> boids, std::span<const 
 	neighbour_indicies[2] = grid.at_pos(grid_cell.x, y_neighbor);	// top or bot of current
 	neighbour_indicies[3] = grid.at_pos(x_neighbor, y_neighbor);	// top left/right bot left/right of current
 
-	std::string a = std::to_string(sizeof(Boid));
-	std::puts(a.c_str());
-
 	for (int i = 0; i < neighbours; ++i)
 	{
 		const int grid_cell_index = neighbour_indicies[i];

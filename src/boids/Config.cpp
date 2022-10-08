@@ -193,6 +193,10 @@ void Config::load_var(nlohmann::json& json)
 
 	convert_to_color(impulse_colors, color["impulse_colors"]);
 
+	boid_add_amount				= misc["boid_add_amount"];
+	boid_add_mouse_diff			= misc["boid_add_mouse_diff"];
+	boid_remove_amount			= misc["boid_remove_amount"];
+
 	steer_enabled				= misc["steer_enabled"];
 	steer_towards_factor		= misc["steer_towards_factor"];
 	steer_away_factor			= misc["steer_away_factor"];
@@ -211,6 +215,7 @@ void Config::load_var(nlohmann::json& json)
 	vertical_sync				= misc["vertical_sync"];
 	max_framerate				= misc["max_framerate"];
 	physics_update_freq			= misc["physics_update_freq"];
+	policy_threshold			= misc["policy_threshold"];
 
 	debug_enabled				= misc["debug_enabled"];
 	debug_update_freq			= misc["debug_update_freq"];
