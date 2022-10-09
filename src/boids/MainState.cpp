@@ -201,10 +201,10 @@ bool MainState::update(float dt)
 			{
 				_boids.emplace_back(*_config, _mouse_pos);
 				_proxy.push_back((std::uint32_t)(_boids.size() - 1));
-
-				_vertices.resize(_boids.size() * 3);
-				_policy = _boids.size() <= _config->policy_threshold ? Policy::unseq : Policy::par_unseq;
 			}
+
+			_vertices.resize(_boids.size() * 3);
+			_policy = _boids.size() <= _config->policy_threshold ? Policy::unseq : Policy::par_unseq;
 		}
 	}
 	if (context().input_handler->get_key_held(sf::Keyboard::Key::Delete))

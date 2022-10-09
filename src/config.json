@@ -3,8 +3,8 @@
     {
         "background" :
         {
-            "background_color" : "0 0 0",
-            "background_texture" : "",
+            "background_color" : "255 255 255",
+            "background_texture" : "background.jpg",
             "background_position_x" : 0,
             "background_position_y" : 0,
             "background_fit_screen" : true,
@@ -15,20 +15,20 @@
 
         "boid" :
         {
-            "boid_count" : 2500,
-            "boid_size_width" : 25.0,
-            "boid_size_height" : 11.0,
-            "boid_max_speed" : 370.0,
-            "boid_min_speed" : 160.0,
+            "boid_count" : 6000,
+            "boid_size_width" : 20.0,
+            "boid_size_height" : 10.0,
+            "boid_max_speed" : 200.0,
+            "boid_min_speed" : 70.0,
             "boid_max_steer" : 4.0,
-            "boid_view_angle" : 240.0
+            "boid_view_angle" : 280.0
         },
         
         "rules" :
         {
-            "sep_distance" : 30.0,
-            "ali_distance" : 60.0,
-            "coh_distance" : 60.0,
+            "sep_distance" : 15.0,
+            "ali_distance" : 30.0,
+            "coh_distance" : 40.0,
 
             "sep_weight" : 2.8,
             "ali_weight" : 1.5,
@@ -37,14 +37,14 @@
 
         "color" : 
         {
-            "color_options" : [ 2, 3, 4, 5, 7 ],
+            "color_options" : [ 2, 3, 4, 5, 6, 7 ],
 
             "color_positional_weight" : 1.0,
-            "color_cycle_weight" : 0.5,
-            "color_density_weight" : 0.9,
+            "color_cycle_weight" : 0.2,
+            "color_density_weight" : 0.4,
             "color_velocity_weight" : 0.5,
-            "color_rotation_weight" : -1.7,
-            "color_audio_weight" : 1.0,
+            "color_rotation_weight" : -1.2,
+            "color_audio_weight" : 0.8,
             "color_fluid_weight" : 1.0,
 
             "boid_color_top_left" : "255 20 255",
@@ -105,33 +105,29 @@
                 "75 0 75"
             ],
 
-            "audio_responsive_apps" : [ ],
-            "audio_responsive_strength" : 4.75,
+            "audio_responsive_apps" : [ "Spotify.exe" ],
+            "audio_responsive_strength" : 5.5,
             "audio_responsive_limit" : 1.2,
             "audio_responsive_density" : 25,
             "audio_responsive_colors" : 
             [
-                "90 0 90",
-                "90 0 90",
-                "90 0 90",
+                "0 0 0",
+                "0 0 0",
+                "0 0 0",
                 "90 0 90",
                 "150 0 255",
-                "150 0 255",
-                "200 10 255",
-                "200 10 255",
-                "90 0 90",
-                "90 0 90",
-                "90 0 90",
+                "0 0 0",
+                "0 0 0",
                 "90 0 90",
                 "150 0 255",
                 "200 10 255",
-                "90 0 90"
+                "0 0 0"
             ],
 
             "impulse_enabled" : true,
             "impulse_size" : 50.0,
-            "impulse_speed" : 500.0,
-            "impulse_fade_distance" : 400.0,
+            "impulse_speed" : 400.0,
+            "impulse_fade_distance" : 300.0,
             "impulse_colors" :
             [
                 "255 20 255",
@@ -142,11 +138,11 @@
                 "90 0 90"
             ],
 
-            "fluid_scale" : 10,
-            "fluid_mouse_strength" : 1.0,
-            "fluid_color_vel" : 0.1,
+            "fluid_scale" : 25,
+            "fluid_mouse_strength" : 0.8,
+            "fluid_color_vel" : 0.3,
             "fluid_diffusion" : 0.0,
-            "fluid_viscosity" : 0.00001,
+            "fluid_viscosity" : 0.000005,
             "fluid_colors" :
             [
                 "0 0 0",
@@ -179,11 +175,11 @@
             "turn_margin_factor" : 0.85,
             "turn_factor" : 275.0,
 
-            "grid_extra_cells" : 32,
+            "grid_extra_cells" : 16,
             "camera_enabled" : false,
             "camera_zoom" : 1.0,
-            "vertical_sync" : true,
-            "max_framerate" : 200,
+            "vertical_sync" : false,
+            "max_framerate" : 180,
             "physics_update_freq" : 60,
             "policy_threshold" : 1500,
 

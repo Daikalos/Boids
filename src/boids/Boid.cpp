@@ -1,9 +1,9 @@
 #include "Boid.h"
 
 Boid::Boid(Config& config, const sf::Vector2f& pos)
-	:  _config(&config), _position(pos)
+	:  _config(&config), _position(pos), _prev_position(pos)
 {
-	_velocity = vu::normalize(sf::Vector2f(
+	_prev_velocity = _velocity = vu::normalize(sf::Vector2f(
 		util::random(-1.0f, 1.0f),
 		util::random(-1.0f, 1.0f)), _config->boid_max_speed);
 
