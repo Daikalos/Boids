@@ -45,7 +45,7 @@ MainState::MainState(StateStack& stack, Context context, Config& config) :
 		_proxy.emplace_back(i);
     }
 
-	_vertices.resize(_config->boid_count * 3);
+	_vertices.resize(_boids.size() * 3);
 	_vertices.setPrimitiveType(sf::Triangles);
 
 	_fluid_mouse_pos = sf::Vector2i(context.camera->
@@ -160,9 +160,9 @@ bool MainState::pre_update(float dt)
 					_background.load_prop(*_config, sf::Vector2i(_window->getSize()));
 
 					_window->set_clear_color(sf::Color(
-						(sf::Uint8)(_config->background_color.x * UINT8_MAX),
-						(sf::Uint8)(_config->background_color.y * UINT8_MAX),
-						(sf::Uint8)(_config->background_color.z * UINT8_MAX), UINT8_MAX));
+						(sf::Uint8)(_config->background_color.x * 255.0f),
+						(sf::Uint8)(_config->background_color.y * 255.0f),
+						(sf::Uint8)(_config->background_color.z * 255.0f)));
 				}
 				break;
 			case RB_Audio:
@@ -200,7 +200,7 @@ bool MainState::update(float dt)
 			for (int i = 0; i < _config->boid_add_amount; ++i)
 			{
 				_boids.emplace_back(*_config, _mouse_pos);
-				_proxy.push_back(_boids.size() - 1);
+				_proxy.push_back((std::uint32_t)(_boids.size() - 1));
 
 				_vertices.resize(_boids.size() * 3);
 				_policy = _boids.size() <= _config->policy_threshold ? Policy::unseq : Policy::par_unseq;
@@ -380,11 +380,11 @@ bool MainState::post_update(float dt, float interp)
 					bc2.z = std::clamp(bc2.z, 0.0f, 1.0f);
 
 					const sf::Color c0 = sf::Color(
-						(sf::Uint8)(bc0.x * UINT8_MAX), (sf::Uint8)(bc0.y * UINT8_MAX), (sf::Uint8)(bc0.z * UINT8_MAX));
+						(sf::Uint8)(bc0.x * 255.0f), (sf::Uint8)(bc0.y * 255.0f), (sf::Uint8)(bc0.z * 255.0f));
 					const sf::Color c1 = sf::Color(
-						(sf::Uint8)(bc1.x * UINT8_MAX), (sf::Uint8)(bc1.y * UINT8_MAX), (sf::Uint8)(bc1.z * UINT8_MAX));
+						(sf::Uint8)(bc1.x * 255.0f), (sf::Uint8)(bc1.y * 255.0f), (sf::Uint8)(bc1.z * 255.0f));
 					const sf::Color c2 = sf::Color(
-						(sf::Uint8)(bc2.x * UINT8_MAX), (sf::Uint8)(bc2.y * UINT8_MAX), (sf::Uint8)(bc2.z * UINT8_MAX));
+						(sf::Uint8)(bc2.x * 255.0f), (sf::Uint8)(bc2.y * 255.0f), (sf::Uint8)(bc2.z * 255.0f));
 
 					const auto v = (&boid - _boids.data()) * 3;
 

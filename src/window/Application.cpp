@@ -12,9 +12,9 @@ Application::Application(const std::string& name) :
 	_camera.set_scale({ _config.camera_zoom, _config.camera_zoom });
 
 	_window.set_clear_color(sf::Color(
-		(sf::Uint8)_config.background_color.x * UINT8_MAX,
-		(sf::Uint8)_config.background_color.y * UINT8_MAX,
-		(sf::Uint8)_config.background_color.z * UINT8_MAX, UINT8_MAX));
+		(sf::Uint8)(_config.background_color.x * 255.0f),
+		(sf::Uint8)(_config.background_color.y * 255.0f),
+		(sf::Uint8)(_config.background_color.z * 255.0f)));
 }
 
 void Application::run()

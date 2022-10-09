@@ -41,9 +41,9 @@ public:
 		_background.setScale(desired_scale);
 
 		_background.setColor(set_color ? sf::Color(
-			(sf::Uint8)(config.background_color.x * UINT8_MAX),
-			(sf::Uint8)(config.background_color.y * UINT8_MAX),
-			(sf::Uint8)(config.background_color.z * UINT8_MAX)) : sf::Color(UINT8_MAX, UINT8_MAX, UINT8_MAX));
+			(sf::Uint8)(config.background_color.x * 255.0f),
+			(sf::Uint8)(config.background_color.y * 255.0f),
+			(sf::Uint8)(config.background_color.z * 255.0f)) : sf::Color(UINT8_MAX, UINT8_MAX, UINT8_MAX));
 	}
 
 	void draw(sf::RenderWindow& window) const
