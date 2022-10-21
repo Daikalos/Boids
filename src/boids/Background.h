@@ -48,7 +48,8 @@ public:
 
 	void draw(sf::RenderWindow& window) const
 	{
-		if (!_background.getTexture()->getMaximumSize())
+		if (_background.getTexture()->getSize().x == 0U ||
+			_background.getTexture()->getSize().y == 0U)
 			return;
 
 		window.draw(_background);

@@ -50,16 +50,16 @@ void Boid::flock(const Grid& grid, std::span<const Boid> boids, std::span<const 
 	sf::Vector2f ali;
 	sf::Vector2f coh;
 
-	int sep_count = 0;
-	int ali_count = 0;
-	int coh_count = 0;
+	std::uint16_t sep_count = 0;
+	std::uint16_t ali_count = 0;
+	std::uint16_t coh_count = 0;
 
 	const sf::Vector2f origin = get_origin();
 	const float vel_length = vu::distance(_velocity);
 
-	constexpr int neighbours = 4; // max 4 neighbours at a time
+	constexpr std::uint8_t neighbours = 4; // max 4 neighbours at a time
 
-	int neighbour_indicies[neighbours] {0};
+	int neighbour_indicies[neighbours];
 	sf::Vector2f neighbour[neighbours];
 
 	const sf::Vector2f grid_cell_raw = grid.relative_pos(origin);
@@ -82,7 +82,7 @@ void Boid::flock(const Grid& grid, std::span<const Boid> boids, std::span<const 
 	neighbour_indicies[2] = grid.at_pos(grid_cell.x, y_neighbor);	// top or bot of current
 	neighbour_indicies[3] = grid.at_pos(x_neighbor, y_neighbor);	// top left/right bot left/right of current
 
-	for (int i = 0; i < neighbours; ++i)
+	for (std::uint8_t i = 0; i < neighbours; ++i)
 	{
 		const int grid_cell_index = neighbour_indicies[i];
 		const int start = grid._cells_start_indices[grid_cell_index];
@@ -105,7 +105,7 @@ void Boid::flock(const Grid& grid, std::span<const Boid> boids, std::span<const 
 				neighbour_cell + b.get_relative_position(); // need to get relative to this boid
 
 			const sf::Vector2f dir	= vu::direction(_relative_pos, other_relative_pos);
-			const float distance_sq = std::fmaxf(vu::distance_sq(dir), FLT_EPSILON);
+			const float distance_sq = std::max(vu::distance_sq(dir), FLT_EPSILON);
 			const float angle		= vu::angle(_prev_velocity, dir, vel_length, std::sqrtf(distance_sq));
 
 			if (angle <= _config->boid_view_angle) // angle only effects cohesion and alignment

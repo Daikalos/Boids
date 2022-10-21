@@ -20,6 +20,16 @@ public:
 	virtual float get_volume() const noexcept = 0;
 };
 
+class AudioMeterEmpty final : public IAudioMeterInfo
+{
+public:
+	void initialize() override {}
+	void update(float dt) override {}
+	void clear() override {}
+
+	float get_volume() const noexcept { return 0.0f; }
+};
+
 #if defined(_WIN32)
 
 #include <mmdeviceapi.h>
@@ -30,16 +40,6 @@ public:
 #include <unordered_map>
 
 #define SAFE_RELEASE(p) { if ((p)) { (p)->Release(); (p) = NULL; } }
-
-class AudioMeterEmpty final : public IAudioMeterInfo
-{
-public:
-	void initialize() override {}
-	void update(float dt) override {}
-	void clear() override {}
-
-	float get_volume() const noexcept { return 0.0f; }
-};
 
 class AudioMeterWin final : public IAudioMeterInfo
 {
@@ -58,7 +58,7 @@ public:
 	[[nodiscard]] float get_volume() const noexcept override;
 
 private:
-	void refresh(std::wstring* comp);
+	void refresh(const std::wstring* comp);
 
 private:
 	Config*					_config				{nullptr};

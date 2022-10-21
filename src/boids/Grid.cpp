@@ -17,14 +17,12 @@ Grid::Grid(Config& config, const RectFloat& rect, const sf::Vector2f& cont_dims)
 
 	_count = _width * _height;
 
-	_cells_start_indices.resize(_count);
-	_cells_end_indices.resize(_count);
-
-	reset_buffers();
+	_cells_start_indices.resize(_count, -1);
+	_cells_end_indices.resize(_count, -1);
 }
 
 void Grid::reset_buffers()
 {
-	memset(_cells_start_indices.data(), -1, sizeof(int) * _cells_start_indices.size());
-	memset(_cells_end_indices.data(), -1, sizeof(int) * _cells_end_indices.size());
+	std::fill_n(_cells_start_indices.begin(), _cells_start_indices.size(), -1);
+	std::fill_n(_cells_end_indices.begin(), _cells_end_indices.size(), -1);
 }

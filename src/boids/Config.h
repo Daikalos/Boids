@@ -14,7 +14,7 @@ static const std::string RULES = "rules";
 static const std::string COLOR = "color";
 static const std::string MISC = "misc";
 
-enum ColorFlags
+enum ColorFlags : std::uint16_t
 {
 	CF_None			= 0,
 	CF_Positional	= 1 << 0,
@@ -28,7 +28,7 @@ enum ColorFlags
 
 inline ColorFlags operator|(ColorFlags a, ColorFlags b)
 {
-	return static_cast<ColorFlags>(static_cast<int>(a) | static_cast<int>(b));
+	return static_cast<ColorFlags>(static_cast<std::uint16_t>(a) | static_cast<std::uint16_t>(b));
 }
 inline ColorFlags operator|=(ColorFlags& a, ColorFlags b)
 {

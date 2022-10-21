@@ -80,7 +80,7 @@ void AudioMeterWin::update(float dt)
 		}
 	}
 
-	for (std::wstring process_name : _config->audio_responsive_apps)
+	for (const std::wstring& process_name : _config->audio_responsive_apps)
 	{
 		if (_processes_session_control.contains(process_name))
 		{
@@ -115,7 +115,7 @@ void AudioMeterWin::update(float dt)
 
 void AudioMeterWin::clear()
 {
-	for (std::pair<const std::wstring, std::pair<IAudioSessionControl*, IAudioMeterInformation*>>& element : _processes_session_control)
+	for (auto& element : _processes_session_control)
 	{
 		SAFE_RELEASE(element.second.first);
 		SAFE_RELEASE(element.second.second);
@@ -123,7 +123,7 @@ void AudioMeterWin::clear()
 	_processes_session_control.clear();
 }
 
-void AudioMeterWin::refresh(std::wstring* comp)
+void AudioMeterWin::refresh(const std::wstring* comp)
 {
 	IAudioSessionEnumerator* pSessionEnumerator = NULL;
 
@@ -152,7 +152,7 @@ void AudioMeterWin::refresh(std::wstring* comp)
 					LPWSTR sessionID;
 					if (SUCCEEDED(sessionControl2->GetSessionInstanceIdentifier(&sessionID)))
 					{
-						for (std::wstring pn : _config->audio_responsive_apps)
+						for (const std::wstring& pn : _config->audio_responsive_apps)
 						{
 							if (pn.size() == 0)
 								continue;
