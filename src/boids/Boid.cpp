@@ -11,6 +11,13 @@ Boid::Boid(Config& config, const sf::Vector2f& pos)
 		_cycle_time = util::random(0.0f, 1.0f);
 }
 
+Boid::Boid(Config& config, const sf::Vector2f& pos, const sf::Vector2f& velocity)
+	: _config(&config), _position(pos), _prev_position(pos), _velocity(velocity), _prev_velocity(velocity)
+{
+	if (_config->boid_cycle_colors_random)
+		_cycle_time = util::random(0.0f, 1.0f);
+}
+
 void Boid::pre_update(const Grid& grid) noexcept
 {
 	_prev_position = _position;

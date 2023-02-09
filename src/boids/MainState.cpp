@@ -194,13 +194,18 @@ bool MainState::update(float dt)
 
 	if (context().input_handler->get_button_held(sf::Mouse::Middle))
 	{
-		const sf::Vector2f amount = vu::abs(_mouse_pos - _mouse_pos_prev);
-		if (vu::distance(amount) > _config->boid_add_mouse_diff)
+		const sf::Vector2f mouse_delta = _mouse_pos - _mouse_pos_prev;
+		if (vu::distance(mouse_delta) > _config->boid_add_mouse_diff)
 		{
 			for (int i = 0; i < _config->boid_add_amount; ++i)
 			{
-				_boids.emplace_back(*_config, _mouse_pos);
-				_proxy.push_back((std::uint32_t)(_boids.size() - 1));
+				const sf::Vector2f center = sf::Vector2f(_config->boid_size_width, _config->boid_size_height) / 2.0f;
+				const sf::Vector2f init_pos = _mouse_pos - center;
+
+				Boid& boid = _boids.emplace_back(*_config, init_pos, 
+					vu::rotate_point(mouse_delta, {}, util::random(-1.0f, 1.0f)));
+
+				_proxy.push_back(static_cast<std::uint32_t>(_boids.size() - 1));
 			}
 
 			_vertices.resize(_boids.size() * 3);

@@ -18,6 +18,7 @@ class Boid
 {
 public:
 	Boid(Config& config, const sf::Vector2f& pos);
+	Boid(Config& config, const sf::Vector2f& pos, const sf::Vector2f& velocity);
 
 	void steer_towards(const sf::Vector2f& direction, const float length, const float weight);
 	void steer_towards(const sf::Vector2f& point, const float weight);
