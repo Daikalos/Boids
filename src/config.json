@@ -3,11 +3,11 @@
     {
         "background" :
         {
-            "background_color" : "255 255 255",
+            "background_color" : "0 0 0",
             "background_texture" : "background.jpg",
             "background_position_x" : 0,
             "background_position_y" : 0,
-            "background_fit_screen" : true,
+            "background_fit_screen" : false,
             "background_override_size" : false,
             "background_width" : 0,
             "background_height" : 0
@@ -16,21 +16,21 @@
         "boid" :
         {
             "boid_count" : 6000,
-            "boid_size_width" : 20.0,
-            "boid_size_height" : 10.0,
+            "boid_size_width" : 22.0,
+            "boid_size_height" : 11.0,
             "boid_max_speed" : 200.0,
-            "boid_min_speed" : 70.0,
+            "boid_min_speed" : 50.0,
             "boid_max_steer" : 4.0,
             "boid_view_angle" : 280.0
         },
         
         "rules" :
         {
-            "sep_distance" : 15.0,
-            "ali_distance" : 30.0,
+            "sep_distance" : 20.0,
+            "ali_distance" : 40.0,
             "coh_distance" : 40.0,
 
-            "sep_weight" : 2.8,
+            "sep_weight" : 3.8,
             "ali_weight" : 1.5,
             "coh_weight" : 1.8
         },
@@ -41,10 +41,10 @@
 
             "color_positional_weight" : 1.0,
             "color_cycle_weight" : 0.2,
-            "color_density_weight" : 0.4,
-            "color_velocity_weight" : 0.5,
+            "color_density_weight" : 0.5,
+            "color_velocity_weight" : 0.6,
             "color_rotation_weight" : -1.2,
-            "color_audio_weight" : 0.8,
+            "color_audio_weight" : 0.6,
             "color_fluid_weight" : 1.0,
 
             "boid_color_top_left" : "255 20 255",
@@ -183,7 +183,7 @@
             "physics_update_freq" : 60,
             "policy_threshold" : 1500,
 
-            "debug_enabled" : false,
+            "debug_enabled" : true,
             "debug_update_freq" : 0.5,
             "debug_toggle_key" : 85
         }

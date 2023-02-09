@@ -215,7 +215,7 @@ const sf::Vector3f& Boid::get_color() const noexcept
 { 
 	return _color; 
 }
-const std::uint16_t& Boid::get_cell_index() const noexcept
+std::uint16_t Boid::get_cell_index() const noexcept
 { 
 	return _cell_index; 
 }
@@ -269,18 +269,19 @@ bool Boid::turn_at_border(const RectFloat& border, float dt)
 bool Boid::teleport_at_border(const RectFloat& border)
 {
 	const sf::Vector2f current = _position;
+	const float boid_size_max = std::max(_config->boid_size_width, _config->boid_size_height);
 
-	if (_position.x + _config->boid_size_width < border.left)
+	if (_position.x + boid_size_max < border.left)
 		_position.x = (float)border.right;
 
 	if (_position.x > border.right)
-		_position.x = border.left - _config->boid_size_width;
+		_position.x = border.left - boid_size_max;
 
-	if (_position.y + _config->boid_size_height < border.top)
+	if (_position.y + boid_size_max < border.top)
 		_position.y = (float)border.bot;
 
 	if (_position.y > border.bot)
-		_position.y = border.top - _config->boid_size_height;
+		_position.y = border.top - boid_size_max;
 
 	return (current != _position);
 }

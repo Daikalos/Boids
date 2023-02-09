@@ -34,7 +34,7 @@ public: // Properties
 	[[nodiscard]] const sf::Vector2f& get_velocity() const noexcept;
 	[[nodiscard]] const sf::Vector2f& get_prev_velocity() const noexcept;
 	[[nodiscard]] const sf::Vector3f& get_color() const noexcept;
-	[[nodiscard]] const std::uint16_t& get_cell_index() const noexcept;
+	[[nodiscard]] std::uint16_t get_cell_index() const noexcept;
 
 	[[nodiscard]] sf::Vector2f get_origin() const noexcept;
 	[[nodiscard]] sf::Vector2f get_prev_origin() const noexcept;

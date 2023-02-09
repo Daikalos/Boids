@@ -272,7 +272,7 @@ bool MainState::fixed_update(float dt)
 		});
 
 	std::sort(_proxy.begin(), _proxy.end(),
-		[this](const std::uint32_t i0, const std::uint32_t i1)
+		[this](const std::uint32_t& i0, const std::uint32_t& i1)
 		{
 			return _boids[i0].get_cell_index() < _boids[i1].get_cell_index();
 		});

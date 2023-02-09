@@ -49,7 +49,7 @@ std::vector<Rebuild> Config::refresh(Config& prev)
 
 	load();
 
-	if (prev.sep_distance != sep_distance || prev.ali_distance != ali_distance || prev.coh_distance != coh_distance || prev.turn_at_border != turn_at_border)
+	if (prev.sep_distance != sep_distance || prev.ali_distance != ali_distance || prev.coh_distance != coh_distance || prev.boid_size_width != boid_size_width || prev.boid_size_height != boid_size_height || prev.turn_at_border != turn_at_border)
 		result.push_back(RB_Grid);
 	if (prev.boid_count != boid_count)
 		result.push_back(RB_Boids);
