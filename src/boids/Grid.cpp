@@ -1,9 +1,9 @@
 #include "Grid.h"
 
-Grid::Grid(Config& config, const RectFloat& rect, const sf::Vector2f& cont_dims)
+Grid::Grid(const RectFloat& rect, const sf::Vector2f& cont_dims)
 	: _rect(rect), _cont_dims(cont_dims)
 {
-	float boid_size_max = std::max(config.boid_size_width, config.boid_size_height);
+	float boid_size_max = std::max(Config::GetInstance().boid_size_width, Config::GetInstance().boid_size_height);
 
 	_rect.top_left -= sf::Vector2f(boid_size_max, boid_size_max) / 2.0f;
 	_rect.bot_right += sf::Vector2f(boid_size_max, boid_size_max) / 2.0f;

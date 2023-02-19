@@ -1,7 +1,6 @@
 #include "Debug.h"
 
-Debug::Debug(Config& config) 
-	: _config(&config), _update_freq_max(_config->debug_update_freq) 
+Debug::Debug() : _update_freq_max(Config::GetInstance().debug_update_freq) 
 { 
 
 }
@@ -43,10 +42,10 @@ void Debug::update(const InputHandler& input_handler, float dt)
 {
 	_refresh = false;
 
-	if (!_config->debug_enabled)
+	if (!Config::GetInstance().debug_enabled)
 		return;
 
-	if (input_handler.get_key_pressed(static_cast<sf::Keyboard::Key>(_config->debug_toggle_key)))
+	if (input_handler.get_key_pressed(static_cast<sf::Keyboard::Key>(Config::GetInstance().debug_toggle_key)))
 		toggle();
 
 	if (!_enabled)
@@ -56,12 +55,12 @@ void Debug::update(const InputHandler& input_handler, float dt)
 	if (_update_freq <= 0.0f)
 	{
 		_debug_info = 
-			"\nCONFIG STATUS: " + std::string(_config->load_status ? "SUCCESS" : "FAILED TO LOAD") +
-			"\n\nBOIDS: " + std::to_string(_config->boid_count) +
+			"\nCONFIG STATUS: " + std::string(Config::GetInstance().load_status ? "SUCCESS" : "FAILED TO LOAD") +
+			"\n\nBOIDS: " + std::to_string(Config::GetInstance().boid_count) +
 			"\nFPS: " + std::to_string((int)(1.0f / dt));
 
 		_refresh = true;
-		_update_freq = _config->debug_update_freq;
+		_update_freq = Config::GetInstance().debug_update_freq;
 	}
 
 	_debug_text_info.setString(
@@ -70,7 +69,7 @@ void Debug::update(const InputHandler& input_handler, float dt)
 
 void Debug::draw(sf::RenderWindow& window) const
 {
-	if (!_config->debug_enabled)
+	if (!Config::GetInstance().debug_enabled)
 		return;
 
 	window.draw(_debug_text_state);

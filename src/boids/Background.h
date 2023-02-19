@@ -19,31 +19,31 @@ public:
 			_background.setTexture(sf::Texture(), true);
 	}
 
-	void load_prop(Config& config, const sf::Vector2i& size)
+	void load_prop(const sf::Vector2i& size)
 	{
 		sf::Vector2f desired_scale = sf::Vector2f(1.0f, 1.0f);
 
-		if (config.background_fit_screen)
+		if (Config::GetInstance().background_fit_screen)
 			desired_scale = sf::Vector2f(
 				size.x / _background.getLocalBounds().width,
 				size.y / _background.getLocalBounds().height);
-		else if (config.background_override_size)
+		else if (Config::GetInstance().background_override_size)
 			desired_scale = sf::Vector2f(
-				config.background_width / _background.getLocalBounds().width,
-				config.background_height / _background.getLocalBounds().height);
+				Config::GetInstance().background_width / _background.getLocalBounds().width,
+				Config::GetInstance().background_height / _background.getLocalBounds().height);
 
-		bool set_color = config.background_color.x > FLT_EPSILON || config.background_color.y > FLT_EPSILON || config.background_color.z > FLT_EPSILON;
+		bool set_color = Config::GetInstance().background_color.x > FLT_EPSILON || Config::GetInstance().background_color.y > FLT_EPSILON || Config::GetInstance().background_color.z > FLT_EPSILON;
 
 		_background.setPosition(sf::Vector2f(
-			(float)config.background_position_x,
-			(float)config.background_position_y));
+			(float)Config::GetInstance().background_position_x,
+			(float)Config::GetInstance().background_position_y));
 
 		_background.setScale(desired_scale);
 
 		_background.setColor(set_color ? sf::Color(
-			(sf::Uint8)(config.background_color.x * 255.0f),
-			(sf::Uint8)(config.background_color.y * 255.0f),
-			(sf::Uint8)(config.background_color.z * 255.0f)) : sf::Color(UINT8_MAX, UINT8_MAX, UINT8_MAX));
+			(sf::Uint8)(Config::GetInstance().background_color.x * 255.0f),
+			(sf::Uint8)(Config::GetInstance().background_color.y * 255.0f),
+			(sf::Uint8)(Config::GetInstance().background_color.z * 255.0f)) : sf::Color(UINT8_MAX, UINT8_MAX, UINT8_MAX));
 	}
 
 	void draw(sf::RenderWindow& window) const

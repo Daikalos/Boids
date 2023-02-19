@@ -1,7 +1,7 @@
 #include "Fluid.h"
 
-Fluid::Fluid(Config& config, const sf::Vector2u& size)
-	: _config(&config), W(size.x / _config->fluid_scale), H(size.y / _config->fluid_scale), N(W * H)
+Fluid::Fluid(const sf::Vector2u& size)
+	: W(size.x / Config::GetInstance().fluid_scale), H(size.y / Config::GetInstance().fluid_scale), N(W * H)
 {
 	vx = std::make_unique<float[]>(N);
 	vy = std::make_unique<float[]>(N);
@@ -15,31 +15,31 @@ Fluid::Fluid(Config& config, const sf::Vector2u& size)
 
 sf::Vector3f Fluid::get_color(const sf::Vector2f& origin) const
 {
-	if (_config->fluid_colors.empty())
+	if (Config::GetInstance().fluid_colors.empty())
 		return sf::Vector3f();
 
-	const int x = (int)(origin.x / _config->fluid_scale);
-	const int y = (int)(origin.y / _config->fluid_scale);
+	const int x = (int)(origin.x / Config::GetInstance().fluid_scale);
+	const int y = (int)(origin.y / Config::GetInstance().fluid_scale);
 
 	const float vel_x = util::map_to_range(vx[safe_IX(x, y)],
-		-_config->fluid_color_vel, _config->fluid_color_vel, -1.0f, 1.0f);
+		-Config::GetInstance().fluid_color_vel, Config::GetInstance().fluid_color_vel, -1.0f, 1.0f);
 	const float vel_y = util::map_to_range(vy[safe_IX(x, y)],
-		-_config->fluid_color_vel, _config->fluid_color_vel, -1.0f, 1.0f);
+		-Config::GetInstance().fluid_color_vel, Config::GetInstance().fluid_color_vel, -1.0f, 1.0f);
 
-	const float bnd = (float)_config->fluid_colors.size() - 1.0f;
+	const float bnd = (float)Config::GetInstance().fluid_colors.size() - 1.0f;
 
 	float scaled_speed = vu::distance(sf::Vector2f(vel_x, vel_y)) * bnd;
 	scaled_speed = std::clamp(scaled_speed, 0.0f, bnd);
 
 	const int index1 = (int)scaled_speed;
-	const int index2 = ((int)scaled_speed + 1) % (int)_config->fluid_colors.size();
+	const int index2 = ((int)scaled_speed + 1) % (int)Config::GetInstance().fluid_colors.size();
 
-	const sf::Vector3f color1 = _config->fluid_colors[index1];
-	const sf::Vector3f color2 = _config->fluid_colors[index2];
+	const sf::Vector3f color1 = Config::GetInstance().fluid_colors[index1];
+	const sf::Vector3f color2 = Config::GetInstance().fluid_colors[index2];
 
 	const float newT = scaled_speed - std::floorf(scaled_speed);
 
-	return vu::lerp(color1, color2, newT) * _config->color_fluid_weight;
+	return vu::lerp(color1, color2, newT) * Config::GetInstance().color_fluid_weight;
 }
 
 void Fluid::add_density(int x, int y, float amount)
@@ -261,8 +261,8 @@ void Fluid::update(const float dt)
 	std::future<void> thread3;
 
 	{
-		thread1 = std::async(std::launch::deferred, diffuseFunc, vx_prev.get(), vx.get(), _config->fluid_viscosity, 1);
-		thread2 = std::async(std::launch::deferred, diffuseFunc, vy_prev.get(), vy.get(), _config->fluid_viscosity, 2);
+		thread1 = std::async(std::launch::deferred, diffuseFunc, vx_prev.get(), vx.get(), Config::GetInstance().fluid_viscosity, 1);
+		thread2 = std::async(std::launch::deferred, diffuseFunc, vy_prev.get(), vy.get(), Config::GetInstance().fluid_viscosity, 2);
 
 		thread1.wait();
 		thread2.wait();
@@ -282,7 +282,7 @@ void Fluid::update(const float dt)
 
 	{
 		thread1 = std::async(std::launch::deferred, projectFunc, vx.get(), vy.get(), vx_prev.get(), vy_prev.get());
-		thread2 = std::async(std::launch::deferred, diffuseFunc, density_prev.get(), density.get(), _config->fluid_diffusion, 0);
+		thread2 = std::async(std::launch::deferred, diffuseFunc, density_prev.get(), density.get(), Config::GetInstance().fluid_diffusion, 0);
 
 		thread1.wait();
 

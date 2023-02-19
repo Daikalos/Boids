@@ -21,7 +21,7 @@
 class MainState final : public State
 {
 public:
-	MainState(StateStack& stack, Context context, Config& config);
+	MainState(StateStack& stack, Context context);
 
 	bool handle_event(const sf::Event& event) override;
 
@@ -35,7 +35,6 @@ public:
 private:
 	Window*						_window;
 
-	Config*						_config;
 	Grid						_grid;
 	Debug						_debug;
 	IAudioMeterInfo::ptr		_audio_meter	{nullptr};

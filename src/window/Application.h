@@ -2,7 +2,6 @@
 
 #include <SFML/Graphics.hpp>
 
-#include "../boids/Config.h"
 #include "../boids/MainState.h"
 
 #include "Camera.h"
@@ -30,7 +29,6 @@ private:
 	void register_states();
 
 private:
-	Config			_config;
 	Camera			_camera;
 	Window			_window;
 	InputHandler	_input_handler;

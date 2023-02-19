@@ -11,7 +11,7 @@ class Grid
 {
 public:
 	Grid() = default;
-	Grid(Config& config, const RectFloat& rect, const sf::Vector2f& cont_dims);
+	Grid(const RectFloat& rect, const sf::Vector2f& cont_dims);
 
 public:
 	void reset_buffers();

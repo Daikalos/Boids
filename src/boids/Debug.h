@@ -11,7 +11,7 @@
 class Debug : public NonCopyable
 {
 public:
-	Debug(Config& config);
+	Debug();
 
 	void set_update_freq(float value);
 
@@ -27,8 +27,6 @@ private:
 	void toggle();
 
 private:
-	const Config*	_config				{nullptr};
-
 	float			_update_freq_max	{0.0f};
 	float			_update_freq		{0.0f};
 

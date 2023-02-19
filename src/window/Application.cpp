@@ -1,20 +1,19 @@
 #include "Application.h"
 
 Application::Application(const std::string& name) :
-	_window(name, sf::VideoMode().getDesktopMode(), WindowBorder::Fullscreen, sf::ContextSettings(), _config.vertical_sync, _config.max_framerate, _camera),
+	_window(name, sf::VideoMode().getDesktopMode(), WindowBorder::Fullscreen, sf::ContextSettings(), Config::GetInstance().vertical_sync, Config::GetInstance().max_framerate, _camera),
 	_input_handler(), 
 	_texture_holder(), 
 	_state_stack(State::Context(_window, _camera, _input_handler, _texture_holder, _font_holder))
 {
 	register_states();
-	_state_stack.push(States::ID::Main);
 
-	_camera.set_scale({ _config.camera_zoom, _config.camera_zoom });
+	_camera.set_scale({ Config::GetInstance().camera_zoom, Config::GetInstance().camera_zoom });
 
 	_window.set_clear_color(sf::Color(
-		(sf::Uint8)(_config.background_color.x * 255.0f),
-		(sf::Uint8)(_config.background_color.y * 255.0f),
-		(sf::Uint8)(_config.background_color.z * 255.0f)));
+		(sf::Uint8)(Config::GetInstance().background_color.x * 255.0f),
+		(sf::Uint8)(Config::GetInstance().background_color.y * 255.0f),
+		(sf::Uint8)(Config::GetInstance().background_color.z * 255.0f)));
 }
 
 void Application::run()
@@ -30,18 +29,20 @@ void Application::run()
 	int ticks = 0;
 	int death_spiral = 12; // guarantee prevention of infinite loop
 
+	_state_stack.push(States::ID::Main);
+
 	while (_window.isOpen())
 	{
 		dt = std::fminf(clock.restart().asSeconds(), 0.075f);
 		accumulator += dt;
 
-		dt_per_frame = 1.0f / std::fmaxf(_config.physics_update_freq, 1.0f);
+		dt_per_frame = 1.0f / std::fmaxf(Config::GetInstance().physics_update_freq, 1.0f);
 
 		_input_handler.update(dt);
 
 		process_input();
 
-		if (_config.camera_enabled)
+		if (Config::GetInstance().camera_enabled)
 			_camera.update(_input_handler, _window);
 
 		pre_update(dt);
@@ -107,5 +108,5 @@ void Application::draw()
 
 void Application::register_states()
 {
-	_state_stack.register_state<MainState>(States::ID::Main, _config);
+	_state_stack.register_state<MainState>(States::ID::Main);
 }

@@ -17,7 +17,7 @@
 class Fluid final
 {
 public:
-	Fluid(Config& config, const sf::Vector2u& size);
+	Fluid(const sf::Vector2u& size);
 
 	[[nodiscard]] sf::Vector3f get_color(const sf::Vector2f& origin) const;
 
@@ -44,8 +44,6 @@ private:
 	void project(float* u, float* v, float* p, float* div);
 
 private:
-	Config* _config;
-
 	int W, H, N;
 
 	std::unique_ptr<float[]> vx;

@@ -233,6 +233,16 @@ struct Config
 	bool load_status{false};
 
 public:
+	static Config& GetInstance() 
+	{
+		// switched to using singleton since it in this context, will never go beyond one allocation, 
+		// and because of the small scale of the application.
+
+		static Config instance;
+		return instance;
+	}
+
+public:
 	Config();
 
 	void load();

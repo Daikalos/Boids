@@ -2,17 +2,17 @@
 
 #if defined(_WIN32)
 
-AudioMeterWin::AudioMeterWin(Config& config, float refresh_freq)
-	: _config(&config), _refresh_freq_max(refresh_freq), _refresh_freq(_refresh_freq_max) {}
+AudioMeterWin::AudioMeterWin(float refresh_freq) 
+	: _refresh_freq_max(refresh_freq), _refresh_freq(_refresh_freq_max) {}
 
 AudioMeterWin::~AudioMeterWin()
 {
 	SAFE_RELEASE(_meter_info);
 	SAFE_RELEASE(_session_manager);
 
-	for (int i = 0; i < _config->audio_responsive_apps.size(); ++i)
+	for (int i = 0; i < Config::GetInstance().audio_responsive_apps.size(); ++i)
 	{
-		std::wstring& process_name = _config->audio_responsive_apps[i];
+		std::wstring& process_name = Config::GetInstance().audio_responsive_apps[i];
 
 		SAFE_RELEASE(_processes_session_control[process_name].first);
 		SAFE_RELEASE(_processes_session_control[process_name].second);
@@ -46,7 +46,7 @@ void AudioMeterWin::initialize()
 	if (FAILED(_device->Activate(__uuidof(IAudioSessionManager), CLSCTX_ALL, NULL, (void**)&_session_manager)))
 		return;
 
-	if (_config->audio_responsive_apps.size() > 0)
+	if (Config::GetInstance().audio_responsive_apps.size() > 0)
 	{
 		refresh(nullptr);
 	}
@@ -63,10 +63,10 @@ void AudioMeterWin::update(float dt)
 {
 	_volume = 0.0f;
 
-	if (!(_config->color_flags & CF_Audio))
+	if (!(Config::GetInstance().color_flags & CF_Audio))
 		return;
 
-	if (_config->audio_responsive_apps.size() == 0)
+	if (Config::GetInstance().audio_responsive_apps.size() == 0)
 	{
 		if (_meter_info)
 		{
@@ -80,7 +80,7 @@ void AudioMeterWin::update(float dt)
 		}
 	}
 
-	for (const std::wstring& process_name : _config->audio_responsive_apps)
+	for (const std::wstring& process_name : Config::GetInstance().audio_responsive_apps)
 	{
 		if (_processes_session_control.contains(process_name))
 		{
@@ -152,7 +152,7 @@ void AudioMeterWin::refresh(const std::wstring* comp)
 					LPWSTR sessionID;
 					if (SUCCEEDED(sessionControl2->GetSessionInstanceIdentifier(&sessionID)))
 					{
-						for (const std::wstring& pn : _config->audio_responsive_apps)
+						for (const std::wstring& pn : Config::GetInstance().audio_responsive_apps)
 						{
 							if (pn.size() == 0)
 								continue;

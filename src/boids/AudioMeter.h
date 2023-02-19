@@ -47,7 +47,7 @@ private:
 	using ProcessInfo = typename std::pair<IAudioSessionControl*, IAudioMeterInformation*>;
 
 public:
-	AudioMeterWin(Config& config, float refresh_freq);
+	AudioMeterWin(float refresh_freq);
 	~AudioMeterWin();
 
 public:
@@ -61,8 +61,6 @@ private:
 	void refresh(const std::wstring* comp);
 
 private:
-	Config*					_config				{nullptr};
-
 	float					_volume				{0.0f};
 
 	float					_refresh_freq_max	{0.0f};
