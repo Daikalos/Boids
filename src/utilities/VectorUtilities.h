@@ -66,41 +66,6 @@ namespace vu
 		return distance_opt(direction(from, to));
 	}
 
-	static inline float acosf(float x)
-	{
-		const float negate = static_cast<float>(x < 0);
-
-		x = std::fabsf(x);
-
-		float ret = -0.0187293f;
-		ret = ret * x;
-		ret = ret + 0.0742610f;
-		ret = ret * x;
-		ret = ret - 0.2121144f;
-		ret = ret * x;
-		ret = ret + 1.5707288f;
-		ret = ret * std::sqrtf(1.0f - x);
-		ret = ret - 2 * negate * ret;
-
-		return negate * 3.14159265358979f + ret;
-	}
-
-	template<Arithmetic T>
-	static constexpr float angle(const sf::Vector2<T>& vector)
-	{
-		return std::atan2f(vector.y, vector.x);
-	}
-	template<Arithmetic T>
-	static inline constexpr float angle(const sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs, const float lhs_length, const float rhs_length)
-	{
-		return acosf(dot(lhs, rhs) / (lhs_length * rhs_length));
-	}
-	template<Arithmetic T>
-	static constexpr float angle(const sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs)
-	{
-		return angle(lhs, rhs, distance(lhs), distance(rhs));
-	}
-
 	template<Arithmetic T>
 	static constexpr sf::Vector2<T> normalize(sf::Vector2<T> vector, const float length, const float radius)
 	{

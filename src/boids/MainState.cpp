@@ -346,8 +346,8 @@ bool MainState::post_update(float dt, float interp)
 					const sf::Vector2f ori = boid.get_origin();
 					const sf::Vector2f prev_ori = boid.get_prev_origin();
 
-					const float rot = vu::angle(boid.get_velocity());
-					const float prev_rot = vu::angle(boid.get_prev_velocity());
+					const float rot = boid.get_velocity().angle().asRadians();
+					const float prev_rot = boid.get_prev_velocity().angle().asRadians();
 
 					const sf::Vector2f pointA = vu::rotate_point({ ori.x + (Config::GetInstance().boid_size_width / 2), ori.y									}, ori, rot); // middle right tip
 					const sf::Vector2f pointB = vu::rotate_point({ ori.x - (Config::GetInstance().boid_size_width / 2), ori.y - (Config::GetInstance().boid_size_height / 2)	}, ori, rot); // top left corner

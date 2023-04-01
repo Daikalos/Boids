@@ -89,6 +89,8 @@ void Boid::flock(const Grid& grid, std::span<const Boid> boids, std::span<const 
 	neighbour_indicies[2] = grid.at_pos(grid_cell.x, y_neighbor);	// top or bot of current
 	neighbour_indicies[3] = grid.at_pos(x_neighbor, y_neighbor);	// top left/right bot left/right of current
 
+	Config& config = Config::GetInstance();
+
 	for (std::uint8_t i = 0; i < neighbours; ++i)
 	{
 		const int grid_cell_index = neighbour_indicies[i];
@@ -112,23 +114,23 @@ void Boid::flock(const Grid& grid, std::span<const Boid> boids, std::span<const 
 
 			const sf::Vector2f dir	= vu::direction(_relative_pos, other_relative_pos);
 			const float distance_sq = std::max(vu::distance_sq(dir), FLT_EPSILON);
-			const float angle		= vu::angle(_prev_velocity, dir, vel_length, std::sqrtf(distance_sq));
+			const float angle		= _prev_velocity.angleTo(dir).asRadians();
 
-			if (angle <= Config::GetInstance().boid_view_angle) // angle only effects cohesion and alignment
+			if (angle >= -config.boid_view_angle && angle <= config.boid_view_angle) // angle only effects cohesion and alignment
 			{
-				if (distance_sq <= Config::GetInstance().coh_distance)
+				if (distance_sq <= config.coh_distance)
 				{
 					coh += origin + dir; // Head towards center of boids
 					++coh_count;
 				}
-				if (distance_sq <= Config::GetInstance().ali_distance)
+				if (distance_sq <= config.ali_distance)
 				{
 					ali += b.get_prev_velocity(); // Align with every boids velocity
 					++ali_count;
 				}
 			}
 
-			if (distance_sq <= Config::GetInstance().sep_distance)
+			if (distance_sq <= config.sep_distance)
 			{
 				sep += -dir / distance_sq;
 				++sep_count;
@@ -136,14 +138,14 @@ void Boid::flock(const Grid& grid, std::span<const Boid> boids, std::span<const 
 		}
 	}
 
-	if (coh_count) coh = vu::normalize(vu::direction(origin, coh / (float)coh_count), Config::GetInstance().boid_max_speed);
-	if (ali_count) ali = vu::normalize(ali / (float)ali_count, Config::GetInstance().boid_max_speed);
-	if (sep_count) sep = vu::normalize(sep / (float)sep_count, Config::GetInstance().boid_max_speed);
+	if (coh_count) coh = vu::normalize(vu::direction(origin, coh / (float)coh_count), config.boid_max_speed);
+	if (ali_count) ali = vu::normalize(ali / (float)ali_count, config.boid_max_speed);
+	if (sep_count) sep = vu::normalize(sep / (float)sep_count, config.boid_max_speed);
 
 	_velocity +=
-		steer_at(coh) * Config::GetInstance().coh_weight +
-		steer_at(ali) * Config::GetInstance().ali_weight +
-		steer_at(sep) * Config::GetInstance().sep_weight;
+		steer_at(coh) * config.coh_weight +
+		steer_at(ali) * config.ali_weight +
+		steer_at(sep) * config.sep_weight;
 
 	_density = std::max(std::max(coh_count, ali_count), sep_count);
 }
@@ -365,7 +367,7 @@ sf::Vector3f Boid::rotation_color() const
 	if (Config::GetInstance().boid_rotation_colors.empty()) [[unlikely]]
 		return sf::Vector3f();
 
-	const float rotation_percentage = (vu::angle(_velocity) + float(M_PI)) / (2.0f * float(M_PI));
+	const float rotation_percentage = (_velocity.angle().asRadians() + float(M_PI)) / (2.0f * float(M_PI));
 
 	const float scaled_rotation = rotation_percentage * (float)(Config::GetInstance().boid_rotation_colors.size() - 1);
 
