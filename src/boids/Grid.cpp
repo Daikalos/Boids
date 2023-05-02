@@ -1,30 +1,54 @@
 #include "Grid.h"
 
 Grid::Grid(const RectFloat& rect, const sf::Vector2f& cont_dims)
-	: _rect(rect), _cont_dims(cont_dims)
+	: rootRect(rect), contDims(cont_dims)
 {
-	float boid_size_max = std::max(Config::GetInstance().boid_size_width, Config::GetInstance().boid_size_height);
+	float boid_size_max = std::max(Config::Inst().BoidWidth, Config::Inst().BoidHeight);
 
-	_rect.top_left -= sf::Vector2f(boid_size_max, boid_size_max) / 2.0f;
-	_rect.bot_right += sf::Vector2f(boid_size_max, boid_size_max) / 2.0f;
+	rootRect.top_left -= sf::Vector2f(boid_size_max, boid_size_max) / 2.0f;
+	rootRect.bot_right += sf::Vector2f(boid_size_max, boid_size_max) / 2.0f;
 
-	float a = _rect.width() / _cont_dims.x;
-	float b = _rect.height() / _cont_dims.y;
+	float a = rootRect.width() / contDims.x;
+	float b = rootRect.height() / contDims.y;
 
-	_cont_dims.x = _rect.width() / std::floorf(a);
-	_cont_dims.y = _rect.height() / std::floorf(b);
+	contDims.x = rootRect.width() / std::floorf(a);
+	contDims.y = rootRect.height() / std::floorf(b);
 
-	_width = (int)a;
-	_height = (int)b;
+	m_width = (int)a;
+	m_height = (int)b;
 
-	_count = _width * _height;
+	m_count = m_width * m_height;
 
-	_cells_start_indices.resize(_count, -1);
-	_cells_end_indices.resize(_count, -1);
+	startIndices.resize(m_count, -1);
+	endIndices.resize(m_count, -1);
 }
 
-void Grid::reset_buffers()
+sf::Vector2f Grid::RelativePos(const sf::Vector2f& position) const
 {
-	std::fill_n(_cells_start_indices.begin(), _cells_start_indices.size(), -1);
-	std::fill_n(_cells_end_indices.begin(), _cells_end_indices.size(), -1);
+	return (position - rootRect.top_left) / contDims;
+}
+int Grid::AtPos(const sf::Vector2f& position) const
+{
+	return AtPos(sf::Vector2i(RelativePos(position)));
+}
+int Grid::AtPos(const sf::Vector2i& position) const noexcept
+{
+	return AtPos(position.x, position.y);
+}
+int Grid::AtPos(int x, int y) const noexcept
+{
+	x = util::wrap(x, 0, m_width);
+	y = util::wrap(y, 0, m_height);
+
+	return x + y * m_width;
+}
+sf::Vector2i Grid::AtPos(const int i) const
+{
+	return sf::Vector2i(i % m_width, i / m_width);
+}
+
+void Grid::ResetBuffers()
+{
+	std::fill_n(startIndices.begin(), startIndices.size(), -1);
+	std::fill_n(endIndices.begin(), endIndices.size(), -1);
 }

@@ -7,33 +7,31 @@
 #include "Camera.h"
 #include "Window.h"
 #include "ResourceHolder.hpp"
-#include "StateStack.h"
 
 class Application
 {
 public:
 	Application(const std::string& name);
 
-	void run();
+public:
+	void Run();
 
 private:
-	void process_input();
+	void ProcessInput();
 
-	void pre_update(float dt);
-	void update(float dt);
-	void fixed_update(float dt); // after update, before post_update
-	void post_update(float dt, float interp);
+	void PreUpdate(float dt);
+	void Update(float dt);
+	void FixedUpdate(float dt); // after update, before post_update
+	void PostUpdate(float dt, float interp);
 
-	void draw();
-		
-	void register_states();
+	void Draw();
 
 private:
-	Camera			_camera;
-	Window			_window;
-	InputHandler	_input_handler;
-	TextureHolder	_texture_holder;
-	FontHolder		_font_holder;
-	StateStack		_state_stack;
+	Camera			m_camera;
+	Window			m_window;
+	InputHandler	m_inputHandler;
+	TextureHolder	m_textureHolder;
+	FontHolder		m_fontHolder;
+	MainState		m_mainState;
 };
 

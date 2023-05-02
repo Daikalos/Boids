@@ -1,85 +1,77 @@
 #include "Debug.h"
 
-Debug::Debug() : _update_freq_max(Config::GetInstance().debug_update_freq) 
-{ 
+Debug::Debug() : m_updateFreqMax(Config::Inst().DebugUpdateFreq) {}
 
+bool Debug::GetRefresh() const noexcept			{ return m_refresh; }
+const char* Debug::GetState() const noexcept	{ return m_enabled ? "DEBUG ENABLED" : "DEBUG DISABLED"; }
+
+void Debug::SetUpdateFreq(float value)
+{
+	m_updateFreqMax = value;
 }
 
-void Debug::set_update_freq(float value)
+void Debug::Load(const FontHolder& fontHolder)
 {
-	_update_freq_max = value;
-}
-
-bool Debug::get_refresh() const noexcept
-{
-	return _refresh;
-}
-
-std::string Debug::get_state() const noexcept
-{
-	return _enabled ? "DEBUG ENABLED" : "DEBUG DISABLED";
-}
-
-void Debug::load(const FontHolder& _font_holder)
-{
-	if (_font_holder.exists(FontID::F8Bit))
+	if (fontHolder.Exists(FontID::F8Bit))
 	{
-		_debug_text_state.setFont(_font_holder.get(FontID::F8Bit));
-		_debug_text_info.setFont(_font_holder.get(FontID::F8Bit));
+		const sf::Font& font = fontHolder.Get(FontID::F8Bit);
+
+		m_textState.setFont(font);
+		m_textInfo.setFont(font);
 	}
 
-	_debug_text_state.setPosition(sf::Vector2f(32, 32));
-	_debug_text_state.setCharacterSize(26);
+	m_textState.setPosition(sf::Vector2f(32, 32));
+	m_textState.setCharacterSize(26);
 
-	_debug_text_info.setPosition(sf::Vector2f(48, 48));
-	_debug_text_info.setCharacterSize(24);
+	m_textInfo.setPosition(sf::Vector2f(48, 48));
+	m_textInfo.setCharacterSize(24);
 
-	_debug_text_state.setString(get_state() + " (PRESS THE TOGGLE KEY TO ENABLE)");
-	_debug_text_info.setString("");
+	m_textState.setString(GetState() + std::string(" (PRESS THE TOGGLE KEY TO ENABLE)"));
+	m_textInfo.setString("");
 }
 
-void Debug::update(const InputHandler& input_handler, float dt)
+void Debug::Update(const InputHandler& inputHandler, float dt)
 {
-	_refresh = false;
+	m_refresh = false;
 
-	if (!Config::GetInstance().debug_enabled)
+	if (!Config::Inst().DebugEnabled)
 		return;
 
-	if (input_handler.get_key_pressed(static_cast<sf::Keyboard::Key>(Config::GetInstance().debug_toggle_key)))
-		toggle();
+	if (inputHandler.GetKeyPressed(static_cast<sf::Keyboard::Key>(Config::Inst().DebugToggleKey)))
+		Toggle();
 
-	if (!_enabled)
+	if (!m_enabled)
 		return;
 
-	_update_freq -= dt;
-	if (_update_freq <= 0.0f)
+	m_updateFreq -= dt;
+	if (m_updateFreq <= 0.0f)
 	{
-		_debug_info = 
-			"\nCONFIG STATUS: " + std::string(Config::GetInstance().load_status ? "SUCCESS" : "FAILED TO LOAD") +
-			"\n\nBOIDS: " + std::to_string(Config::GetInstance().boid_count) +
+		m_info =
+			"\nCONFIG STATUS: " + std::string(Config::Inst().LoadStatus ? "SUCCESS" : "FAILED TO LOAD") +
+			"\n\nBOIDS: " + std::to_string(Config::Inst().BoidCount) +
 			"\nFPS: " + std::to_string((int)(1.0f / dt));
 
-		_refresh = true;
-		_update_freq = Config::GetInstance().debug_update_freq;
+		m_refresh = true;
+		m_updateFreq = Config::Inst().DebugUpdateFreq;
 	}
 
-	_debug_text_info.setString(
-		"\nCONFIG REFRESH: " + util::remove_trailing_zeroes(std::to_string(util::set_precision(_update_freq, 2))) + _debug_info);
+	m_textInfo.setString("\nCONFIG REFRESH: " + 
+		util::remove_trailing_zeroes(std::to_string(util::set_precision(m_updateFreq, 2))) + m_info);
 }
 
-void Debug::draw(sf::RenderWindow& window) const
+void Debug::Draw(sf::RenderWindow& window) const
 {
-	if (!Config::GetInstance().debug_enabled)
+	if (!Config::Inst().DebugEnabled)
 		return;
 
-	window.draw(_debug_text_state);
-	window.draw(_debug_text_info);
+	window.draw(m_textState);
+	window.draw(m_textInfo);
 }
 
-void Debug::toggle()
+void Debug::Toggle()
 {
-	_enabled = !_enabled;
+	m_enabled = !m_enabled;
 
-	_debug_text_state.setString(get_state());
-	_debug_text_info.setString(_enabled ? _debug_text_info.getString() : "");
+	m_textState.setString(GetState());
+	m_textInfo.setString(m_enabled ? m_textInfo.getString() : "");
 }

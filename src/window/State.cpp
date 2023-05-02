@@ -1,17 +1,11 @@
 #include "State.h"
-#include "StateStack.h"
 
-void State::request_stack_push(States::ID state_id)
-{
-	_state_stack->push(state_id);
-}
+State::State(Context context)
+	: m_context(context) { }
 
-void State::request_stack_pop()
-{
-	_state_stack->pop();
-}
+State::~State() = default;
 
-void State::request_stack_clear()
+auto State::GetContext() const -> const Context&
 {
-	_state_stack->clear();
-}
+	return m_context;
+};

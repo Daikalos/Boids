@@ -2,40 +2,40 @@
 
 Config::Config()
 {
-	boid_view_angle = util::to_radians(boid_view_angle) / 2.0f;
+	BoidViewAngle = util::to_radians(BoidViewAngle) / 2.0f;
 
-	sep_distance *= sep_distance;
-	ali_distance *= ali_distance;
-	coh_distance *= coh_distance;
+	SepDistance *= SepDistance;
+	AliDistance *= AliDistance;
+	CohDistance *= CohDistance;
 
-	predator_distance *= predator_distance;
+	PredatorDistance *= PredatorDistance;
 
 	load();
 }
 
 void Config::load()
 {
-	std::ifstream project_file(FILE_NAME + ".json", std::ifstream::binary);
-	if (project_file.good())
+	std::ifstream projectFile(FILE_NAME + ".json", std::ifstream::binary);
+	if (projectFile.good())
 	{
 		try
 		{
-			load_status = false;
+			LoadStatus = false;
 			Config temp = *this;
 
-			nlohmann::json json = nlohmann::json::parse(project_file);
+			nlohmann::json json = nlohmann::json::parse(projectFile);
 			temp.load_var(json);
 
 			*this = temp;
-			load_status = true;
+			LoadStatus = true;
 
-			boid_view_angle = util::to_radians(boid_view_angle) / 2.0f;
+			BoidViewAngle = util::to_radians(BoidViewAngle) / 2.0f;
 
-			sep_distance *= sep_distance;
-			ali_distance *= ali_distance;
-			coh_distance *= coh_distance;
+			SepDistance *= SepDistance;
+			AliDistance *= AliDistance;
+			CohDistance *= CohDistance;
 
-			predator_distance *= predator_distance;
+			PredatorDistance *= PredatorDistance;
 		}
 		catch (nlohmann::json::parse_error) { }
 		catch (nlohmann::detail::type_error e) { }
@@ -49,30 +49,38 @@ std::vector<Rebuild> Config::refresh(Config& prev)
 
 	load();
 
-	if (prev.sep_distance != sep_distance || prev.ali_distance != ali_distance || prev.coh_distance != coh_distance || prev.boid_size_width != boid_size_width || prev.boid_size_height != boid_size_height || prev.turn_at_border != turn_at_border)
+	if (prev.SepDistance != SepDistance
+		|| prev.AliDistance != AliDistance
+		|| prev.CohDistance != CohDistance
+		|| prev.BoidWidth != BoidWidth
+		|| prev.BoidHeight != BoidHeight
+		|| prev.TurnAtBorder != TurnAtBorder)
+	{
 		result.push_back(RB_Grid);
-	if (prev.boid_count != boid_count)
+	}
+
+	if (prev.BoidCount != BoidCount)
 		result.push_back(RB_Boids);
-	if (prev.boid_cycle_colors_random != boid_cycle_colors_random)
+	if (prev.BoidCycleColorsRandom != BoidCycleColorsRandom)
 		result.push_back(RB_BoidsCycle);
-	if (prev.background_texture != background_texture)
+	if (prev.BackgroundTexture != BackgroundTexture)
 		result.push_back(RB_BackgroundTex);
-	if (prev.vertical_sync != vertical_sync || prev.max_framerate != max_framerate)
+	if (prev.VerticalSync != VerticalSync || prev.MaxFramerate != MaxFramerate)
 		result.push_back(RB_Window);
-	if (!std::ranges::equal(prev.audio_responsive_apps, audio_responsive_apps))
+	if (!std::ranges::equal(prev.AudioResponsiveApps, AudioResponsiveApps))
 		result.push_back(RB_Audio);
-	if (prev.camera_zoom != camera_zoom)
+	if (prev.CameraZoom != CameraZoom)
 		result.push_back(RB_Camera);
-	if (prev.fluid_scale != fluid_scale)
+	if (prev.FluidScale != FluidScale)
 		result.push_back(RB_Fluid);
 
-	if (prev.background_color != background_color ||
-		prev.background_position_x != background_position_x ||
-		prev.background_position_y != background_position_y ||
-		prev.background_fit_screen != background_fit_screen ||
-		prev.background_override_size != background_override_size ||
-		prev.background_width != background_width ||
-		prev.background_height != background_height)
+	if (prev.BackgroundColor != BackgroundColor ||
+		prev.BackgroundPositionX != BackgroundPositionX ||
+		prev.BackgroundPositionY != BackgroundPositionY ||
+		prev.BackgroundFitScreen != BackgroundFitScreen ||
+		prev.BackgroundOverrideSize != BackgroundOverrideSize ||
+		prev.BackgroundWidth != BackgroundWidth ||
+		prev.BackgroundHeight != BackgroundHeight)
 	{
 		result.push_back(RB_BackgroundProp);
 	}
@@ -90,136 +98,136 @@ void Config::load_var(nlohmann::json& json)
 	auto& color = config[COLOR];
 	auto& misc = config[MISC];
 
-	background_color			= str_to_color(background["background_color"]);
-	background_texture			= background["background_texture"];
-	background_position_x		= background["background_position_x"];
-	background_position_y		= background["background_position_y"];
-	background_fit_screen		= background["background_fit_screen"];
-	background_override_size	= background["background_override_size"];
-	background_width			= background["background_width"];
-	background_height			= background["background_height"];
+	BackgroundColor				= str_to_color(background["BackgroundColor"]);
+	BackgroundTexture			= background["BackgroundTexture"];
+	BackgroundPositionX			= background["BackgroundPositionX"];
+	BackgroundPositionY			= background["BackgroundPositionY"];
+	BackgroundFitScreen			= background["BackgroundFitScreen"];
+	BackgroundOverrideSize		= background["BackgroundOverrideSize"];
+	BackgroundWidth				= background["BackgroundWidth"];
+	BackgroundHeight			= background["BackgroundHeight"];
 
-	boid_count					= boid["boid_count"];
-	boid_size_width				= boid["boid_size_width"];
-	boid_size_height			= boid["boid_size_height"];
-	boid_max_speed				= boid["boid_max_speed"];
-	boid_min_speed				= boid["boid_min_speed"];
-	boid_max_steer				= boid["boid_max_steer"];
-	boid_view_angle				= boid["boid_view_angle"];
+	BoidCount					= boid["BoidCount"];
+	BoidWidth					= boid["BoidWidth"];
+	BoidHeight					= boid["BoidHeight"];
+	BoidSpeedMax				= boid["BoidSpeedMax"];
+	BoidSpeedMin				= boid["BoidSpeedMin"];
+	BoidSteerMax				= boid["BoidSteerMax"];
+	BoidViewAngle				= boid["BoidViewAngle"];
 
-	sep_distance				= rules["sep_distance"];
-	ali_distance				= rules["ali_distance"];
-	coh_distance				= rules["coh_distance"];
+	SepDistance					= rules["SepDistance"];
+	AliDistance					= rules["AliDistance"];
+	CohDistance					= rules["CohDistance"];
 
-	sep_weight					= rules["sep_weight"];
-	ali_weight					= rules["ali_weight"];
-	coh_weight					= rules["coh_weight"];
+	SepWeight					= rules["SepWeight"];
+	AliWeight					= rules["AliWeight"];
+	CohWeight					= rules["CohWeight"];
 
-	std::vector<int> temp_color_options = color["color_options"];
-	color_flags = (temp_color_options.size()) ? CF_None : CF_Cycle;
+	std::vector<int> temp_color_options = color["ColorOptions"];
+	ColorFlag = !temp_color_options.empty() ? CF_None : CF_Cycle;
 	for (int i = 0; i < temp_color_options.size(); ++i)
-		color_flags |= static_cast<ColorFlags>((int)std::powf(2.0f, (float)temp_color_options[i] - 1.0f));
+		ColorFlag |= util::pow(2, temp_color_options[i] - 1);
 
-	color_positional_weight		= color["color_positional_weight"];
-	color_cycle_weight			= color["color_cycle_weight"];
-	color_density_weight		= color["color_density_weight"];
-	color_velocity_weight		= color["color_velocity_weight"];
-	color_rotation_weight		= color["color_rotation_weight"];
-	color_audio_weight			= color["color_audio_weight"];
-	color_fluid_weight			= color["color_fluid_weight"];
+	ColorPositionalWeight		= color["ColorPositionalWeight"];
+	ColorCycleWeight			= color["ColorCycleWeight"];
+	ColorDensityWeight			= color["ColorDensityWeight"];
+	ColorVelocityWeight			= color["ColorVelocityWeight"];
+	ColorRotationWeight			= color["ColorRotationWeight"];
+	ColorAudioWeight			= color["ColorAudioWeight"];
+	ColorFluidWeight			= color["ColorFluidWeight"];
 
-	if (color_flags & CF_Positional)
+	if ((ColorFlag & CF_Positional) == CF_Positional)
 	{
-		boid_color_top_left		= str_to_color(color["boid_color_top_left"]);
-		boid_color_top_right	= str_to_color(color["boid_color_top_right"]);
-		boid_color_bot_left		= str_to_color(color["boid_color_bot_left"]);
-		boid_color_bot_right	= str_to_color(color["boid_color_bot_right"]);
+		BoidColorTopLeft		= str_to_color(color["BoidColorTopLeft"]);
+		BoidColorTopRight		= str_to_color(color["BoidColorTopRight"]);
+		BoidColorBotLeft		= str_to_color(color["BoidColorBotLeft"]);
+		BoidColorBotRight		= str_to_color(color["BoidColorBotRight"]);
 	}
-	if (color_flags & CF_Cycle)
+	if ((ColorFlag & CF_Cycle) == CF_Cycle)
 	{
-		boid_cycle_colors_random	= color["boid_cycle_colors_random"];
-		boid_cycle_colors_speed		= color["boid_cycle_colors_speed"];
+		BoidCycleColorsRandom	= color["BoidCycleColorsRandom"];
+		BoidCycleColorsSpeed	= color["BoidCycleColorsSpeed"];
 
-		convert_to_color(boid_cycle_colors, color["boid_cycle_colors"]);
+		convert_to_color(BoidCycleColors, color["BoidCycleColors"]);
 	}
-	if (color_flags & CF_Density)
+	if ((ColorFlag & CF_Density) == CF_Density)
 	{
-		boid_density				= color["boid_density"];
-		boid_density_cycle_enabled	= color["boid_density_cycle_enabled"];
-		boid_density_cycle_speed	= color["boid_density_cycle_speed"];
+		BoidDensity				= color["BoidDensity"];
+		BoidDensityCycleEnabled	= color["BoidDensityCycleEnabled"];
+		BoidDensityCycleSpeed	= color["BoidDensityCycleSpeed"];
 
-		convert_to_color(boid_density_colors, color["boid_density_colors"]);
+		convert_to_color(BoidDensityColors, color["BoidDensityColors"]);
 	}
-	if (color_flags & CF_Velocity)
+	if ((ColorFlag & CF_Velocity) == CF_Velocity)
 	{
-		convert_to_color(boid_velocity_colors, color["boid_velocity_colors"]);
+		convert_to_color(BoidVelocityColors, color["BoidVelocityColors"]);
 	}
-	if (color_flags & CF_Rotation)
+	if ((ColorFlag & CF_Rotation) == CF_Rotation)
 	{
-		convert_to_color(boid_rotation_colors, color["boid_rotation_colors"]);
+		convert_to_color(BoidRotationColors, color["BoidRotationColors"]);
 	}
-	if (color_flags & CF_Audio)
+	if ((ColorFlag & CF_Audio) == CF_Audio)
 	{
-		std::vector<std::string> temp_processes = color["audio_responsive_apps"];
-		audio_responsive_apps = std::vector<std::wstring>(temp_processes.size());
+		std::vector<std::string> temp_processes = color["AudioResponsiveApps"];
+		AudioResponsiveApps = std::vector<std::wstring>(temp_processes.size());
 
-		for (int i = 0; i < audio_responsive_apps.size(); ++i)
+		for (int i = 0; i < AudioResponsiveApps.size(); ++i)
 		{
 			std::string process = temp_processes[i];
-			audio_responsive_apps[i] = std::wstring(process.begin(), process.end());
+			AudioResponsiveApps[i] = std::wstring(process.begin(), process.end());
 		}
 
-		audio_responsive_strength	= color["audio_responsive_strength"];
-		audio_responsive_limit		= color["audio_responsive_limit"];
-		audio_responsive_density	= color["audio_responsive_density"];
+		AudioResponsiveStrength		= color["AudioResponsiveStrength"];
+		AudioResponsiveLimit		= color["AudioResponsiveLimit"];
+		AudioResponsiveDensity		= color["AudioResponsiveDensity"];
 
-		convert_to_color(audio_responsive_colors, color["audio_responsive_colors"]);
+		convert_to_color(AudioResponsiveColors, color["AudioResponsiveColors"]);
 	}
-	if (color_flags & CF_Fluid)
+	if ((ColorFlag & CF_Fluid) == CF_Fluid)
 	{
-		fluid_scale				= color["fluid_scale"];
-		fluid_mouse_strength	= color["fluid_mouse_strength"];
-		fluid_color_vel			= color["fluid_color_vel"];
-		fluid_diffusion			= color["fluid_diffusion"];
-		fluid_viscosity			= color["fluid_viscosity"];
+		FluidScale				= color["FluidScale"];
+		FluidMouseStrength		= color["FluidMouseStrength"];
+		FluidColorVel			= color["FluidColorVel"];
+		FluidDiffusion			= color["FluidDiffusion"];
+		FluidViscosity			= color["FluidViscosity"];
 
-		convert_to_color(fluid_colors, color["fluid_colors"]);
+		convert_to_color(FluidColors, color["FluidColors"]);
 	}
 
-	impulse_enabled				= color["impulse_enabled"];
-	impulse_size				= color["impulse_size"];
-	impulse_speed				= color["impulse_speed"];
-	impulse_fade_distance		= color["impulse_fade_distance"];
+	ImpulseEnabled				= color["ImpulseEnabled"];
+	ImpulseSize					= color["ImpulseSize"];
+	ImpulseSpeed				= color["ImpulseSpeed"];
+	ImpulseFadeDistance			= color["ImpulseFadeDistance"];
 
-	convert_to_color(impulse_colors, color["impulse_colors"]);
+	convert_to_color(ImpulseColors, color["ImpulseColors"]);
 
-	boid_add_amount				= misc["boid_add_amount"];
-	boid_add_mouse_diff			= misc["boid_add_mouse_diff"];
-	boid_remove_amount			= misc["boid_remove_amount"];
+	BoidAddAmount				= misc["BoidAddAmount"];
+	BoidAddMouseDiff			= misc["BoidAddMouseDiff"];
+	BoidRemoveAmount			= misc["BoidRemoveAmount"];
 
-	steer_enabled				= misc["steer_enabled"];
-	steer_towards_factor		= misc["steer_towards_factor"];
-	steer_away_factor			= misc["steer_away_factor"];
+	SteerEnabled				= misc["SteerEnabled"];
+	SteerTowardsFactor			= misc["SteerTowardsFactor"];
+	SteerAwayFactor				= misc["SteerAwayFactor"];
 
-	predator_enabled			= misc["predator_enabled"];
-	predator_distance			= misc["predator_distance"];
-	predator_factor				= misc["predator_factor"];
+	PredatorEnabled				= misc["PredatorEnabled"];
+	PredatorDistance			= misc["PredatorDistance"];
+	PredatorFactor				= misc["PredatorFactor"];
 
-	turn_at_border				= misc["turn_at_border"];
-	turn_margin_factor			= misc["turn_margin_factor"];
-	turn_factor					= misc["turn_factor"];
+	TurnAtBorder				= misc["TurnAtBorder"];
+	TurnMarginFactor			= misc["TurnMarginFactor"];
+	TurnFactor					= misc["TurnFactor"];
 
-	grid_extra_cells			= misc["grid_extra_cells"];
-	camera_enabled				= misc["camera_enabled"];
-	camera_zoom					= misc["camera_zoom"];
-	vertical_sync				= misc["vertical_sync"];
-	max_framerate				= misc["max_framerate"];
-	physics_update_freq			= misc["physics_update_freq"];
-	policy_threshold			= misc["policy_threshold"];
+	GridExtraCells				= misc["GridExtraCells"];
+	CameraEnabled				= misc["CameraEnabled"];
+	CameraZoom					= misc["CameraZoom"];
+	VerticalSync				= misc["VerticalSync"];
+	MaxFramerate				= misc["MaxFramerate"];
+	PhysicsUpdateFreq			= misc["PhysicsUpdateFreq"];
+	PolicyThreshold				= misc["PolicyThreshold"];
 
-	debug_enabled				= misc["debug_enabled"];
-	debug_update_freq			= misc["debug_update_freq"];
-	debug_toggle_key			= misc["debug_toggle_key"];
+	DebugEnabled				= misc["DebugEnabled"];
+	DebugUpdateFreq				= misc["DebugUpdateFreq"];
+	DebugToggleKey				= misc["DebugToggleKey"];
 }
 
 sf::Vector3f Config::str_to_color(std::string str) const

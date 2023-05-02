@@ -5,7 +5,6 @@
 #include "../window/InputHandler.h"
 #include "../window/ResourceHolder.hpp"
 #include "../window/State.h"
-#include "../window/StateStack.h"
 
 #include "../utilities/PolicySelect.h"
 
@@ -14,45 +13,50 @@
 #include "AudioMeter.h"
 #include "Background.h"
 #include "Grid.h"
-#include "Impulse.hpp"
+#include "Impulse.h"
 #include "Boid.h"
 #include "Fluid.h"
 
 class MainState final : public State
 {
 public:
-	MainState(StateStack& stack, Context context);
+	MainState(Context context);
 
-	bool handle_event(const sf::Event& event) override;
+public:
+	void Initialize();
 
-	bool pre_update(float dt) override;
-	bool update(float dt) override;
-	bool fixed_update(float dt) override;
-	bool post_update(float dt, float interp) override;
+	bool HandleEvent(const sf::Event& event) override;
 
-	void draw() override;
+	bool PreUpdate(float dt) override;
+	bool Update(float dt) override;
+	bool FixedUpdate(float dt) override;
+	bool PostUpdate(float dt, float interp) override;
+
+	void Draw() override;
 
 private:
-	Window*						_window;
+	Window*						m_window		{nullptr};
+	Camera*						m_camera		{nullptr};
+	InputHandler*				m_inputHandler	{nullptr};
 
-	Grid						_grid;
-	Debug						_debug;
-	IAudioMeterInfo::ptr		_audio_meter	{nullptr};
-	Background					_background;
-	Fluid						_fluid;
+	Grid						m_grid;
+	Debug						m_debug;
+	IAudioMeterInfo::Ptr		m_audioMeter	{nullptr};
+	Background					m_background;
+	Fluid						m_fluid;
 
-	std::vector<Impulse>		_impulses;
-	std::vector<Boid>			_boids;
-	std::vector<std::uint32_t>	_proxy;
-	sf::VertexArray				_vertices;
-	RectFloat					_border;
+	std::vector<Impulse>		m_impulses;
+	std::vector<Boid>			m_boids;
+	std::vector<std::uint32_t>	m_proxy;
+	sf::VertexArray				m_vertices;
+	RectFloat					m_border;
 
-	sf::Vector2f				_mouse_pos;
-	sf::Vector2f				_mouse_pos_prev;
+	sf::Vector2f				m_mousePos;
+	sf::Vector2f				m_mousePosPrev;
 
-	sf::Vector2i				_fluid_mouse_pos;
-	sf::Vector2i				_fluid_mouse_pos_prev;
+	sf::Vector2i				m_fluidMousePos;
+	sf::Vector2i				m_fluidMousePosPrev;
 
-	float						_min_distance	{0.0f};
-	Policy						_policy			{Policy::unseq};
+	float						m_minDistance	{0.0f};
+	Policy						m_policy		{Policy::unseq};
 };

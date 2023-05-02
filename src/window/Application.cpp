@@ -1,112 +1,100 @@
 #include "Application.h"
 
 Application::Application(const std::string& name) :
-	_window(name, sf::VideoMode().getDesktopMode(), WindowBorder::Fullscreen, sf::ContextSettings(), Config::GetInstance().vertical_sync, Config::GetInstance().max_framerate, _camera),
-	_input_handler(), 
-	_texture_holder(), 
-	_state_stack(State::Context(_window, _camera, _input_handler, _texture_holder, _font_holder))
+	m_window(name, sf::VideoMode().getDesktopMode(), WindowBorder::Fullscreen, sf::ContextSettings(), Config::Inst().VerticalSync, Config::Inst().MaxFramerate, m_camera),
+	m_inputHandler(), 
+	m_textureHolder(), 
+	m_mainState(State::Context(m_window, m_camera, m_inputHandler, m_textureHolder, m_fontHolder))
 {
-	register_states();
+	m_camera.SetScale({ Config::Inst().CameraZoom, Config::Inst().CameraZoom });
 
-	_camera.set_scale({ Config::GetInstance().camera_zoom, Config::GetInstance().camera_zoom });
-
-	_window.set_clear_color(sf::Color(
-		(sf::Uint8)(Config::GetInstance().background_color.x * 255.0f),
-		(sf::Uint8)(Config::GetInstance().background_color.y * 255.0f),
-		(sf::Uint8)(Config::GetInstance().background_color.z * 255.0f)));
+	m_window.SetClearColor(sf::Color(
+		(sf::Uint8)(Config::Inst().BackgroundColor.x * 255.0f),
+		(sf::Uint8)(Config::Inst().BackgroundColor.y * 255.0f),
+		(sf::Uint8)(Config::Inst().BackgroundColor.z * 255.0f)));
 }
 
-void Application::run()
+void Application::Run()
 {
-	_window.initialize();
+	m_window.Initialize();
+	m_mainState.Initialize();
 
 	sf::Clock clock;
 	float dt = FLT_EPSILON;
 
-	float dt_per_frame = 1.0f / 60.0f;
+	float fixedDT = 1.0f / 60.0f;
 	float accumulator = FLT_EPSILON;
 
 	int ticks = 0;
-	int death_spiral = 12; // guarantee prevention of infinite loop
+	int deathSpiral = 12; // guarantee prevention of infinite loop
 
-	_state_stack.push(States::ID::Main);
-
-	while (_window.isOpen())
+	while (m_window.isOpen())
 	{
 		dt = std::fminf(clock.restart().asSeconds(), 0.075f);
 		accumulator += dt;
 
-		dt_per_frame = 1.0f / std::fmaxf(Config::GetInstance().physics_update_freq, 1.0f);
+		fixedDT = 1.0f / std::fmaxf(Config::Inst().PhysicsUpdateFreq, 1.0f);
 
-		_input_handler.update(dt);
+		m_inputHandler.Update(dt);
 
-		process_input();
+		ProcessInput();
 
-		if (Config::GetInstance().camera_enabled)
-			_camera.update(_input_handler, _window);
+		if (Config::Inst().CameraEnabled)
+			m_camera.Update(m_inputHandler, m_window);
 
-		pre_update(dt);
+		PreUpdate(dt);
 
-		update(dt);
+		Update(dt);
 
 		ticks = 0;
-		while (accumulator >= dt_per_frame && ticks++ < death_spiral)
+		while (accumulator >= fixedDT && ticks++ < deathSpiral)
 		{
-			accumulator -= dt_per_frame;
-			fixed_update(dt_per_frame);
+			accumulator -= fixedDT;
+			FixedUpdate(fixedDT);
 		}
 
-		float interp = accumulator / dt_per_frame;
-		post_update(dt, interp); // interp
+		float interp = accumulator / fixedDT;
+		PostUpdate(dt, interp); // interp
 
-		if (_state_stack.is_empty())
-			_window.close();
-
-		draw();
+		Draw();
 	}
 }
 
-void Application::process_input()
+void Application::ProcessInput()
 {
 	sf::Event event;
-	while (_window.pollEvent(event))
+	while (m_window.pollEvent(event))
 	{
-		_input_handler.handle_event(event);
-		_camera.handle_event(event);
-		_window.handle_event(event);
-
-		_state_stack.handle_event(event);
+		m_inputHandler.HandleEvent(event);
+		m_camera.HandleEvent(event);
+		m_window.HandleEvent(event);
+		m_mainState.HandleEvent(event);
 	}
 }
 
-void Application::pre_update(float dt)
+void Application::PreUpdate(float dt)
 {
-	_state_stack.pre_update(dt);
+	m_mainState.PreUpdate(dt);
 }
 
-void Application::update(float dt)
+void Application::Update(float dt)
 {
-	_state_stack.update(dt);
+	m_mainState.Update(dt);
 }
 
-void Application::fixed_update(float dt)
+void Application::FixedUpdate(float dt)
 {
-	_state_stack.fixed_update(dt);
+	m_mainState.FixedUpdate(dt);
 }
 
-void Application::post_update(float dt, float interp)
+void Application::PostUpdate(float dt, float interp)
 {
-	_state_stack.post_update(dt, interp);
+	m_mainState.PostUpdate(dt, interp);
 }
 
-void Application::draw()
+void Application::Draw()
 {
-	_window.setup();
-	_state_stack.draw();
-	_window.display();
-}
-
-void Application::register_states()
-{
-	_state_stack.register_state<MainState>(States::ID::Main);
+	m_window.Setup();
+	m_mainState.Draw();
+	m_window.display();
 }

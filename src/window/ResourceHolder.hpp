@@ -26,87 +26,65 @@ template <class Resource, class Identifier>
 class ResourceHolder : private NonCopyable
 {
 public:
-	using ptr = std::unique_ptr<Resource>;
+	using Ptr = std::unique_ptr<Resource>;
 
 public:
-	ResourceHolder() { }
+	void Load(const Identifier& id, const std::string& path);
+	void Remove(const Identifier& id);
 
-	void load(const Identifier& id, const std::string& path);
+	bool Exists(const Identifier& id) const;
 
-	template <class Parameter>
-	void load(const Identifier& id, const std::string& path, const Parameter& second_param);
-
-	void remove(const Identifier& id);
-
-	Resource& get(const Identifier& id);
-	const Resource& get(const Identifier& id) const;
-
-	bool exists(const Identifier& id) const;
+	Resource& Get(const Identifier& id);
+	const Resource& Get(const Identifier& id) const;
 
 private:
-	std::unordered_map<Identifier, ptr> _resources;
+	std::unordered_map<Identifier, Ptr> m_resources;
 };
 
 template<typename Resource, typename Identifier>
-void ResourceHolder<Resource, Identifier>::load(const Identifier& id, const std::string& path)
+void ResourceHolder<Resource, Identifier>::Load(const Identifier& id, const std::string& path)
 {
-	std::unique_ptr<Resource> resource(new Resource());
+	Ptr resource(new Resource());
 
 	if (!resource->loadFromFile(RESOURCE_FOLDER + path))
 	{
-		remove(id);
+		Remove(id);
 		return;
 	}
 
-	auto inserted = _resources.insert(std::make_pair(id, std::move(resource)));
-	assert(inserted.second);
-}
-
-template<typename Resource, typename Identifier>
-template<typename Parameter>
-void ResourceHolder<Resource, Identifier>::load(const Identifier& id, const std::string& path, const Parameter& second_param)
-{
-	std::unique_ptr<Resource> resource(new Resource());
-
-	if (!resource->loadFromFile(RESOURCE_FOLDER + path, second_param))
-	{
-		remove(id);
-		return;
-	}
-
-	auto inserted = _resources.insert(std::make_pair(id, std::move(resource)));
+	auto inserted = m_resources.insert(std::make_pair(id, std::move(resource)));
 	assert(inserted.second);
 }
 
 template<class Resource, class Identifier>
-void ResourceHolder<Resource, Identifier>::remove(const Identifier& id)
+void ResourceHolder<Resource, Identifier>::Remove(const Identifier& id)
 {
-	if (!exists(id))
+	if (!Exists(id))
 		return;
 
-	_resources.erase(id);
+	m_resources.erase(id);
 }
 
 template<typename Resource, typename Identifier>
-Resource& ResourceHolder<Resource, Identifier>::get(const Identifier& id)
+Resource& ResourceHolder<Resource, Identifier>::Get(const Identifier& id)
 {
-	return get(id);
+	return Get(id);
 }
 
 template<typename Resource, typename Identifier>
-const Resource& ResourceHolder<Resource, Identifier>::get(const Identifier& id) const
+const Resource& ResourceHolder<Resource, Identifier>::Get(const Identifier& id) const
 {
-	auto it = _resources.find(id);
-	assert(it != _resources.end());
+	auto it = m_resources.find(id);
+	assert(it != m_resources.end());
 
 	return *it->second.get();
 }
 
 
 template<class Resource, class Identifier>
-bool ResourceHolder<Resource, Identifier>::exists(const Identifier& id) const
+bool ResourceHolder<Resource, Identifier>::Exists(const Identifier& id) const
 {
-	return _resources.find(id) != _resources.end();
+	return m_resources.find(id) != m_resources.end();
 }
 
 using TextureHolder = ResourceHolder<sf::Texture, TextureID>;

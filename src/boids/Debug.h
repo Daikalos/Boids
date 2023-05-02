@@ -13,28 +13,29 @@ class Debug : public NonCopyable
 public:
 	Debug();
 
-	void set_update_freq(float value);
+public:
+	[[nodiscard]] bool GetRefresh() const noexcept;
+	[[nodiscard]] const char* GetState() const noexcept;
 
-	[[nodiscard]] bool get_refresh() const noexcept;
-	[[nodiscard]] std::string get_state() const noexcept;
+	void SetUpdateFreq(float value);
 
 public:
-	void load(const FontHolder& _font_holder);
-	void update(const InputHandler& input_handler, float dt);
-	void draw(sf::RenderWindow& window) const;
+	void Load(const FontHolder& fontHolder);
+	void Update(const InputHandler& inputHandler, float dt);
+	void Draw(sf::RenderWindow& window) const;
 
 private:
-	void toggle();
+	void Toggle();
 
 private:
-	float			_update_freq_max	{0.0f};
-	float			_update_freq		{0.0f};
+	float			m_updateFreqMax		{0.0f};
+	float			m_updateFreq		{0.0f};
 
-	bool			_enabled			{false};
-	bool			_refresh			{false};
+	bool			m_enabled			{false};
+	bool			m_refresh			{false};
 
-	sf::Text		_debug_text_state;
-	sf::Text		_debug_text_info;
-	std::string		_debug_info;
+	sf::Text		m_textState;
+	sf::Text		m_textInfo;
+	std::string		m_info;
 };
 

@@ -3,7 +3,7 @@
 int main()
 {
 	Application application("Boids");
-	application.run();
+	application.Run();
 
 	return 0;
 }

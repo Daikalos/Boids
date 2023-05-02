@@ -1,106 +1,130 @@
 #include "Boid.h"
 
-Boid::Boid(const sf::Vector2f& pos)
-	: _position(pos), _prev_position(pos)
+Boid::Boid(const sf::Vector2f& pos) : m_position(pos), m_prevPosition(pos)
 {
-	_prev_velocity = _velocity = vu::normalize(sf::Vector2f(
+	m_prevVelocity = m_velocity = vu::normalize(sf::Vector2f(
 		util::random(-1.0f, 1.0f),
-		util::random(-1.0f, 1.0f)), Config::GetInstance().boid_max_speed);
+		util::random(-1.0f, 1.0f)), Config::Inst().BoidSpeedMax);
 
-	if (Config::GetInstance().boid_cycle_colors_random)
-		_cycle_time = util::random(0.0f, 1.0f);
+	if (Config::Inst().BoidCycleColorsRandom)
+		m_cycleTime = util::random(0.0f, 1.0f);
 }
 
 Boid::Boid(const sf::Vector2f& pos, const sf::Vector2f& velocity)
-	: _position(pos), _prev_position(pos), _velocity(velocity), _prev_velocity(velocity)
+	: m_position(pos), m_prevPosition(pos), m_velocity(velocity), m_prevVelocity(velocity)
 {
-	if (Config::GetInstance().boid_cycle_colors_random)
-		_cycle_time = util::random(0.0f, 1.0f);
+	if (Config::Inst().BoidCycleColorsRandom)
+		m_cycleTime = util::random(0.0f, 1.0f);
 }
 
-void Boid::pre_update(const Grid& grid) noexcept
+const sf::Vector2f& Boid::GetPosition() const noexcept			{ return m_position; }
+const sf::Vector2f& Boid::GetPrevPosition() const noexcept		{ return m_prevPosition; }
+const sf::Vector2f& Boid::GetRelativePosition() const noexcept	{ return m_relativePos; }
+const sf::Vector2f& Boid::GetVelocity() const noexcept			{ return m_velocity; }
+const sf::Vector2f& Boid::GetPrevVelocity() const noexcept		{ return m_prevVelocity; }
+std::uint16_t Boid::GetCellIndex() const noexcept				{ return m_cellIndex; }
+
+sf::Vector2f Boid::GetOrigin() const noexcept
 {
-	_prev_position = _position;
-	_prev_velocity = _velocity;
-
-	const sf::Vector2f grid_cell_raw = grid.relative_pos(get_origin());
-	const sf::Vector2i grid_cell = sf::Vector2i(grid_cell_raw);
-	const sf::Vector2f grid_cell_overflow = grid_cell_raw - sf::Vector2f(grid_cell);
-
-	_relative_pos = grid_cell_overflow * grid._cont_dims;
-	_cell_index = grid.at_pos(grid_cell);
+	return GetPosition() + sf::Vector2f(
+		Config::Inst().BoidWidth,
+		Config::Inst().BoidHeight) / 2.0f;
+}
+sf::Vector2f Boid::GetPrevOrigin() const noexcept
+{
+	return GetPrevPosition() + sf::Vector2f(
+		Config::Inst().BoidWidth,
+		Config::Inst().BoidHeight) / 2.0f;
 }
 
-void Boid::update_grid_cells(Grid& grid, std::span<const Boid> boids, std::span<const std::uint32_t> proxy, const uint32_t index) const
+void Boid::SetCycleTime(const float val) noexcept
+{
+	m_cycleTime = val;
+}
+
+void Boid::PreUpdate(const Grid& grid) noexcept
+{
+	m_prevPosition = m_position;
+	m_prevVelocity = m_velocity;
+
+	const sf::Vector2f gridCellRaw = grid.RelativePos(GetOrigin());
+	const sf::Vector2i gridCell = sf::Vector2i(gridCellRaw);
+	const sf::Vector2f gridCellOverflow = gridCellRaw - sf::Vector2f(gridCell);
+
+	m_relativePos = gridCellOverflow * grid.contDims;
+	m_cellIndex = grid.AtPos(gridCell);
+}
+
+void Boid::UpdateGridCells(Grid& grid, std::span<const Boid> boids, std::span<const std::uint32_t> proxy, const uint32_t index) const
 {
 	if (index == 0)
 	{
-		grid._cells_start_indices[_cell_index] = index;
+		grid.startIndices[m_cellIndex] = index;
 		return;
 	}
 
 	if (index == boids.size() - 1)
-		grid._cells_end_indices[_cell_index] = index;
+		grid.endIndices[m_cellIndex] = index;
 
-	const int other_index = boids[proxy[index - 1]].get_cell_index();
+	const int otherIndex = boids[proxy[index - 1]].GetCellIndex();
 
-	if (other_index != _cell_index)
+	if (otherIndex != m_cellIndex)
 	{
-		grid._cells_start_indices[_cell_index] = index;
-		grid._cells_end_indices[other_index] = index - 1;
+		grid.startIndices[m_cellIndex] = index;
+		grid.endIndices[otherIndex] = index - 1;
 	}
 }
 
-void Boid::flock(const Grid& grid, std::span<const Boid> boids, std::span<const std::uint32_t> proxy)
+void Boid::Flock(const Grid& grid, std::span<const Boid> boids, std::span<const std::uint32_t> proxy)
 {
 	sf::Vector2f sep;
 	sf::Vector2f ali;
 	sf::Vector2f coh;
 
-	std::uint16_t sep_count = 0;
-	std::uint16_t ali_count = 0;
-	std::uint16_t coh_count = 0;
+	std::uint16_t sepCount = 0;
+	std::uint16_t aliCount = 0;
+	std::uint16_t cohCount = 0;
 
-	const sf::Vector2f origin = get_origin();
-	const float vel_length = vu::distance(_velocity);
+	const sf::Vector2f origin = GetOrigin();
+	const float velLength = vu::distance(m_velocity);
 
-	constexpr std::uint8_t neighbours = 4; // max 4 neighbours at a time
+	constexpr auto neighbourCount = 4; // max 4 neighbours at a time
 
-	int neighbour_indicies[neighbours];
-	sf::Vector2f neighbour[neighbours];
+	int neighIndicies[neighbourCount] {};
+	sf::Vector2f neighbours[neighbourCount];
 
-	const sf::Vector2f grid_cell_raw = grid.relative_pos(origin);
-	const sf::Vector2i grid_cell = sf::Vector2i(grid_cell_raw);
-	const sf::Vector2f grid_cell_overflow = grid_cell_raw - sf::Vector2f(grid_cell);
+	const sf::Vector2f gridCellRaw		= grid.RelativePos(origin);
+	const sf::Vector2i gridCell			= sf::Vector2i(gridCellRaw);
+	const sf::Vector2f gridCellOverflow = gridCellRaw - sf::Vector2f(gridCell);
 
-	const int x = (grid_cell_overflow.x > 0.5f ? 1 : -1);
-	const int y = (grid_cell_overflow.y > 0.5f ? 1 : -1);
+	const int x = (gridCellOverflow.x > 0.5f ? 1 : -1);
+	const int y = (gridCellOverflow.y > 0.5f ? 1 : -1);
 
-	const int x_neighbor = grid_cell.x + x;
-	const int y_neighbor = grid_cell.y + y;
+	const int neighbour_x = gridCell.x + x;
+	const int neighbour_y = gridCell.y + y;
 
-	neighbour[0] = grid._cont_dims * sf::Vector2f(0,		0);
-	neighbour[1] = grid._cont_dims * sf::Vector2f((float)x, 0);
-	neighbour[2] = grid._cont_dims * sf::Vector2f(0,		(float)y);
-	neighbour[3] = grid._cont_dims * sf::Vector2f((float)x, (float)y);
+	neighbours[0] = grid.contDims * sf::Vector2f(0,			0);
+	neighbours[1] = grid.contDims * sf::Vector2f((float)x,	0);
+	neighbours[2] = grid.contDims * sf::Vector2f(0,			(float)y);
+	neighbours[3] = grid.contDims * sf::Vector2f((float)x,	(float)y);
 
-	neighbour_indicies[0] = grid.at_pos(grid_cell.x, grid_cell.y);	// current
-	neighbour_indicies[1] = grid.at_pos(x_neighbor, grid_cell.y);	// left or right of current
-	neighbour_indicies[2] = grid.at_pos(grid_cell.x, y_neighbor);	// top or bot of current
-	neighbour_indicies[3] = grid.at_pos(x_neighbor, y_neighbor);	// top left/right bot left/right of current
+	neighIndicies[0] = grid.AtPos(gridCell.x,  gridCell.y);	// current
+	neighIndicies[1] = grid.AtPos(neighbour_x, gridCell.y);	// left or right of current
+	neighIndicies[2] = grid.AtPos(gridCell.x,  neighbour_y);	// top or bot of current
+	neighIndicies[3] = grid.AtPos(neighbour_x, neighbour_y);	// top left/right bot left/right of current
 
-	Config& config = Config::GetInstance();
+	Config& config = Config::Inst();
 
-	for (std::uint8_t i = 0; i < neighbours; ++i)
+	for (std::uint8_t i = 0; i < neighbourCount; ++i)
 	{
-		const int grid_cell_index = neighbour_indicies[i];
-		const int start = grid._cells_start_indices[grid_cell_index];
+		const int grid_cell_index = neighIndicies[i];
+		const int start = grid.startIndices[grid_cell_index];
 
 		if (start < 0)
 			continue;
 
-		const sf::Vector2f neighbour_cell = neighbour[i];
-		const int end = grid._cells_end_indices[grid_cell_index];
+		const sf::Vector2f neighbour_cell = neighbours[i];
+		const int end = grid.endIndices[grid_cell_index];
 
 		for (int j = start; j <= end; ++j) // do in one loop
 		{
@@ -109,327 +133,286 @@ void Boid::flock(const Grid& grid, std::span<const Boid> boids, std::span<const 
 			if (&b == this) [[unlikely]]
 				continue;
 
-			const sf::Vector2f other_relative_pos = 
-				neighbour_cell + b.get_relative_position(); // need to get relative to this boid
+			const sf::Vector2f otherRelativePos = 
+				neighbour_cell + b.GetRelativePosition(); // need to get relative to this Boid
 
-			const sf::Vector2f dir	= vu::direction(_relative_pos, other_relative_pos);
-			const float distance_sq = std::max(vu::distance_sq(dir), FLT_EPSILON);
-			const float angle		= _prev_velocity.angleTo(dir).asRadians();
+			const sf::Vector2f dir	= vu::direction(m_relativePos, otherRelativePos);
+			const float distanceSqr = std::max(vu::distance_sq(dir), FLT_EPSILON);
+			const float angle		= m_prevVelocity.angleTo(dir).asRadians();
 
-			if (angle >= -config.boid_view_angle && angle <= config.boid_view_angle) // angle only effects cohesion and alignment
+			if (angle >= -config.BoidViewAngle && angle <= config.BoidViewAngle) // angle only effects cohesion and alignment
 			{
-				if (distance_sq <= config.coh_distance)
+				if (distanceSqr <= config.CohDistance)
 				{
 					coh += origin + dir; // Head towards center of boids
-					++coh_count;
+					++cohCount;
 				}
-				if (distance_sq <= config.ali_distance)
+				if (distanceSqr <= config.AliDistance)
 				{
-					ali += b.get_prev_velocity(); // Align with every boids velocity
-					++ali_count;
+					ali += b.GetPrevVelocity(); // Align with every boids velocity
+					++aliCount;
 				}
 			}
 
-			if (distance_sq <= config.sep_distance)
+			if (distanceSqr <= config.SepDistance)
 			{
-				sep += -dir / distance_sq;
-				++sep_count;
+				sep += -dir / distanceSqr;
+				++sepCount;
 			}
 		}
 	}
 
-	if (coh_count) coh = vu::normalize(vu::direction(origin, coh / (float)coh_count), config.boid_max_speed);
-	if (ali_count) ali = vu::normalize(ali / (float)ali_count, config.boid_max_speed);
-	if (sep_count) sep = vu::normalize(sep / (float)sep_count, config.boid_max_speed);
+	if (cohCount) coh = vu::normalize(vu::direction(origin, coh / (float)cohCount), config.BoidSpeedMax);
+	if (aliCount) ali = vu::normalize(ali / (float)aliCount, config.BoidSpeedMax);
+	if (sepCount) sep = vu::normalize(sep / (float)sepCount, config.BoidSpeedMax);
 
-	_velocity +=
-		steer_at(coh) * config.coh_weight +
-		steer_at(ali) * config.ali_weight +
-		steer_at(sep) * config.sep_weight;
+	m_velocity +=
+		SteerAt(coh) * config.CohWeight +
+		SteerAt(ali) * config.AliWeight +
+		SteerAt(sep) * config.SepWeight;
 
-	_density = std::max(std::max(coh_count, ali_count), sep_count);
+	m_density = std::max(std::max(cohCount, aliCount), sepCount);
 }
 
-void Boid::update(const RectFloat& border, const IAudioMeterInfo* audio_meter, std::span<const Impulse> impulses, float dt)
+void Boid::Update(const RectFloat& border, std::span<const Impulse> impulses, float dt)
 {
-	_velocity = vu::clamp(_velocity, Config::GetInstance().boid_min_speed, Config::GetInstance().boid_max_speed);
+	m_velocity = vu::clamp(m_velocity, Config::Inst().BoidSpeedMin, Config::Inst().BoidSpeedMax);
 
-	_position += _velocity * dt;
+	m_position += m_velocity * dt;
 
-	if (outside_border(border, dt))
-		_prev_position = _position;
+	if (OutsideBorder(border, dt))
+		m_prevPosition = m_position;
 
-	if (Config::GetInstance().color_flags & CF_Cycle)
-		_cycle_time = std::fmodf(_cycle_time + dt * Config::GetInstance().boid_cycle_colors_speed, 1.0f);
-	if (Config::GetInstance().color_flags & CF_Density)
-		_density_time = (Config::GetInstance().boid_density_cycle_enabled) ? std::fmodf(_density_time + dt * Config::GetInstance().boid_density_cycle_speed, 1.0f) : 0.0f;
+	if ((Config::Inst().ColorFlag & CF_Cycle) == CF_Cycle)
+		m_cycleTime = std::fmodf(m_cycleTime + dt * Config::Inst().BoidCycleColorsSpeed, 1.0f);
+	if ((Config::Inst().ColorFlag & CF_Density) == CF_Density)
+		m_densityTime = (Config::Inst().BoidDensityCycleEnabled) ? std::fmodf(m_densityTime + dt * Config::Inst().BoidDensityCycleSpeed, 1.0f) : 0.0f;
 }
 
-sf::Vector2f Boid::steer_at(const sf::Vector2f& steer_direction) const
+sf::Vector2f Boid::SteerAt(const sf::Vector2f& steer_direction) const
 {
-	return vu::limit(vu::direction(_velocity, steer_direction), Config::GetInstance().boid_max_steer);
+	return vu::limit(vu::direction(m_velocity, steer_direction), Config::Inst().BoidSteerMax);
 }
 
-void Boid::steer_towards(const sf::Vector2f& direction, float length, float weight)
+void Boid::SteerTowards(const sf::Vector2f& direction, float length, float weight)
 {
 	if (std::fabsf(weight) <= FLT_EPSILON)
 		return;
 
-	const sf::Vector2f steer = vu::normalize(direction, length, Config::GetInstance().boid_max_speed);
+	const sf::Vector2f steer = vu::normalize(direction, length, Config::Inst().BoidSpeedMax);
 
-	_velocity += steer_at(steer) * weight;
+	m_velocity += SteerAt(steer) * weight;
 }
-void Boid::steer_towards(const sf::Vector2f& point, float weight)
+void Boid::SteerTowards(const sf::Vector2f& point, float weight)
 {
-	steer_towards(point, vu::distance(point), weight);
+	SteerTowards(point, vu::distance(point), weight);
 }
 
-sf::Vector3f Boid::get_color(const RectFloat& border, const IAudioMeterInfo* audio_meter, std::span<const Impulse> impulses) const noexcept
+sf::Vector3f Boid::GetColor(const RectFloat& border, const IAudioMeterInfo* audioMeter, std::span<const Impulse> impulses) const noexcept
 {
 	sf::Vector3f color = sf::Vector3f();
 
-	if (Config::GetInstance().color_flags & CF_Positional)
-		color += position_color(border) * Config::GetInstance().color_positional_weight;
-	if (Config::GetInstance().color_flags & CF_Cycle)
-		color += cycle_color() * Config::GetInstance().color_cycle_weight;
-	if (Config::GetInstance().color_flags & CF_Density)
-		color += density_color() * Config::GetInstance().color_density_weight;
-	if (Config::GetInstance().color_flags & CF_Velocity)
-		color += velocity_color() * Config::GetInstance().color_velocity_weight;
-	if (Config::GetInstance().color_flags & CF_Rotation)
-		color += rotation_color() * Config::GetInstance().color_rotation_weight;
-	if (Config::GetInstance().color_flags & CF_Audio)
-		color += audio_color(audio_meter) * Config::GetInstance().color_audio_weight;
+	std::uint32_t flag = Config::Inst().ColorFlag;
 
-	impulse_color(color, impulses);
+	if ((flag & CF_Positional) == CF_Positional)
+		color += PositionColor(border) * Config::Inst().ColorPositionalWeight;
+	if ((flag & CF_Cycle) == CF_Cycle)
+		color += CycleColor() * Config::Inst().ColorCycleWeight;
+	if ((flag & CF_Density) == CF_Density)
+		color += DensityColor() * Config::Inst().ColorDensityWeight;
+	if ((flag & CF_Velocity) == CF_Velocity)
+		color += VelocityColor() * Config::Inst().ColorVelocityWeight;
+	if ((flag & CF_Rotation) == CF_Rotation)
+		color += RotationColor() * Config::Inst().ColorRotationWeight;
+	if ((flag & CF_Audio) == CF_Audio && audioMeter != nullptr)
+		color += AudioColor(audioMeter) * Config::Inst().ColorAudioWeight;
+
+	ImpulseColor(color, impulses);
 
 	return color;
 }
 
-const sf::Vector2f& Boid::get_position() const noexcept
+bool Boid::OutsideBorder(const RectFloat& border, float dt)
 {
-	return _position; 
+	return Config::Inst().TurnAtBorder ? TurnAtBorder(border, dt) : TeleportAtBorder(border);
 }
-const sf::Vector2f& Boid::get_prev_position() const noexcept
-{ 
-	return _prev_position; 
-}
-const sf::Vector2f& Boid::get_relative_position() const noexcept
-{ 
-	return _relative_pos; 
-}
-const sf::Vector2f& Boid::get_velocity() const noexcept
-{ 
-	return _velocity; 
-}
-const sf::Vector2f& Boid::get_prev_velocity() const noexcept
-{ 
-	return _prev_velocity; 
-}
-std::uint16_t Boid::get_cell_index() const noexcept
-{ 
-	return _cell_index; 
-}
-
-sf::Vector2f Boid::get_origin() const noexcept
+bool Boid::TurnAtBorder(const RectFloat& border, float dt)
 {
-	return get_position() + sf::Vector2f(
-		Config::GetInstance().boid_size_width,
-		Config::GetInstance().boid_size_height) / 2.0f;
-}
-sf::Vector2f Boid::get_prev_origin() const noexcept
-{
-	return get_prev_position() + sf::Vector2f(
-		Config::GetInstance().boid_size_width,
-		Config::GetInstance().boid_size_height) / 2.0f;
-}
+	const float widthMargin = border.width() - border.width() * Config::Inst().TurnMarginFactor;
+	const float heightMargin = border.height() - border.height() * Config::Inst().TurnMarginFactor;
 
-void Boid::set_cycle_time(const float val) noexcept
-{
-	_cycle_time = val;
-}
+	const float leftMargin = border.left + widthMargin;
+	const float topMargin = border.top + heightMargin;
+	const float rightMargin = border.right - widthMargin;
+	const float botMargin = border.bot - heightMargin;
 
-bool Boid::outside_border(const RectFloat& border, float dt)
-{
-	return Config::GetInstance().turn_at_border ? turn_at_border(border, dt) : teleport_at_border(border);
-}
-bool Boid::turn_at_border(const RectFloat& border, float dt)
-{
-	const float width_margin = border.width() - border.width() * Config::GetInstance().turn_margin_factor;
-	const float height_margin = border.height() - border.height() * Config::GetInstance().turn_margin_factor;
+	if (m_position.x + Config::Inst().BoidWidth < leftMargin)
+		m_velocity.x += Config::Inst().TurnFactor * dt * (1.0f + std::powf(std::abs(m_position.x - leftMargin) / widthMargin, 2.0f)) * (1.0f / (m_density + 1.0f));
 
-	const float left_margin = border.left + width_margin;
-	const float top_margin = border.top + height_margin;
-	const float right_margin = border.right - width_margin;
-	const float bot_margin = border.bot - height_margin;
+	if (m_position.x > rightMargin)
+		m_velocity.x -= Config::Inst().TurnFactor * dt * (1.0f + std::powf(std::abs(m_position.x - rightMargin) / widthMargin, 2.0f)) * (1.0f / (m_density + 1.0f));
 
-	if (_position.x + Config::GetInstance().boid_size_width < left_margin)
-		_velocity.x += Config::GetInstance().turn_factor * dt * (1.0f + std::powf(std::abs(_position.x - left_margin) / width_margin, 2.0f)) * (1.0f / (_density + 1.0f));
+	if (m_position.y + Config::Inst().BoidHeight < topMargin)
+		m_velocity.y += Config::Inst().TurnFactor * dt * (1.0f + std::powf(std::abs(m_position.y - topMargin) / heightMargin, 2.0f)) * (1.0f / (m_density + 1.0f));
 
-	if (_position.x > right_margin)
-		_velocity.x -= Config::GetInstance().turn_factor * dt * (1.0f + std::powf(std::abs(_position.x - right_margin) / width_margin, 2.0f)) * (1.0f / (_density + 1.0f));
-
-	if (_position.y + Config::GetInstance().boid_size_height < top_margin)
-		_velocity.y += Config::GetInstance().turn_factor * dt * (1.0f + std::powf(std::abs(_position.y - top_margin) / height_margin, 2.0f)) * (1.0f / (_density + 1.0f));
-
-	if (_position.y > bot_margin)
-		_velocity.y -= Config::GetInstance().turn_factor * dt * (1.0f + std::powf(std::abs(_position.y - bot_margin) / height_margin, 2.0f)) * (1.0f / (_density + 1.0f));
+	if (m_position.y > botMargin)
+		m_velocity.y -= Config::Inst().TurnFactor * dt * (1.0f + std::powf(std::abs(m_position.y - botMargin) / heightMargin, 2.0f)) * (1.0f / (m_density + 1.0f));
 
 	return false;
 }
-bool Boid::teleport_at_border(const RectFloat& border)
+bool Boid::TeleportAtBorder(const RectFloat& border)
 {
-	const sf::Vector2f current = _position;
-	const float boid_size_max = std::max(Config::GetInstance().boid_size_width, Config::GetInstance().boid_size_height);
+	const float maxSize = std::max(Config::Inst().BoidWidth, Config::Inst().BoidHeight);
+	const sf::Vector2f current = m_position;
 
-	if (_position.x + boid_size_max < border.left)
-		_position.x = (float)border.right;
+	if (m_position.x + maxSize < border.left)
+		m_position.x = (float)border.right;
 
-	if (_position.x > border.right)
-		_position.x = border.left - boid_size_max;
+	if (m_position.x > border.right)
+		m_position.x = border.left - maxSize;
 
-	if (_position.y + boid_size_max < border.top)
-		_position.y = (float)border.bot;
+	if (m_position.y + maxSize < border.top)
+		m_position.y = (float)border.bot;
 
-	if (_position.y > border.bot)
-		_position.y = border.top - boid_size_max;
+	if (m_position.y > border.bot)
+		m_position.y = border.top - maxSize;
 
-	return (current != _position);
+	return (current != m_position);
 }
 
-sf::Vector3f Boid::position_color(const RectFloat& border) const
+sf::Vector3f Boid::PositionColor(const RectFloat& border) const
 {
-	const float t = _position.x / border.width();
-	const float s = _position.y / border.height();
+	const float t = m_position.x / border.width();
+	const float s = m_position.y / border.height();
 
 	return sf::Vector3f(
-		util::interpolate(Config::GetInstance().boid_color_top_left.x * 255.0f, Config::GetInstance().boid_color_top_right.x * 255.0f, Config::GetInstance().boid_color_bot_left.x * 255.0f, Config::GetInstance().boid_color_bot_right.x * 255.0f, t, s) / 255.0f,
-		util::interpolate(Config::GetInstance().boid_color_top_left.y * 255.0f, Config::GetInstance().boid_color_top_right.y * 255.0f, Config::GetInstance().boid_color_bot_left.y * 255.0f, Config::GetInstance().boid_color_bot_right.y * 255.0f, t, s) / 255.0f,
-		util::interpolate(Config::GetInstance().boid_color_top_left.z * 255.0f, Config::GetInstance().boid_color_top_right.z * 255.0f, Config::GetInstance().boid_color_bot_left.z * 255.0f, Config::GetInstance().boid_color_bot_right.z * 255.0f, t, s) / 255.0f);
+		util::interpolate(Config::Inst().BoidColorTopLeft.x * 255.0f, Config::Inst().BoidColorTopRight.x * 255.0f, Config::Inst().BoidColorBotLeft.x * 255.0f, Config::Inst().BoidColorBotRight.x * 255.0f, t, s) / 255.0f,
+		util::interpolate(Config::Inst().BoidColorTopLeft.y * 255.0f, Config::Inst().BoidColorTopRight.y * 255.0f, Config::Inst().BoidColorBotLeft.y * 255.0f, Config::Inst().BoidColorBotRight.y * 255.0f, t, s) / 255.0f,
+		util::interpolate(Config::Inst().BoidColorTopLeft.z * 255.0f, Config::Inst().BoidColorTopRight.z * 255.0f, Config::Inst().BoidColorBotLeft.z * 255.0f, Config::Inst().BoidColorBotRight.z * 255.0f, t, s) / 255.0f);
 }
-sf::Vector3f Boid::cycle_color() const
+sf::Vector3f Boid::CycleColor() const
 {
-	if (Config::GetInstance().boid_cycle_colors.empty()) [[unlikely]]
+	if (Config::Inst().BoidCycleColors.empty()) [[unlikely]]
 		return sf::Vector3f();
 
-	float scaled_time = _cycle_time * (float)(Config::GetInstance().boid_cycle_colors.size() - 1);
+	float scaledTime = m_cycleTime * (float)(Config::Inst().BoidCycleColors.size() - 1);
 
-	const auto index1 = (int)scaled_time;
-	const auto index2 = ((int)scaled_time + 1) % (int)Config::GetInstance().boid_cycle_colors.size();
+	const auto index1 = (int)scaledTime;
+	const auto index2 = ((int)scaledTime + 1) % (int)Config::Inst().BoidCycleColors.size();
 
-	const sf::Vector3f color1 = Config::GetInstance().boid_cycle_colors[index1];
-	const sf::Vector3f color2 = Config::GetInstance().boid_cycle_colors[index2];
+	const sf::Vector3f color1 = Config::Inst().BoidCycleColors[index1];
+	const sf::Vector3f color2 = Config::Inst().BoidCycleColors[index2];
 
-	const float newT = scaled_time - std::floorf(scaled_time);
+	const float newT = scaledTime - std::floorf(scaledTime);
 
 	return vu::lerp(color1, color2, newT);
 }
-sf::Vector3f Boid::density_color() const
+sf::Vector3f Boid::DensityColor() const
 {
-	if (Config::GetInstance().boid_density_colors.empty() || !Config::GetInstance().boid_density) [[unlikely]]
+	if (Config::Inst().BoidDensityColors.empty() || !Config::Inst().BoidDensity) [[unlikely]]
 		return sf::Vector3f();
 
-	const float density_percentage = (_density / (float)Config::GetInstance().boid_density);
+	const float densityPercentage = (m_density / (float)Config::Inst().BoidDensity);
 
-	const float scaled_density = std::fmodf(density_percentage + _density_time, 1.0f) * (float)(Config::GetInstance().boid_density_colors.size() - 1);
+	const float scaledDensity = std::fmodf(densityPercentage + m_densityTime, 1.0f) * (float)(Config::Inst().BoidDensityColors.size() - 1);
 
-	const auto index1 = (int)scaled_density;
-	const auto index2 = ((int)scaled_density + 1) % (int)Config::GetInstance().boid_density_colors.size();
+	const auto index1 = (int)scaledDensity;
+	const auto index2 = ((int)scaledDensity + 1) % (int)Config::Inst().BoidDensityColors.size();
 
-	const sf::Vector3f color1 = Config::GetInstance().boid_density_colors[index1];
-	const sf::Vector3f color2 = Config::GetInstance().boid_density_colors[index2];
+	const sf::Vector3f color1 = Config::Inst().BoidDensityColors[index1];
+	const sf::Vector3f color2 = Config::Inst().BoidDensityColors[index2];
 
-	const float newT = scaled_density - std::floorf(scaled_density);
+	const float newT = scaledDensity - std::floorf(scaledDensity);
 
 	return vu::lerp(color1, color2, newT);
 }
-sf::Vector3f Boid::velocity_color() const
+sf::Vector3f Boid::VelocityColor() const
 {
-	if (Config::GetInstance().boid_velocity_colors.empty() || (Config::GetInstance().boid_max_speed == Config::GetInstance().boid_min_speed)) [[unlikely]]
+	if (Config::Inst().BoidVelocityColors.empty() || (Config::Inst().BoidSpeedMax == Config::Inst().BoidSpeedMin)) [[unlikely]]
 		return sf::Vector3f();
 
-	const float velocity_percentage = std::clamp((vu::distance(_velocity) - Config::GetInstance().boid_min_speed) / (Config::GetInstance().boid_max_speed - Config::GetInstance().boid_min_speed), 0.0f, 1.0f);
+	const float velocity_percentage = std::clamp((vu::distance(m_velocity) - Config::Inst().BoidSpeedMin) / (Config::Inst().BoidSpeedMax - Config::Inst().BoidSpeedMin), 0.0f, 1.0f);
 
-	const float scaled_velocity = velocity_percentage * (float)(Config::GetInstance().boid_velocity_colors.size() - 1);
+	const float scaled_velocity = velocity_percentage * (float)(Config::Inst().BoidVelocityColors.size() - 1);
 
 	const auto index1 = (int)scaled_velocity;
-	const auto index2 = ((int)scaled_velocity + 1) % (int)Config::GetInstance().boid_velocity_colors.size();
+	const auto index2 = ((int)scaled_velocity + 1) % (int)Config::Inst().BoidVelocityColors.size();
 
-	const sf::Vector3f color1 = Config::GetInstance().boid_velocity_colors[index1];
-	const sf::Vector3f color2 = Config::GetInstance().boid_velocity_colors[index2];
+	const sf::Vector3f color1 = Config::Inst().BoidVelocityColors[index1];
+	const sf::Vector3f color2 = Config::Inst().BoidVelocityColors[index2];
 
 	const float newT = scaled_velocity - std::floorf(scaled_velocity);
 
 	return vu::lerp(color1, color2, newT);
 }
-sf::Vector3f Boid::rotation_color() const
+sf::Vector3f Boid::RotationColor() const
 {
-	if (Config::GetInstance().boid_rotation_colors.empty()) [[unlikely]]
+	if (Config::Inst().BoidRotationColors.empty()) [[unlikely]]
 		return sf::Vector3f();
 
-	const float rotation_percentage = (_velocity.angle().asRadians() + float(M_PI)) / (2.0f * float(M_PI));
+	const float rotationPercentage = (m_velocity.angle().asRadians() + float(M_PI)) / (2.0f * float(M_PI));
 
-	const float scaled_rotation = rotation_percentage * (float)(Config::GetInstance().boid_rotation_colors.size() - 1);
+	const float scaledRotation = rotationPercentage * (float)(Config::Inst().BoidRotationColors.size() - 1);
 
-	const auto index1 = (int)scaled_rotation;
-	const auto index2 = ((int)scaled_rotation + 1) % (int)Config::GetInstance().boid_rotation_colors.size();
+	const auto index1 = (int)scaledRotation;
+	const auto index2 = ((int)scaledRotation + 1) % (int)Config::Inst().BoidRotationColors.size();
 
-	const sf::Vector3f color1 = Config::GetInstance().boid_rotation_colors[index1];
-	const sf::Vector3f color2 = Config::GetInstance().boid_rotation_colors[index2];
+	const sf::Vector3f color1 = Config::Inst().BoidRotationColors[index1];
+	const sf::Vector3f color2 = Config::Inst().BoidRotationColors[index2];
 
-	const float newT = scaled_rotation - std::floorf(scaled_rotation);
+	const float newT = scaledRotation - std::floorf(scaledRotation);
 
 	return vu::lerp(color1, color2, newT);
 }
-sf::Vector3f Boid::audio_color(const IAudioMeterInfo* audio_meter) const
+sf::Vector3f Boid::AudioColor(const IAudioMeterInfo* audioMeter) const
 {
-	if (Config::GetInstance().audio_responsive_colors.empty()) [[unlikely]]
+	if (Config::Inst().AudioResponsiveColors.empty()) [[unlikely]]
 		return sf::Vector3f();
 
-	const float density_percentage = (_density / (float)Config::GetInstance().audio_responsive_density);
-	const float max_volume = std::fminf(audio_meter->get_volume() * Config::GetInstance().audio_responsive_strength, Config::GetInstance().audio_responsive_limit);
+	const float densityPercentage = (m_density / (float)Config::Inst().AudioResponsiveDensity);
+	const float maxVolume = std::fminf(audioMeter->GetVolume() * Config::Inst().AudioResponsiveStrength, Config::Inst().AudioResponsiveLimit);
 
-	const float scaled_volume = std::fminf(max_volume * density_percentage, 1.0f) * (float)(Config::GetInstance().audio_responsive_colors.size() - 1);
+	const float scaledVolume = std::fminf(maxVolume * densityPercentage, 1.0f) * (float)(Config::Inst().AudioResponsiveColors.size() - 1);
 
-	const auto index1 = (int)scaled_volume;
-	const auto index2 = ((int)scaled_volume + 1) % (int)Config::GetInstance().audio_responsive_colors.size();
+	const auto index1 = (int)scaledVolume;
+	const auto index2 = ((int)scaledVolume + 1) % (int)Config::Inst().AudioResponsiveColors.size();
 
-	const sf::Vector3f color1 = Config::GetInstance().audio_responsive_colors[index1];
-	const sf::Vector3f color2 = Config::GetInstance().audio_responsive_colors[index2];
+	const sf::Vector3f color1 = Config::Inst().AudioResponsiveColors[index1];
+	const sf::Vector3f color2 = Config::Inst().AudioResponsiveColors[index2];
 
-	const float newT = scaled_volume - std::floorf(scaled_volume);
+	const float newT = scaledVolume - std::floorf(scaledVolume);
 
 	return vu::lerp(color1, color2, newT);
 }
-void Boid::impulse_color(sf::Vector3f& color, std::span<const Impulse> impulses) const
+void Boid::ImpulseColor(sf::Vector3f& Color, std::span<const Impulse> impulses) const
 {
-	if (Config::GetInstance().impulse_colors.empty()) [[unlikely]]
+	if (Config::Inst().ImpulseColors.empty()) [[unlikely]]
 		return;
 
 	for (const Impulse& impulse : impulses)
 	{
-		const sf::Vector2f impulse_pos = impulse.get_position();
-		const float impulse_length = impulse.get_length();
+		const sf::Vector2f impulsePos = impulse.GetPosition();
+		const float impulseLength = impulse.GetLength();
 
-		const float length = vu::distance(_position, impulse_pos);
-		const float diff = std::abs(length - impulse_length);
+		const float length = vu::distance(m_position, impulsePos);
+		const float diff = std::abs(length - impulseLength);
 
-		const float percentage = (impulse_length / Config::GetInstance().impulse_fade_distance);
-		const float size = impulse.get_size() * (1.0f - percentage);
+		const float percentage = (impulseLength / Config::Inst().ImpulseFadeDistance);
+		const float size = impulse.GetSize() * (1.0f - percentage);
 
 		if (diff <= size)
 		{
-			const float scaled_length = std::fmodf(percentage, 1.0f) * (float)(Config::GetInstance().impulse_colors.size() - 1);
+			const float scaled_length = std::fmodf(percentage, 1.0f) * (float)(Config::Inst().ImpulseColors.size() - 1);
 
 			const auto index1 = (int)scaled_length;
-			const auto index2 = ((int)scaled_length + 1) % (int)Config::GetInstance().impulse_colors.size();
+			const auto index2 = ((int)scaled_length + 1) % (int)Config::Inst().ImpulseColors.size();
 
-			const sf::Vector3f color1 = Config::GetInstance().impulse_colors[index1];
-			const sf::Vector3f color2 = Config::GetInstance().impulse_colors[index2];
+			const sf::Vector3f color1 = Config::Inst().ImpulseColors[index1];
+			const sf::Vector3f color2 = Config::Inst().ImpulseColors[index2];
 
 			const float newT = scaled_length - std::floorf(scaled_length);
 
-			color = vu::lerp(color1, color2, newT);
+			Color = vu::lerp(color1, color2, newT);
 		}
 	}
 }

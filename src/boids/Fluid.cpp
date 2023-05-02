@@ -1,7 +1,9 @@
 #include "Fluid.h"
 
+Fluid::Fluid() = default;
+
 Fluid::Fluid(const sf::Vector2u& size)
-	: W(size.x / Config::GetInstance().fluid_scale), H(size.y / Config::GetInstance().fluid_scale), N(W * H)
+	: W(size.x / Config::Inst().FluidScale), H(size.y / Config::Inst().FluidScale), N(W * H)
 {
 	vx = std::make_unique<float[]>(N);
 	vy = std::make_unique<float[]>(N);
@@ -13,66 +15,49 @@ Fluid::Fluid(const sf::Vector2u& size)
 	density_prev = std::make_unique<float[]>(N);
 }
 
-sf::Vector3f Fluid::get_color(const sf::Vector2f& origin) const
+sf::Vector3f Fluid::GetColor(const sf::Vector2f& origin) const
 {
-	if (Config::GetInstance().fluid_colors.empty())
+	if (Config::Inst().FluidColors.empty())
 		return sf::Vector3f();
 
-	const int x = (int)(origin.x / Config::GetInstance().fluid_scale);
-	const int y = (int)(origin.y / Config::GetInstance().fluid_scale);
+	const int x = (int)(origin.x / Config::Inst().FluidScale);
+	const int y = (int)(origin.y / Config::Inst().FluidScale);
 
-	const float vel_x = util::map_to_range(vx[safe_IX(x, y)],
-		-Config::GetInstance().fluid_color_vel, Config::GetInstance().fluid_color_vel, -1.0f, 1.0f);
-	const float vel_y = util::map_to_range(vy[safe_IX(x, y)],
-		-Config::GetInstance().fluid_color_vel, Config::GetInstance().fluid_color_vel, -1.0f, 1.0f);
+	const float vel_x = util::map_to_range(vx[SafeIX(x, y)],
+		-Config::Inst().FluidColorVel, Config::Inst().FluidColorVel, -1.0f, 1.0f);
+	const float vel_y = util::map_to_range(vy[SafeIX(x, y)],
+		-Config::Inst().FluidColorVel, Config::Inst().FluidColorVel, -1.0f, 1.0f);
 
-	const float bnd = (float)Config::GetInstance().fluid_colors.size() - 1.0f;
+	const float bnd = (float)Config::Inst().FluidColors.size() - 1.0f;
 
 	float scaled_speed = vu::distance(sf::Vector2f(vel_x, vel_y)) * bnd;
 	scaled_speed = std::clamp(scaled_speed, 0.0f, bnd);
 
 	const int index1 = (int)scaled_speed;
-	const int index2 = ((int)scaled_speed + 1) % (int)Config::GetInstance().fluid_colors.size();
+	const int index2 = ((int)scaled_speed + 1) % (int)Config::Inst().FluidColors.size();
 
-	const sf::Vector3f color1 = Config::GetInstance().fluid_colors[index1];
-	const sf::Vector3f color2 = Config::GetInstance().fluid_colors[index2];
+	const sf::Vector3f color1 = Config::Inst().FluidColors[index1];
+	const sf::Vector3f color2 = Config::Inst().FluidColors[index2];
 
 	const float newT = scaled_speed - std::floorf(scaled_speed);
 
-	return vu::lerp(color1, color2, newT) * Config::GetInstance().color_fluid_weight;
+	return vu::lerp(color1, color2, newT) * Config::Inst().ColorFluidWeight;
 }
 
-void Fluid::add_density(int x, int y, float amount)
+void Fluid::AddDensity(int x, int y, float amount)
 {
-	density[safe_IX(x, y)] += amount;
+	density[SafeIX(x, y)] += amount;
 }
 
-void Fluid::add_velocity(int x, int y, float vx, float vy)
+void Fluid::AddVelocity(int x, int y, float vx, float vy)
 {
-	int index = safe_IX(x, y);
+	int index = SafeIX(x, y);
 
 	this->vx[index] += vx;
 	this->vy[index] += vy;
 }
 
-constexpr int Fluid::IX(const int x, const int y) const noexcept 
-{ 
-	return x + y * W; 
-}
-constexpr int Fluid::IX(const int i) const noexcept 
-{ 
-	return (i % W) + i; 
-}
-
-constexpr int Fluid::safe_IX(int x, int y) const noexcept
-{
-	x = std::clamp<int>(x, 0, W - 1);
-	y = std::clamp<int>(y, 0, H - 1);
-
-	return IX(x, y);
-}
-
-void Fluid::lin_solve(float* x, const float* x0, const float a, const int b, const float c)
+void Fluid::LinSolve(float* x, const float* x0, const float a, const int b, const float c)
 {
 	for (int k = 0; k < 2; ++k)
 	{
@@ -87,11 +72,11 @@ void Fluid::lin_solve(float* x, const float* x0, const float a, const int b, con
 					 x[IX(j, i + 1)])) / c;
 			}
 		}
-		set_bnd(x, b);
+		SetBnd(x, b);
 	}
 }
 
-void Fluid::set_bnd(float* x, const int b)
+void Fluid::SetBnd(float* x, const int b)
 {
 	for (int i = 1; i < std::max(H - 1, W - 1); ++i)
 	{
@@ -115,13 +100,13 @@ void Fluid::set_bnd(float* x, const int b)
 
 }
 
-void Fluid::diffuse(float* x, const float* x0, const float diff, const int b, const float dt)
+void Fluid::Diffuse(float* x, const float* x0, const float diff, const int b, const float dt)
 {
 	float a = dt * diff * (W - 2) * (H - 2);
-	lin_solve(x, x0, a, b, 1 + 6 * a);
+	LinSolve(x, x0, a, b, 1 + 6 * a);
 }
 
-void Fluid::advect(float* d, const float* d0, const float* vx, const float* vy, const int b, const float dt)
+void Fluid::Advect(float* d, const float* d0, const float* vx, const float* vy, const int b, const float dt)
 {
 	float i0, j0, i1, j1;
 	float x, y, s0, t0, s1, t1;
@@ -162,15 +147,15 @@ void Fluid::advect(float* d, const float* d0, const float* vx, const float* vy, 
 			const int j1i = (int)j1;
 
 			d[IX(j, i)] =
-				s0 * (t0 * d0[safe_IX(i0i, j0i)] + t1 * d0[safe_IX(i0i, j1i)]) +
-				s1 * (t0 * d0[safe_IX(i1i, j0i)] + t1 * d0[safe_IX(i1i, j1i)]);
+				s0 * (t0 * d0[SafeIX(i0i, j0i)] + t1 * d0[SafeIX(i0i, j1i)]) +
+				s1 * (t0 * d0[SafeIX(i1i, j0i)] + t1 * d0[SafeIX(i1i, j1i)]);
 		}
 	}
 
-	set_bnd(d, b);
+	SetBnd(d, b);
 }
 
-void Fluid::project(float* vx, float* vy, float* p, float* div)
+void Fluid::Project(float* vx, float* vy, float* p, float* div)
 {
 	for (int y = 1; y < H - 1; ++y)
 	{
@@ -186,10 +171,10 @@ void Fluid::project(float* vx, float* vy, float* p, float* div)
 		}
 	}
 
-	set_bnd(div, 0);
-	set_bnd(p, 0);
+	SetBnd(div, 0);
+	SetBnd(p, 0);
 
-	lin_solve(p, div, 1, 0, 6);
+	LinSolve(p, div, 1, 0, 6);
 
 	for (int y = 1; y < H - 1; ++y)
 	{
@@ -200,11 +185,11 @@ void Fluid::project(float* vx, float* vy, float* p, float* div)
 		}
 	}
 
-	set_bnd(vx, 1);
-	set_bnd(vy, 2);
+	SetBnd(vx, 1);
+	SetBnd(vy, 2);
 }
 
-void Fluid::step_line(int x0, int y0, int x1, int y1, int dx, int dy, float a)
+void Fluid::StepLine(int x0, int y0, int x1, int y1, int dx, int dy, float a)
 {
 	if (x0 == x1 && y0 == y1)
 		return;
@@ -214,7 +199,7 @@ void Fluid::step_line(int x0, int y0, int x1, int y1, int dx, int dy, float a)
 		int pk = 2 * dy - dx;
 		for (int i = 0; i < dx; ++i)
 		{
-			add_velocity(x0, y0, (x1 - x0) * a, (y1 - y0) * a);
+			AddVelocity(x0, y0, (x1 - x0) * a, (y1 - y0) * a);
 
 			x0 < x1 ? ++x0 : --x0;
 
@@ -231,7 +216,7 @@ void Fluid::step_line(int x0, int y0, int x1, int y1, int dx, int dy, float a)
 		int pk = 2 * dx - dy;
 		for (int i = 0; i < dy; ++i)
 		{
-			add_velocity(x0, y0, (x1 - x0) * a, (y1 - y0) * a);
+			AddVelocity(x0, y0, (x1 - x0) * a, (y1 - y0) * a);
 
 			y0 < y1 ? ++y0 : --y0;
 
@@ -245,15 +230,15 @@ void Fluid::step_line(int x0, int y0, int x1, int y1, int dx, int dy, float a)
 	}
 }
 
-void Fluid::update(const float dt)
+void Fluid::Update(const float dt)
 {
-	const auto diffuseFunc = std::bind(&Fluid::diffuse, this,
+	const auto diffuseFunc = std::bind(&Fluid::Diffuse, this,
 		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, dt);
 
-	const auto advectFunc = std::bind(&Fluid::advect, this,
+	const auto advectFunc = std::bind(&Fluid::Advect, this,
 		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, dt);
 
-	const auto projectFunc = std::bind(&Fluid::project, this,
+	const auto projectFunc = std::bind(&Fluid::Project, this,
 		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
 
 	std::future<void> thread1;
@@ -261,8 +246,8 @@ void Fluid::update(const float dt)
 	std::future<void> thread3;
 
 	{
-		thread1 = std::async(std::launch::deferred, diffuseFunc, vx_prev.get(), vx.get(), Config::GetInstance().fluid_viscosity, 1);
-		thread2 = std::async(std::launch::deferred, diffuseFunc, vy_prev.get(), vy.get(), Config::GetInstance().fluid_viscosity, 2);
+		thread1 = std::async(std::launch::deferred, diffuseFunc, vx_prev.get(), vx.get(), Config::Inst().FluidViscosity, 1);
+		thread2 = std::async(std::launch::deferred, diffuseFunc, vy_prev.get(), vy.get(), Config::Inst().FluidViscosity, 2);
 
 		thread1.wait();
 		thread2.wait();
@@ -282,7 +267,7 @@ void Fluid::update(const float dt)
 
 	{
 		thread1 = std::async(std::launch::deferred, projectFunc, vx.get(), vy.get(), vx_prev.get(), vy_prev.get());
-		thread2 = std::async(std::launch::deferred, diffuseFunc, density_prev.get(), density.get(), Config::GetInstance().fluid_diffusion, 0);
+		thread2 = std::async(std::launch::deferred, diffuseFunc, density_prev.get(), density.get(), Config::Inst().FluidDiffusion, 0);
 
 		thread1.wait();
 
@@ -291,4 +276,17 @@ void Fluid::update(const float dt)
 		thread2.wait();
 		thread3.wait();
 	}
+}
+
+int Fluid::IX(const int x, const int y) const noexcept	
+{ 
+	return x + y * W; 
+}
+
+int Fluid::SafeIX(int x, int y) const noexcept
+{
+	x = std::clamp<int>(x, 0, W - 1);
+	y = std::clamp<int>(y, 0, H - 1);
+
+	return IX(x, y);
 }

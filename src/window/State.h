@@ -7,56 +7,40 @@
 #include "InputHandler.h"
 #include "ResourceHolder.hpp"
 
-#include "States.h"
-
-class StateStack;
-
 class State
 {
 public:
-	typedef std::unique_ptr<State> ptr;
+	using Ptr = std::unique_ptr<State>;
 
 	struct Context // holds vital objects
 	{
-		Context(Window& window, Camera& camera, InputHandler& input_handler, TextureHolder& texture_holder, FontHolder& font_holder)
-			: window(&window), camera(&camera), input_handler(&input_handler), texture_holder(&texture_holder), font_holder(&font_holder) { }
+		Context(Window& window, Camera& camera, InputHandler& inputHandler, TextureHolder& textureHolder, FontHolder& fontHolder)
+			: window(&window), camera(&camera), inputHandler(&inputHandler), textureHolder(&textureHolder), fontHolder(&fontHolder) { }
 
 		Window*			window;
 		Camera*			camera;
-		InputHandler*	input_handler;
-		TextureHolder*	texture_holder;
-		FontHolder*		font_holder;
+		InputHandler*	inputHandler;
+		TextureHolder*	textureHolder;
+		FontHolder*		fontHolder;
 	};
 
 public:
-	explicit State(StateStack& _state_stack, Context context)
-		: _state_stack(&_state_stack), _context(context) { }
+	explicit State(Context context);
+	virtual ~State();
 
-	virtual ~State() {}
+public:
+	virtual bool HandleEvent(const sf::Event& event) = 0;
 
-	virtual bool handle_event(const sf::Event& event) = 0;
+	virtual bool PreUpdate(float dt) = 0;
+	virtual bool Update(float dt) = 0;
+	virtual bool FixedUpdate(float dt) = 0;
+	virtual bool PostUpdate(float dt, float interp) = 0;
 
-	virtual bool pre_update(float dt)					{ return true; }
-	virtual bool update(float dt) = 0;
-	virtual bool fixed_update(float dt)					{ return true; }
-	virtual bool post_update(float dt, float interp)	{ return true; }
-
-	virtual void draw() = 0;
-
-	virtual void on_activate() {}
-	virtual void on_destroy() {}
+	virtual void Draw() = 0;
 
 protected:
-	void request_stack_push(States::ID state_id);
-	void request_stack_pop();
-	void request_stack_clear();
-
-	const Context& context() const
-	{
-		return _context;
-	}
+	auto GetContext() const -> const Context&;
 
 private:
-	StateStack* _state_stack;
-	Context		_context;
+	Context	m_context;
 };

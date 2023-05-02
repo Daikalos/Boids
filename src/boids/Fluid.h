@@ -17,31 +17,32 @@
 class Fluid final
 {
 public:
+	Fluid();
 	Fluid(const sf::Vector2u& size);
 
-	[[nodiscard]] sf::Vector3f get_color(const sf::Vector2f& origin) const;
-
-	[[nodiscard]] constexpr int IX(const int x, const int y) const noexcept;
-	[[nodiscard]] constexpr int IX(const int i) const noexcept;
-
-	[[nodiscard]] constexpr int safe_IX(int x, int y) const noexcept;
+public:
+	[[nodiscard]] sf::Vector3f GetColor(const sf::Vector2f& origin) const;
 
 public:
-	void add_density(int x, int y, float amount);
-	void add_velocity(int x, int y, float vx, float vy);
+	void AddDensity(int x, int y, float amount);
+	void AddVelocity(int x, int y, float vx, float vy);
 
-	void step_line(int x0, int y0, int x1, int y1, int dx, int dy, float a);
+	void StepLine(int x0, int y0, int x1, int y1, int dx, int dy, float a);
 
-	void update(const float dt);
+	void Update(const float dt);
 
 private:
-	void lin_solve(float* x, const float* x0, const float a, const int b, const float c);
+	void LinSolve(float* x, const float* x0, const float a, const int b, const float c);
 
-	void set_bnd(float* x, const int b);
+	void SetBnd(float* x, const int b);
 
-	void diffuse(float* x, const float* x0, const float diff, const int b, const float dt);
-	void advect(float* d, const float* d0, const float* vx, const float* vy, const int b, const float dt);
-	void project(float* u, float* v, float* p, float* div);
+	void Diffuse(float* x, const float* x0, const float diff, const int b, const float dt);
+	void Advect(float* d, const float* d0, const float* vx, const float* vy, const int b, const float dt);
+	void Project(float* u, float* v, float* p, float* div);
+
+private:
+	[[nodiscard]] int IX(const int x, const int y) const noexcept;
+	[[nodiscard]] int SafeIX(int x, int y) const noexcept;
 
 private:
 	int W, H, N;

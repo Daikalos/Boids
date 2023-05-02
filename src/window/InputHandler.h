@@ -30,59 +30,36 @@ namespace Binding
 class InputHandler : NonCopyable
 {
 public:
-	using uint = uint32_t;
-
-public:
 	InputHandler();
 
-	// call at start of loop before poll event
-	//
-	void update(float dt);
-	void handle_event(const sf::Event& event);
+public:
+	bool GetButtonHeld(const sf::Mouse::Button& button) const;
+	bool GetButtonPressed(const sf::Mouse::Button& button) const;
+	bool GetButtonReleased(const sf::Mouse::Button& button) const;
+
+	bool GetScrollUp() const;
+	bool GetScrollDown() const;
+
+	bool GetKeyHeld(const sf::Keyboard::Key& key) const;
+	bool GetKeyPressed(const sf::Keyboard::Key& key) const;
+	bool GetKeyReleased(const sf::Keyboard::Key& key) const;
 
 public:
-	inline bool get_button_held(const sf::Mouse::Button& button) const
-	{
-		return _current_button_state[button] && _button_held_timer[button] >= _held_threshold;
-	}
-	inline bool get_button_pressed(const sf::Mouse::Button& button) const
-	{
-		return _current_button_state[button] && !_previous_button_state[button];
-	}
-	inline bool get_button_released(const sf::Mouse::Button& button) const
-	{
-		return !get_button_pressed(button);
-	}
-
-	inline bool get_scroll_up() const { return _scroll_delta > 0; }
-	inline bool get_scroll_down() const { return _scroll_delta < 0; }
-
-	inline bool get_key_held(const sf::Keyboard::Key& key) const
-	{
-		return _current_key_state[key] && _key_held_timer[key] >= _held_threshold;
-	}
-	inline bool get_key_pressed(const sf::Keyboard::Key& key) const
-	{
-		return _current_key_state[key] && !_previous_key_state[key];
-	}
-	inline bool get_key_released(const sf::Keyboard::Key& key) const
-	{
-		return !get_key_pressed(key);
-	}
-
-	//////////////////////
+	// call at start of loop before poll event
+	//
+	void Update(float dt);
+	void HandleEvent(const sf::Event& event);
 
 private: // VARIABLES
-	float	_held_threshold{0.0f};
+	float	m_scrollDelta		{0.0f};
+	float	m_heldThreshold		{0.0f};
 
-	float	_scroll_delta{0.0f};
+	bool	m_currButtonState	[sf::Mouse::ButtonCount] = {false};
+	bool	m_prevButtonState	[sf::Mouse::ButtonCount] = {false};
+	float	m_heldButtonTime	[sf::Mouse::ButtonCount] = {0.0f};
 
-	bool	_current_button_state	[sf::Mouse::ButtonCount] = {false};
-	bool	_previous_button_state	[sf::Mouse::ButtonCount] = {false};
-	float	_button_held_timer		[sf::Mouse::ButtonCount] = {0.0f};
-
-	bool	_current_key_state		[sf::Keyboard::KeyCount] = {false};
-	bool	_previous_key_state		[sf::Keyboard::KeyCount] = {false};
-	float	_key_held_timer			[sf::Keyboard::KeyCount] = {0.0f};
+	bool	m_currKeyState		[sf::Keyboard::KeyCount] = {false};
+	bool	m_prevKeyState		[sf::Keyboard::KeyCount] = {false};
+	float	m_heldKeyTime		[sf::Keyboard::KeyCount] = {0.0f};
 };
 

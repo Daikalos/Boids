@@ -11,7 +11,7 @@ enum class Policy
 };
 
 template<class F>
-static auto policy_select(F&& f, Policy p)
+static auto PolicySelect(F&& f, Policy p)
 {
 	switch (p) 
 	{

@@ -1,37 +1,71 @@
 #include "InputHandler.h"
 
-InputHandler::InputHandler()
-	: _held_threshold(0.1f) { }
+InputHandler::InputHandler() : m_heldThreshold(0.1f) { }
 
-void InputHandler::update(float dt)
+bool InputHandler::GetButtonHeld(const sf::Mouse::Button& button) const
 {
-	_scroll_delta = 0.0f;
+	return m_currButtonState[button] && m_heldButtonTime[button] >= m_heldThreshold;
+}
+bool InputHandler::GetButtonPressed(const sf::Mouse::Button& button) const
+{
+	return m_currButtonState[button] && !m_prevButtonState[button];
+}
+bool InputHandler::GetButtonReleased(const sf::Mouse::Button& button) const
+{
+	return !m_currButtonState[button] && m_prevButtonState[button];
+}
 
-	for (uint i = 0; i < sf::Mouse::ButtonCount; ++i)
+bool InputHandler::GetScrollUp() const { return m_scrollDelta > 0; }
+bool InputHandler::GetScrollDown() const { return m_scrollDelta < 0; }
+
+bool InputHandler::GetKeyHeld(const sf::Keyboard::Key& key) const
+{
+	return m_currKeyState[key] && m_heldKeyTime[key] >= m_heldThreshold;
+}
+bool InputHandler::GetKeyPressed(const sf::Keyboard::Key& key) const
+{
+	return m_currKeyState[key] && !m_prevKeyState[key];
+}
+bool InputHandler::GetKeyReleased(const sf::Keyboard::Key& key) const
+{
+	return !m_currKeyState[key] && m_prevKeyState[key];
+}
+
+void InputHandler::Update(float dt)
+{
+	m_scrollDelta = 0.0f;
+
+	for (uint32_t i = 0; i < sf::Mouse::ButtonCount; ++i)
 	{
-		_previous_button_state[i] = _current_button_state[i];
-		_current_button_state[i] = sf::Mouse::isButtonPressed(static_cast<sf::Mouse::Button>(i));
+		bool& prevState = m_prevButtonState[i];
+		bool& currState = m_currButtonState[i];
+		float& heldTime = m_heldButtonTime[i];
 
-		_button_held_timer[i] = _current_button_state[i] ? 
-			_button_held_timer[i] + (_button_held_timer[i] < _held_threshold ? dt : 0.0f) : 0.0f;
+		prevState = currState;
+		currState = sf::Mouse::isButtonPressed(static_cast<sf::Mouse::Button>(i));
+
+		heldTime = currState ? (heldTime + dt) : 0.0f;
 	}
 
-	for (uint i = 0; i < sf::Keyboard::KeyCount; ++i)
+	for (uint32_t i = 0; i < sf::Keyboard::KeyCount; ++i)
 	{
-		_previous_key_state[i] = _current_key_state[i];
-		_current_key_state[i] = sf::Keyboard::isKeyPressed(static_cast<sf::Keyboard::Key>(i));
+		bool& prevState = m_prevKeyState[i];
+		bool& currState = m_currKeyState[i];
+		float& heldTime = m_heldKeyTime[i];
 
-		_key_held_timer[i] = _current_key_state[i] ? 
-			_key_held_timer[i] + (_key_held_timer[i] < _held_threshold ? dt : 0.0f) : 0.0f;
+		m_prevKeyState[i] = m_currKeyState[i];
+		m_currKeyState[i] = sf::Keyboard::isKeyPressed(static_cast<sf::Keyboard::Key>(i));
+
+		heldTime = currState ? (heldTime + dt) : 0.0f;
 	}
 }
 
-void InputHandler::handle_event(const sf::Event& event)
+void InputHandler::HandleEvent(const sf::Event& event)
 {
 	switch (event.type)
 	{
 	case sf::Event::MouseWheelScrolled:
-		_scroll_delta = event.mouseWheelScroll.delta;
+		m_scrollDelta = event.mouseWheelScroll.delta;
 		break;
 	}
 }

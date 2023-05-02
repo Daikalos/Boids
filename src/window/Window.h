@@ -20,41 +20,41 @@ enum class WindowBorder
 class Window : public sf::RenderWindow, NonCopyable
 {
 public:
-	Window(std::string name, sf::VideoMode mode, WindowBorder window_border, sf::ContextSettings settings, bool vertical_sync, int frame_rate, Camera& camera);
+	Window(std::string name, sf::VideoMode mode, WindowBorder windowBorder, sf::ContextSettings settings, bool verticalSync, int framerate, Camera& camera);
 
-	void initialize();
-	void handle_event(const sf::Event& event);
+	void Initialize();
+	void HandleEvent(const sf::Event& event);
 
 	// clears and sets view
 	//
-	void setup();
+	void Setup();
 
-	void set_framerate(int frame_rate);
-	void set_vertical_sync(bool flag);
+	void SetFramerate(int frame_rate);
+	void SetVerticalSync(bool flag);
 
-	void build(WindowBorder window_border, sf::VideoMode mode, sf::ContextSettings settings);
+	void Build(WindowBorder windowBorder, sf::VideoMode mode, sf::ContextSettings settings);
 
-	void set_border(WindowBorder border);
-	void set_mode(sf::VideoMode mode);
-	void set_settings(sf::ContextSettings settings);
+	void SetBorder(WindowBorder border);
+	void SetMode(sf::VideoMode mode);
+	void SetSettings(sf::ContextSettings settings);
 
-	void set_clear_color(sf::Color color);
+	void SetClearColor(sf::Color Color);
 
 	// false = hides and grabs the cursor
 	// true = shows and unhooks the cursor
 	//
-	void set_cursor_state(bool flag);
+	void SetCursorState(bool flag);
 
-	RectFloat get_border() const;
+	RectFloat GetBorder() const;
 
 private:
-	std::string				_name;
-	sf::VideoMode			_mode;
-	WindowBorder			_border;
-	sf::ContextSettings		_settings;
-	bool					_vertical_sync;
-	int						_frame_rate;
-	sf::Color				_clear_color;
+	std::string				m_name;
+	sf::VideoMode			m_mode;
+	WindowBorder			m_border;
+	sf::ContextSettings		m_settings;
+	bool					m_verticalSync	{false};
+	int						m_framerate		{60};
+	sf::Color				m_clearColor	{sf::Color::Black};
 
-	Camera*					_camera;
+	Camera*					m_camera;
 };

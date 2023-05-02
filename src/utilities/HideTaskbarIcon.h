@@ -6,7 +6,7 @@
 
 #include <ShObjIdl.h>
 
-static void hide_taskbar_icon(const sf::RenderWindow& window)
+static void HideTaskbarIcon(const sf::RenderWindow& window)
 {
 	ITaskbarList* pTaskList = NULL;
 	

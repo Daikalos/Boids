@@ -1,19 +1,19 @@
 #include "Window.h"
 
-Window::Window(std::string name, sf::VideoMode mode, WindowBorder window_border, sf::ContextSettings settings, bool vertical_sync, int frame_rate, Camera& _camera)
-	: _name(name), _mode(mode), _border(window_border), _settings(settings), _vertical_sync(vertical_sync), _frame_rate(frame_rate), _camera(&_camera) {}
+Window::Window(std::string name, sf::VideoMode mode, WindowBorder windowBorder, sf::ContextSettings settings, bool verticalSync, int framerate, Camera& _camera)
+	: m_name(name), m_mode(mode), m_border(windowBorder), m_settings(settings), m_verticalSync(verticalSync), m_framerate(framerate), m_camera(&_camera) {}
 
-void Window::initialize()
+void Window::Initialize()
 {
-	_mode = sf::VideoMode::getDesktopMode();
+	m_mode = sf::VideoMode::getDesktopMode();
 
-	build(_border, _mode, _settings);
+	Build(m_border, m_mode, m_settings);
 
-	_camera->set_size(sf::Vector2f(getSize()));
-	_camera->set_position(_camera->get_size() / 2.0f);
+	m_camera->SetSize(sf::Vector2f(getSize()));
+	m_camera->SetPosition(m_camera->GetSize() / 2.0f);
 
 #ifdef _WIN32
-	hide_taskbar_icon(*this);
+	HideTaskbarIcon(*this);
 #endif
 
 	if (!setActive(true))
@@ -30,7 +30,7 @@ void Window::initialize()
 	glEnableClientState(GL_COLOR_ARRAY);
 }
 
-void Window::handle_event(const sf::Event& event)
+void Window::HandleEvent(const sf::Event& event)
 {
 	switch (event.type)
 	{
@@ -50,79 +50,79 @@ void Window::handle_event(const sf::Event& event)
 	}
 }
 
-void Window::setup()
+void Window::Setup()
 {
-	clear(sf::Color(_clear_color.r, _clear_color.g, _clear_color.b, 0));
-	setView(*_camera);
+	clear(sf::Color(m_clearColor.r, m_clearColor.g, m_clearColor.b, 0));
+	setView(*m_camera);
 }
 
-void Window::set_framerate(int frame_rate)
+void Window::SetFramerate(int frame_rate)
 {
-	_frame_rate = frame_rate;
-	setFramerateLimit(_vertical_sync ? 0 : frame_rate);
+	m_framerate = frame_rate;
+	setFramerateLimit(m_verticalSync ? 0 : frame_rate);
 }
 
-void Window::set_vertical_sync(bool flag)
+void Window::SetVerticalSync(bool flag)
 {
-	_vertical_sync = flag;
+	m_verticalSync = flag;
 
-	setFramerateLimit(_vertical_sync ? 0 : _frame_rate);
-	setVerticalSyncEnabled(_vertical_sync);
+	setFramerateLimit(m_verticalSync ? 0 : m_framerate);
+	setVerticalSyncEnabled(m_verticalSync);
 }
 
-void Window::build(WindowBorder window_border, sf::VideoMode mode, sf::ContextSettings settings)
+void Window::Build(WindowBorder windowBorder, sf::VideoMode mode, sf::ContextSettings settings)
 {
-	_border = window_border;
-	_mode = mode;
-	_settings = settings;
+	m_border = windowBorder;
+	m_mode = mode;
+	m_settings = settings;
 
-	switch (window_border)
+	switch (windowBorder)
 	{
 	case WindowBorder::Windowed:
-		create(sf::VideoMode(mode.size, sf::VideoMode::getDesktopMode().bitsPerPixel), _name, sf::Style::Close, settings);
+		create(sf::VideoMode(mode.size, sf::VideoMode::getDesktopMode().bitsPerPixel), m_name, sf::Style::Close, settings);
 		break;
 	case WindowBorder::Fullscreen:
-		create(sf::VideoMode(mode.size, sf::VideoMode::getDesktopMode().bitsPerPixel), _name, sf::Style::Fullscreen, settings);
+		create(sf::VideoMode(mode.size, sf::VideoMode::getDesktopMode().bitsPerPixel), m_name, sf::Style::Fullscreen, settings);
 		break;
 	case WindowBorder::BorderlessWindowed:
-		create(sf::VideoMode(mode.size, sf::VideoMode::getDesktopMode().bitsPerPixel), _name, sf::Style::None, settings);
+		create(sf::VideoMode(mode.size, sf::VideoMode::getDesktopMode().bitsPerPixel), m_name, sf::Style::None, settings);
 		break;
 	}
 
-	setFramerateLimit(_vertical_sync ? 0 : _frame_rate);
-	setVerticalSyncEnabled(_vertical_sync);
+	setFramerateLimit(m_verticalSync ? 0 : m_framerate);
+	setVerticalSyncEnabled(m_verticalSync);
 }
 
-void Window::set_border(WindowBorder border)
+void Window::SetBorder(WindowBorder border)
 {
-	if (_border != border)
-		build(border, _mode, _settings);
+	if (m_border != border)
+		Build(border, m_mode, m_settings);
 }
-void Window::set_mode(sf::VideoMode mode)
+void Window::SetMode(sf::VideoMode mode)
 {
-	if (_mode != mode)
+	if (m_mode != mode)
 	{
-		build(_border, mode, _settings);
-		_camera->set_size(sf::Vector2f(mode.size));
+		Build(m_border, mode, m_settings);
+		m_camera->SetSize(sf::Vector2f(mode.size));
 	}
 }
-void Window::set_settings(sf::ContextSettings settings)
+void Window::SetSettings(sf::ContextSettings settings)
 {
-	build(_border, _mode, settings);
+	Build(m_border, m_mode, settings);
 }
 
-void Window::set_clear_color(sf::Color color)
+void Window::SetClearColor(sf::Color Color)
 {
-	_clear_color = color;
+	m_clearColor = Color;
 }
 
-void Window::set_cursor_state(bool flag)
+void Window::SetCursorState(bool flag)
 {
 	setMouseCursorVisible(flag);
 	setMouseCursorGrabbed(!flag);
 }
 
-RectFloat Window::get_border() const
+RectFloat Window::GetBorder() const
 {
 	return RectFloat(0, 0, (float)getSize().x, (float)getSize().y);
 }

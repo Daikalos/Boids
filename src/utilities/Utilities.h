@@ -50,6 +50,21 @@ namespace util
 	}
 
 	template<typename T>
+	static constexpr T pow(const T base, const int exponent)
+	{
+		if (exponent < 0)
+			return pow(1 / base, -exponent);
+
+		if (exponent == 0)
+			return 1;
+
+		if (exponent % 2 == 0)
+			return pow(base, exponent / 2) * pow(base, exponent / 2);
+
+		return base * pow(base, (exponent - 1) / 2) * pow(base, (exponent - 1) / 2);
+	}
+
+	template<typename T>
 	static constexpr T map_to_range(const T val, const T minIn, const T maxIn, const T minOut, const T maxOut)
 	{
 		const float x = (val - minIn) / (maxIn - minIn);
@@ -65,7 +80,7 @@ namespace util
 	template<typename T>
 	static constexpr T set_precision(const T val, const int places)
 	{
-		const float n = std::powf(10.0f, (float)places);
+		const float n = pow(10, places);
 		return std::roundf(val * n) / n;
 	}
 
@@ -87,13 +102,13 @@ namespace util
 	static thread_local std::mt19937_64 dre(std::chrono::steady_clock::now().time_since_epoch().count());
 
 	template<std::floating_point T>
-	static constexpr T random(const T min, const T max)
+	static T random(const T min, const T max)
 	{
 		std::uniform_real_distribution<T> uid(min, max);
 		return (T)uid(dre);
 	}
 	template<std::integral T>
-	static constexpr T random(const T min, const T max)
+	static T random(const T min, const T max)
 	{
 		std::uniform_int_distribution<T> uid(min, max);
 		return (T)uid(dre);

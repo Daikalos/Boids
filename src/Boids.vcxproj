@@ -19,19 +19,20 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="boids\Background.cpp" />
     <ClCompile Include="boids\AudioMeter.cpp" />
     <ClCompile Include="boids\Boid.cpp" />
     <ClCompile Include="boids\Config.cpp" />
     <ClCompile Include="boids\Debug.cpp" />
     <ClCompile Include="boids\Fluid.cpp" />
     <ClCompile Include="boids\Grid.cpp" />
+    <ClCompile Include="boids\Impulse.cpp" />
     <ClCompile Include="boids\MainState.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="window\Application.cpp" />
     <ClCompile Include="window\Camera.cpp" />
     <ClCompile Include="window\InputHandler.cpp" />
     <ClCompile Include="window\State.cpp" />
-    <ClCompile Include="window\StateStack.cpp" />
     <ClCompile Include="window\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -42,7 +43,7 @@
     <ClInclude Include="boids\Debug.h" />
     <ClInclude Include="boids\Fluid.h" />
     <ClInclude Include="boids\Grid.h" />
-    <ClInclude Include="boids\Impulse.hpp" />
+    <ClInclude Include="boids\Impulse.h" />
     <ClInclude Include="utilities\PolicySelect.h" />
     <ClInclude Include="utilities\Rectangle.hpp" />
     <ClInclude Include="utilities\VectorUtilities.h" />
@@ -55,8 +56,6 @@
     <ClInclude Include="window\InputHandler.h" />
     <ClInclude Include="boids\MainState.h" />
     <ClInclude Include="window\State.h" />
-    <ClInclude Include="window\States.h" />
-    <ClInclude Include="window\StateStack.h" />
     <ClInclude Include="window\Window.h" />
   </ItemGroup>
   <ItemGroup>
