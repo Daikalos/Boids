@@ -21,7 +21,7 @@ public:
 
 public:
 	void Load(const FontHolder& fontHolder);
-	void Update(const InputHandler& inputHandler, float dt);
+	void Update(const InputHandler& inputHandler, std::uint32_t boidCount, std::uint32_t cellCount, float dt);
 	void Draw(sf::RenderWindow& window) const;
 
 private:

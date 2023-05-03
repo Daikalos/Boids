@@ -83,7 +83,7 @@ bool MainState::HandleEvent(const sf::Event& event)
 
 bool MainState::PreUpdate(float dt)
 {
-    m_debug.Update(*m_inputHandler, dt);
+    m_debug.Update(*m_inputHandler, m_boids.size(), m_grid.GetCount(), dt);
 
 	if (m_debug.GetRefresh()) // time to refresh data
 	{

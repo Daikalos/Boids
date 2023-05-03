@@ -30,7 +30,7 @@ void Debug::Load(const FontHolder& fontHolder)
 	m_textInfo.setString("");
 }
 
-void Debug::Update(const InputHandler& inputHandler, float dt)
+void Debug::Update(const InputHandler& inputHandler, std::uint32_t boidCount, std::uint32_t cellCount, float dt)
 {
 	m_refresh = false;
 
@@ -48,8 +48,9 @@ void Debug::Update(const InputHandler& inputHandler, float dt)
 	{
 		m_info =
 			"\nCONFIG STATUS: " + std::string(Config::Inst().LoadStatus ? "SUCCESS" : "FAILED TO LOAD") +
-			"\n\nBOIDS: " + std::to_string(Config::Inst().BoidCount) +
-			"\nFPS: " + std::to_string((int)(1.0f / dt));
+			"\n\nBOIDS: " + std::to_string(boidCount) +
+			"\nCELLS: " + std::to_string(cellCount) +
+			"\nFPS: " + std::to_string((int)std::floorf(1.0f / dt));
 
 		m_refresh = true;
 		m_updateFreq = Config::Inst().DebugUpdateFreq;

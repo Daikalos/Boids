@@ -23,6 +23,11 @@ Grid::Grid(const RectFloat& rect, const sf::Vector2f& cont_dims)
 	endIndices.resize(m_count, -1);
 }
 
+int Grid::GetCount() const noexcept
+{
+	return m_count;
+}
+
 sf::Vector2f Grid::RelativePos(const sf::Vector2f& position) const
 {
 	return (position - rootRect.top_left) / contDims;

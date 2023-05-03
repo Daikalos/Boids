@@ -14,6 +14,9 @@ public:
 	Grid(const RectFloat& rect, const sf::Vector2f& cont_dims);
 
 public:
+	int GetCount() const noexcept;
+
+public:
 	[[nodiscard]] sf::Vector2f RelativePos(const sf::Vector2f& position) const;
 	[[nodiscard]] int AtPos(const sf::Vector2f& position) const;
 	[[nodiscard]] int AtPos(const sf::Vector2i& position) const noexcept;

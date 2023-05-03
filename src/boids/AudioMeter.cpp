@@ -97,7 +97,7 @@ void AudioMeterWin::Update(float dt)
 
 				float temp = 0.0f;
 				if (SUCCEEDED(meterInformation->GetPeakValue(&temp)) && temp > m_volume)
-					m_volume = -20 * std::log10f(1.0f - temp);
+					m_volume = -20.0f * std::log10f(1.0f - temp);
 			}
 			else
 			{
