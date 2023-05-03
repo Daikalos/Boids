@@ -190,21 +190,22 @@ bool MainState::Update(float dt)
 {
 	m_audioMeter->Update(dt);
 
+	m_mousePosPrev = m_mousePos;
 	m_mousePos = sf::Vector2f(m_camera->
 		GetMouseWorldPosition(*m_window));
 
 	if (m_inputHandler->GetButtonHeld(sf::Mouse::Middle))
 	{
-		const sf::Vector2f mouse_delta = m_mousePos - m_mousePosPrev;
-		if (vu::distance(mouse_delta) > Config::Inst().BoidAddMouseDiff)
+		const sf::Vector2f mouseDelta = vu::direction(m_mousePosPrev, m_mousePos);
+		if (vu::distance(mouseDelta) > Config::Inst().BoidAddMouseDiff)
 		{
 			for (int i = 0; i < Config::Inst().BoidAddAmount; ++i)
 			{
 				const sf::Vector2f center = sf::Vector2f(Config::Inst().BoidWidth, Config::Inst().BoidHeight) / 2.0f;
-				const sf::Vector2f init_pos = m_mousePos - center;
+				const sf::Vector2f initPos = m_mousePos - center;
 
-				Boid& Boid = m_boids.emplace_back(init_pos, 
-					vu::rotate_point(mouse_delta, {}, util::random(-1.0f, 1.0f)));
+				Boid& Boid = m_boids.emplace_back(initPos,
+					vu::rotate_point(mouseDelta, {}, util::random(-1.0f, 1.0f)));
 
 				m_proxy.push_back(static_cast<std::uint32_t>(m_boids.size() - 1));
 			}
@@ -235,31 +236,32 @@ bool MainState::Update(float dt)
 		}
 	}
 
-	m_mousePosPrev = m_mousePos;
-
 	if (Config::Inst().ImpulseEnabled && m_inputHandler->GetButtonPressed(sf::Mouse::Button::Left))
 		m_impulses.push_back(Impulse(m_mousePos, Config::Inst().ImpulseSpeed, Config::Inst().ImpulseSize, -Config::Inst().ImpulseSize));
 
-	std::for_each(m_impulses.rbegin(), m_impulses.rend(),
-		[&dt, this](Impulse& impulse)
-		{
-			impulse.Update(dt);
+	for (int i = m_impulses.size() - 1; i >= 0; --i)
+	{
+		Impulse& impulse = m_impulses[i];
 
-			if (impulse.GetLength() > Config::Inst().ImpulseFadeDistance)
-				m_impulses.erase(m_impulses.begin() + (&impulse - m_impulses.data()));
-		});
+		impulse.Update(dt);
+		if (impulse.GetLength() > Config::Inst().ImpulseFadeDistance)
+			m_impulses.erase(m_impulses.begin() + i);
+	}
 
 	if ((Config::Inst().ColorFlag & CF_Fluid) == CF_Fluid)
 	{
+		m_fluidMousePosPrev = m_fluidMousePos;
 		m_fluidMousePos = sf::Vector2i(m_mousePos / (float)Config::Inst().FluidScale);
+
 		const sf::Vector2i amount = vu::abs(m_fluidMousePos - m_fluidMousePosPrev);
 
-		m_fluid.StepLine(
-			m_fluidMousePosPrev.x, m_fluidMousePosPrev.y,
-			m_fluidMousePos.x, m_fluidMousePos.y,
-			amount.x, amount.y, Config::Inst().FluidMouseStrength);
-
-		m_fluidMousePosPrev = m_fluidMousePos;
+		if (std::abs(amount.x) > 0 || std::abs(amount.y) > 0)
+		{
+			m_fluid.StepLine(
+				m_fluidMousePosPrev.x, m_fluidMousePosPrev.y,
+				m_fluidMousePos.x, m_fluidMousePos.y,
+				amount.x, amount.y, Config::Inst().FluidMouseStrength);
+		}
 
 		m_fluid.Update(dt);
 	}

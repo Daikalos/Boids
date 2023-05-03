@@ -47,12 +47,12 @@ void Boid::PreUpdate(const Grid& grid) noexcept
 	m_prevPosition = m_position;
 	m_prevVelocity = m_velocity;
 
-	const sf::Vector2f gridCellRaw = grid.RelativePos(GetOrigin());
-	const sf::Vector2i gridCell = sf::Vector2i(gridCellRaw);
+	const sf::Vector2f gridCellRaw		= grid.RelativePos(GetOrigin());
+	const sf::Vector2i gridCell			= sf::Vector2i(gridCellRaw);
 	const sf::Vector2f gridCellOverflow = gridCellRaw - sf::Vector2f(gridCell);
 
-	m_relativePos = gridCellOverflow * grid.contDims;
-	m_cellIndex = grid.AtPos(gridCell);
+	m_relativePos	= gridCellOverflow * grid.contDims;
+	m_cellIndex		= grid.AtPos(gridCell);
 }
 
 void Boid::UpdateGridCells(Grid& grid, std::span<const Boid> boids, std::span<const std::uint32_t> proxy, const uint32_t index) const
@@ -86,7 +86,6 @@ void Boid::Flock(const Grid& grid, std::span<const Boid> boids, std::span<const 
 	std::uint16_t cohCount = 0;
 
 	const sf::Vector2f origin = GetOrigin();
-	const float velLength = vu::distance(m_velocity);
 
 	constexpr auto neighbourCount = 4; // max 4 neighbours at a time
 
@@ -108,8 +107,8 @@ void Boid::Flock(const Grid& grid, std::span<const Boid> boids, std::span<const 
 	neighbours[2] = grid.contDims * sf::Vector2f(0,			(float)y);
 	neighbours[3] = grid.contDims * sf::Vector2f((float)x,	(float)y);
 
-	neighIndicies[0] = grid.AtPos(gridCell.x,  gridCell.y);	// current
-	neighIndicies[1] = grid.AtPos(neighbour_x, gridCell.y);	// left or right of current
+	neighIndicies[0] = grid.AtPos(gridCell.x,  gridCell.y);		// current
+	neighIndicies[1] = grid.AtPos(neighbour_x, gridCell.y);		// left or right of current
 	neighIndicies[2] = grid.AtPos(gridCell.x,  neighbour_y);	// top or bot of current
 	neighIndicies[3] = grid.AtPos(neighbour_x, neighbour_y);	// top left/right bot left/right of current
 
@@ -117,24 +116,24 @@ void Boid::Flock(const Grid& grid, std::span<const Boid> boids, std::span<const 
 
 	for (std::uint8_t i = 0; i < neighbourCount; ++i)
 	{
-		const int grid_cell_index = neighIndicies[i];
-		const int start = grid.startIndices[grid_cell_index];
+		const int gridCellIndex = neighIndicies[i];
+		const int start = grid.startIndices[gridCellIndex];
 
-		if (start < 0)
+		if (start == -1)
 			continue;
 
-		const sf::Vector2f neighbour_cell = neighbours[i];
-		const int end = grid.endIndices[grid_cell_index];
+		const int end = grid.endIndices[gridCellIndex];
+		const sf::Vector2f neighbourCell = neighbours[i];
 
 		for (int j = start; j <= end; ++j) // do in one loop
 		{
 			const Boid& b = boids[proxy[j]];
 
-			if (&b == this) [[unlikely]]
+			if (&b == this)
 				continue;
 
 			const sf::Vector2f otherRelativePos = 
-				neighbour_cell + b.GetRelativePosition(); // need to get relative to this Boid
+				neighbourCell + b.GetRelativePosition(); // need to get relative to this Boid
 
 			const sf::Vector2f dir	= vu::direction(m_relativePos, otherRelativePos);
 			const float distanceSqr = std::max(vu::distance_sq(dir), FLT_EPSILON);
@@ -191,12 +190,12 @@ void Boid::Update(const RectFloat& border, std::span<const Impulse> impulses, fl
 
 sf::Vector2f Boid::SteerAt(const sf::Vector2f& steer_direction) const
 {
-	return vu::limit(vu::direction(m_velocity, steer_direction), Config::Inst().BoidSteerMax);
+	return vu::limit(vu::direction(m_prevVelocity, steer_direction), Config::Inst().BoidSteerMax);
 }
 
 void Boid::SteerTowards(const sf::Vector2f& direction, float length, float weight)
 {
-	if (std::fabsf(weight) <= FLT_EPSILON)
+	if (std::abs(weight) < FLT_EPSILON)
 		return;
 
 	const sf::Vector2f steer = vu::normalize(direction, length, Config::Inst().BoidSpeedMax);

@@ -3,10 +3,10 @@
 Grid::Grid(const RectFloat& rect, const sf::Vector2f& cont_dims)
 	: rootRect(rect), contDims(cont_dims)
 {
-	float boid_size_max = std::max(Config::Inst().BoidWidth, Config::Inst().BoidHeight);
+	float sizeMax = std::max(Config::Inst().BoidWidth, Config::Inst().BoidHeight);
 
-	rootRect.top_left -= sf::Vector2f(boid_size_max, boid_size_max) / 2.0f;
-	rootRect.bot_right += sf::Vector2f(boid_size_max, boid_size_max) / 2.0f;
+	rootRect.top_left -= sf::Vector2f(sizeMax, sizeMax) / 2.0f;
+	rootRect.bot_right += sf::Vector2f(sizeMax, sizeMax) / 2.0f;
 
 	float a = rootRect.width() / contDims.x;
 	float b = rootRect.height() / contDims.y;
