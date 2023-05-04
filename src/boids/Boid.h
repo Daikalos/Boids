@@ -64,6 +64,7 @@ private:
 	sf::Vector2f	m_position, m_prevPosition, m_relativePos;
 	sf::Vector2f	m_velocity, m_prevVelocity;
 
+	float			m_speed			{0.0f};
 	float			m_cycleTime		{0.0f};
 	float			m_densityTime	{0.0f};
 

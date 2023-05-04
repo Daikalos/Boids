@@ -135,21 +135,30 @@ void Boid::Flock(const Grid& grid, std::span<const Boid> boids, std::span<const 
 			const sf::Vector2f otherRelativePos = 
 				neighbourCell + b.GetRelativePosition(); // need to get relative to this Boid
 
-			const sf::Vector2f dir	= vu::direction(m_relativePos, otherRelativePos);
-			const float distanceSqr = std::max(vu::distance_sq(dir), FLT_EPSILON);
-			const float angle		= m_prevVelocity.angleTo(dir).asRadians();
+			const sf::Vector2f dir	= otherRelativePos - m_relativePos;
+			const float distanceSqr = dir.lengthSq();
 
-			if (angle >= -config.BoidViewAngle && angle <= config.BoidViewAngle) // angle only effects cohesion and alignment
+			if (distanceSqr == 0.0f)
+				continue;
+
+			const bool withinCohesion	= distanceSqr <= config.CohDistance;
+			const bool withinAlignment	= distanceSqr <= config.AliDistance;
+
+			if (withinCohesion || withinAlignment)
 			{
-				if (distanceSqr <= config.CohDistance)
+				const float angle = m_prevVelocity.angleTo(dir).asRadians();
+				if (angle >= -config.BoidViewAngle && angle <= config.BoidViewAngle)
 				{
-					coh += origin + dir; // Head towards center of boids
-					++cohCount;
-				}
-				if (distanceSqr <= config.AliDistance)
-				{
-					ali += b.GetPrevVelocity(); // Align with every boids velocity
-					++aliCount;
+					if (withinCohesion)
+					{
+						coh += origin + dir; // Head towards center of boids
+						++cohCount;
+					}
+					if (withinAlignment)
+					{
+						ali += b.GetPrevVelocity(); // Align with every boids velocity
+						++aliCount;
+					}
 				}
 			}
 
@@ -161,21 +170,17 @@ void Boid::Flock(const Grid& grid, std::span<const Boid> boids, std::span<const 
 		}
 	}
 
-	if (cohCount) coh = vu::normalize(vu::direction(origin, coh / (float)cohCount), config.BoidSpeedMax);
-	if (aliCount) ali = vu::normalize(ali / (float)aliCount, config.BoidSpeedMax);
-	if (sepCount) sep = vu::normalize(sep / (float)sepCount, config.BoidSpeedMax);
-
-	m_velocity +=
-		SteerAt(coh) * config.CohWeight +
-		SteerAt(ali) * config.AliWeight +
-		SteerAt(sep) * config.SepWeight;
+	if (cohCount) m_velocity += SteerAt(vu::normalize(vu::direction(origin, coh / static_cast<float>(cohCount)), config.BoidSpeedMax)) * config.CohWeight;
+	if (aliCount) m_velocity += SteerAt(vu::normalize(ali / static_cast<float>(aliCount), config.BoidSpeedMax)) * config.AliWeight;
+	if (sepCount) m_velocity += SteerAt(vu::normalize(sep / static_cast<float>(sepCount), config.BoidSpeedMax)) * config.SepWeight;
 
 	m_density = std::max(std::max(cohCount, aliCount), sepCount);
 }
 
 void Boid::Update(const RectFloat& border, std::span<const Impulse> impulses, float dt)
 {
-	m_velocity = vu::clamp(m_velocity, Config::Inst().BoidSpeedMin, Config::Inst().BoidSpeedMax);
+	m_speed = std::clamp(m_velocity.length(), Config::Inst().BoidSpeedMin, Config::Inst().BoidSpeedMax);
+	m_velocity = vu::normalize(m_velocity, m_speed);
 
 	m_position += m_velocity * dt;
 
@@ -204,7 +209,7 @@ void Boid::SteerTowards(const sf::Vector2f& direction, float length, float weigh
 }
 void Boid::SteerTowards(const sf::Vector2f& point, float weight)
 {
-	SteerTowards(point, vu::distance(point), weight);
+	SteerTowards(point, point.length(), weight);
 }
 
 sf::Vector3f Boid::GetColor(const RectFloat& border, const IAudioMeterInfo* audioMeter, std::span<const Impulse> impulses) const noexcept
@@ -327,10 +332,13 @@ sf::Vector3f Boid::DensityColor() const
 }
 sf::Vector3f Boid::VelocityColor() const
 {
-	if (Config::Inst().BoidVelocityColors.empty() || (Config::Inst().BoidSpeedMax == Config::Inst().BoidSpeedMin)) [[unlikely]]
+	if (Config::Inst().BoidVelocityColors.empty()) [[unlikely]]
 		return sf::Vector3f();
 
-	const float velocity_percentage = std::clamp((vu::distance(m_velocity) - Config::Inst().BoidSpeedMin) / (Config::Inst().BoidSpeedMax - Config::Inst().BoidSpeedMin), 0.0f, 1.0f);
+	const float inv = (Config::Inst().BoidSpeedMax == Config::Inst().BoidSpeedMin) ? 1.0f 
+		: (1.0f / (Config::Inst().BoidSpeedMax - Config::Inst().BoidSpeedMin));
+
+	const float velocity_percentage = std::clamp((m_speed - Config::Inst().BoidSpeedMin) * inv, 0.0f, 1.0f);
 
 	const float scaled_velocity = velocity_percentage * (float)(Config::Inst().BoidVelocityColors.size() - 1);
 

@@ -30,7 +30,7 @@ sf::Vector3f Fluid::GetColor(const sf::Vector2f& origin) const
 
 	const float bnd = (float)Config::Inst().FluidColors.size() - 1.0f;
 
-	float scaled_speed = vu::distance(sf::Vector2f(vel_x, vel_y)) * bnd;
+	float scaled_speed = sf::Vector2f(vel_x, vel_y).length() * bnd;
 	scaled_speed = std::clamp(scaled_speed, 0.0f, bnd);
 
 	const int index1 = (int)scaled_speed;

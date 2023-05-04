@@ -183,7 +183,7 @@
             "PhysicsUpdateFreq" : 60,
             "PolicyThreshold" : 1500,
 
-            "DebugEnabled" : true,
+            "DebugEnabled" : false,
             "DebugUpdateFreq" : 0.5,
             "DebugToggleKey" : 85
         }

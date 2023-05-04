@@ -14,30 +14,9 @@ namespace vu
 	template<Arithmetic T>
 	static constexpr sf::Vector2<T> direction(const sf::Vector2<T>& from, const sf::Vector2<T>& to)
 	{
-		return sf::Vector2<T>(to.x - from.x, to.y - from.y);
+		return (to - from);
 	}
 
-	template<Arithmetic T>
-	static constexpr float dot(const sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs)
-	{
-		return lhs.x * rhs.x + lhs.y * rhs.y;
-	}
-	template<Arithmetic T>
-	static constexpr float cross(const sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs)
-	{
-		return lhs.x * rhs.y - lhs.y * rhs.x;
-	}
-
-	template<Arithmetic T>
-	static constexpr float distance(const sf::Vector2<T>& vector)
-	{
-		return std::sqrtf(vector.x * vector.x + vector.y * vector.y);
-	}
-	template<Arithmetic T>
-	static constexpr float distance_sq(const sf::Vector2<T>& vector)
-	{
-		return vector.x * vector.x + vector.y * vector.y;
-	}
 	template<Arithmetic T>
 	static constexpr float distance_opt(const sf::Vector2<T>& vector)
 	{
@@ -53,12 +32,12 @@ namespace vu
 	template<Arithmetic T>
 	static constexpr float distance(const sf::Vector2<T>& from, const sf::Vector2<T>& to)
 	{
-		return distance(direction(from, to));
+		return direction(from, to).length();
 	}
 	template<Arithmetic T>
 	static constexpr float distance_sq(const sf::Vector2<T>& from, const sf::Vector2<T>& to)
 	{
-		return distance_sq(direction(from, to));
+		return direction(from, to).lengthSq();
 	}
 	template<Arithmetic T>
 	static constexpr float distance_opt(const sf::Vector2<T>& from, const sf::Vector2<T>& to)
@@ -82,7 +61,7 @@ namespace vu
 	template<Arithmetic T>
 	static constexpr sf::Vector2<T> normalize(const sf::Vector2<T>& vector, const float radius = 1.0f)
 	{
-		return normalize(vector, distance(vector), radius);
+		return normalize(vector, vector.length(), radius);
 	}
 
 	template<Arithmetic T>
@@ -96,23 +75,7 @@ namespace vu
 	template<Arithmetic T>
 	static constexpr sf::Vector2<T> limit(const sf::Vector2<T>& vector, const float max_length)
 	{
-		return limit(vector, distance(vector), max_length);
-	}
-
-	template<Arithmetic T>
-	static constexpr sf::Vector2<T> clamp(const sf::Vector2<T>& vector, const float length, const float min_length, const float max_length)
-	{
-		if (length < min_length)
-			return normalize(vector, length, min_length);
-		if (length > max_length)
-			return normalize(vector, length, max_length);
-
-		return vector;
-	}
-	template<Arithmetic T>
-	static constexpr sf::Vector2<T> clamp(const sf::Vector2<T>& vector, const float min_length, const float max_length)
-	{
-		return clamp(vector, distance(vector), min_length, max_length);
+		return limit(vector, vector.length(), max_length);
 	}
 
 	template<Arithmetic T>

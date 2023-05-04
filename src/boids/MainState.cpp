@@ -197,7 +197,7 @@ bool MainState::Update(float dt)
 	if (m_inputHandler->GetButtonHeld(sf::Mouse::Middle))
 	{
 		const sf::Vector2f mouseDelta = vu::direction(m_mousePosPrev, m_mousePos);
-		if (vu::distance(mouseDelta) > Config::Inst().BoidAddMouseDiff)
+		if (mouseDelta.length() > Config::Inst().BoidAddMouseDiff)
 		{
 			for (int i = 0; i < Config::Inst().BoidAddAmount; ++i)
 			{
@@ -316,7 +316,7 @@ bool MainState::FixedUpdate(float dt)
 					{
 						sf::Vector2f dir = vu::direction(boid.GetPosition(), m_mousePos);
 
-						float lengthSqr = vu::distance_sq(dir);
+						float lengthSqr = dir.lengthSq();
 						if (lengthSqr <= Config::Inst().PredatorDistance)
 						{
 							float weight = std::sqrtf(lengthSqr / Config::Inst().PredatorDistance);
