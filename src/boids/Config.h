@@ -6,13 +6,14 @@
 
 #include "../utilities/Utilities.h"
 
-static const std::string FILE_NAME	= "Config";
+inline constexpr const char* FILE_NAME	= "config-v1.json";
 
-static const std::string BACKGROUND = "Background";
-static const std::string BOID		= "Boid";
-static const std::string RULES		= "Rules";
-static const std::string COLOR		= "Color";
-static const std::string MISC		= "Misc";
+inline constexpr const char* CONFIG		= "Config";
+inline constexpr const char* BACKGROUND = "Background";
+inline constexpr const char* BOID		= "Boid";
+inline constexpr const char* RULES		= "Rules";
+inline constexpr const char* COLOR		= "Color";
+inline constexpr const char* MISC		= "Misc";
 
 enum ColorFlags : std::uint32_t
 {

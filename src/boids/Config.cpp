@@ -15,7 +15,7 @@ Config::Config()
 
 void Config::load()
 {
-	std::ifstream projectFile(FILE_NAME + ".json", std::ifstream::binary);
+	std::ifstream projectFile(FILE_NAME, std::ifstream::binary);
 	if (projectFile.good())
 	{
 		try
@@ -90,13 +90,13 @@ std::vector<Rebuild> Config::refresh(Config& prev)
 
 void Config::load_var(nlohmann::json& json)
 {
-	auto& config = json[FILE_NAME];
+	auto& config = json[CONFIG];
 
-	auto& background = config[BACKGROUND];
-	auto& boid = config[BOID];
-	auto& rules = config[RULES];
-	auto& color = config[COLOR];
-	auto& misc = config[MISC];
+	auto& background	= config[BACKGROUND];
+	auto& boid			= config[BOID];
+	auto& rules			= config[RULES];
+	auto& color			= config[COLOR];
+	auto& misc			= config[MISC];
 
 	BackgroundColor				= str_to_color(background["BackgroundColor"]);
 	BackgroundTexture			= background["BackgroundTexture"];
