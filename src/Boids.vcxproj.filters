@@ -129,7 +129,4 @@
       <Filter>Header Files\Utils</Filter>
     </ClInclude>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="config.json" />
-  </ItemGroup>
 </Project>

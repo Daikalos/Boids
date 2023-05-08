@@ -242,25 +242,30 @@ bool Boid::OutsideBorder(const RectFloat& border, float dt)
 }
 bool Boid::TurnAtBorder(const RectFloat& border, float dt)
 {
-	const float widthMargin = border.width() - border.width() * Config::Inst().TurnMarginFactor;
-	const float heightMargin = border.height() - border.height() * Config::Inst().TurnMarginFactor;
+	const float maxSize = std::max(Config::Inst().BoidWidth, Config::Inst().BoidHeight);
 
-	const float leftMargin = border.left + widthMargin;
-	const float topMargin = border.top + heightMargin;
-	const float rightMargin = border.right - widthMargin;
-	const float botMargin = border.bot - heightMargin;
+	float widthMargin = border.width() - border.width() * Config::Inst().TurnMarginFactor;
+	float heightMargin = border.height() - border.height() * Config::Inst().TurnMarginFactor;
 
-	if (m_position.x + Config::Inst().BoidWidth < leftMargin)
-		m_velocity.x += Config::Inst().TurnFactor * dt * (1.0f + std::powf(std::abs(m_position.x - leftMargin) / widthMargin, 2.0f)) * (1.0f / (m_density + 1.0f));
+	const float leftMargin	= border.left	+ widthMargin;
+	const float topMargin	= border.top	+ heightMargin;
+	const float rightMargin = border.right	- widthMargin;
+	const float botMargin	= border.bot	- heightMargin;
+
+	if (widthMargin == 0.0f)	widthMargin = 1.0f;
+	if (heightMargin == 0.0f)	heightMargin = 1.0f;
+
+	if (m_position.x + maxSize < leftMargin)
+		m_velocity.x += Config::Inst().TurnFactor * std::powf(std::abs(m_position.x - leftMargin) / widthMargin, 2.0f) * (1.0f / (m_density + 1.0f)) * dt;
 
 	if (m_position.x > rightMargin)
-		m_velocity.x -= Config::Inst().TurnFactor * dt * (1.0f + std::powf(std::abs(m_position.x - rightMargin) / widthMargin, 2.0f)) * (1.0f / (m_density + 1.0f));
+		m_velocity.x -= Config::Inst().TurnFactor * std::powf(std::abs(m_position.x - rightMargin) / widthMargin, 2.0f) * (1.0f / (m_density + 1.0f)) * dt;
 
-	if (m_position.y + Config::Inst().BoidHeight < topMargin)
-		m_velocity.y += Config::Inst().TurnFactor * dt * (1.0f + std::powf(std::abs(m_position.y - topMargin) / heightMargin, 2.0f)) * (1.0f / (m_density + 1.0f));
+	if (m_position.y + maxSize < topMargin)
+		m_velocity.y += Config::Inst().TurnFactor * std::powf(std::abs(m_position.y - topMargin) / heightMargin, 2.0f) * (1.0f / (m_density + 1.0f)) * dt;
 
 	if (m_position.y > botMargin)
-		m_velocity.y -= Config::Inst().TurnFactor * dt * (1.0f + std::powf(std::abs(m_position.y - botMargin) / heightMargin, 2.0f)) * (1.0f / (m_density + 1.0f));
+		m_velocity.y -= Config::Inst().TurnFactor * std::powf(std::abs(m_position.y - botMargin) / heightMargin, 2.0f) * (1.0f / (m_density + 1.0f)) * dt;
 
 	return false;
 }

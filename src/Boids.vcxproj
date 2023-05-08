@@ -58,9 +58,6 @@
     <ClInclude Include="window\State.h" />
     <ClInclude Include="window\Window.h" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="config.json" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>

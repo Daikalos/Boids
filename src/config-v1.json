@@ -28,7 +28,7 @@
         {
             "SepDistance" : 20.0,
             "AliDistance" : 40.0,
-            "CohDistance" : 40.0,
+            "CohDistance" : 30.0,
 
             "SepWeight" : 3.8,
             "AliWeight" : 1.5,
@@ -171,8 +171,8 @@
             "PredatorDistance" : 250.0,
             "PredatorFactor" : 0.6,
 
-            "TurnAtBorder" : false,
-            "TurnMarginFactor" : 0.85,
+            "TurnAtBorder" : true,
+            "TurnMarginFactor" : 1.0,
             "TurnFactor" : 275.0,
 
             "GridExtraCells" : 16,
