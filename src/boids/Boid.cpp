@@ -68,13 +68,12 @@ void BoidContainer::Pop(std::size_t count)
 	assert(count > 0); // pop nothing ???
 
 	std::size_t oldSize = m_size;
-
 	m_size = (count < m_size) ? (m_size - count) : 0;
 
 	std::remove_if(m_indices.get(), m_indices.get() + oldSize,
 		[this](std::uint32_t i)
 		{
-			return i >= m_size; // push all older sizes to the end
+			return i >= m_size; // push all older indices to the end
 		});
 }
 
