@@ -29,6 +29,7 @@
     <ClCompile Include="boids\Impulse.cpp" />
     <ClCompile Include="boids\MainState.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="utilities\FPSCounter.cpp" />
     <ClCompile Include="window\Application.cpp" />
     <ClCompile Include="window\Camera.cpp" />
     <ClCompile Include="window\InputHandler.cpp" />
@@ -44,11 +45,11 @@
     <ClInclude Include="boids\Fluid.h" />
     <ClInclude Include="boids\Grid.h" />
     <ClInclude Include="boids\Impulse.h" />
+    <ClInclude Include="utilities\FPSCounter.h" />
     <ClInclude Include="utilities\PolicySelect.h" />
     <ClInclude Include="utilities\Rectangle.hpp" />
     <ClInclude Include="utilities\VectorUtilities.h" />
     <ClInclude Include="window\ResourceHolder.hpp" />
-    <ClInclude Include="utilities\NonCopyable.h" />
     <ClInclude Include="utilities\Utilities.h" />
     <ClInclude Include="window\Application.h" />
     <ClInclude Include="window\Camera.h" />
@@ -180,6 +181,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

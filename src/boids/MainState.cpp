@@ -1,7 +1,7 @@
 #include "MainState.h"
 
 MainState::MainState(Context context) 
-	: State(context), m_window(context.window), m_camera(context.camera), m_inputHandler(context.inputHandler) {}
+	: State(context), m_window(context.window), m_camera(context.camera), m_inputHandler(context.inputHandler), m_boids(Config::Inst().BoidCount) {}
 
 void MainState::Initialize()
 {
@@ -38,8 +38,7 @@ void MainState::Initialize()
 
 	m_grid = Grid(gridBorder, sf::Vector2f(m_minDistance, m_minDistance) * 2.0f);
 
-	m_boids.reserve(Config::Inst().BoidCount);
-	m_proxy.reserve(Config::Inst().BoidCount);
+	m_boids.Reserve(Config::Inst().BoidCount);
 
 	for (int i = 0; i < Config::Inst().BoidCount; ++i)
 	{
@@ -47,11 +46,10 @@ void MainState::Initialize()
 			util::random(0.0f, m_border.width()) - m_border.left,
 			util::random(0.0f, m_border.height()) - m_border.top);
 
-		m_boids.emplace_back(pos);
-		m_proxy.emplace_back(i);
+		m_boids.Push(pos);
 	}
 
-	m_vertices.resize(m_boids.size() * 3);
+	m_vertices.resize(m_boids.GetSize() * 3);
 	m_vertices.setPrimitiveType(sf::Triangles);
 
 	m_policy = Config::Inst().BoidCount <= Config::Inst().PolicyThreshold ? Policy::unseq : Policy::par_unseq;
@@ -83,7 +81,7 @@ bool MainState::HandleEvent(const sf::Event& event)
 
 bool MainState::PreUpdate(float dt)
 {
-    m_debug.Update(*m_inputHandler, m_boids.size(), m_grid.GetCount(), dt);
+    m_debug.Update(*m_inputHandler, m_boids.GetSize(), m_grid.GetCount(), dt);
 
 	if (m_debug.GetRefresh()) // time to refresh data
 	{
@@ -110,8 +108,7 @@ bool MainState::PreUpdate(float dt)
 				{
 					if (Config::Inst().BoidCount > prev.BoidCount) // new is larger
 					{
-						m_boids.reserve(Config::Inst().BoidCount);
-						m_proxy.reserve(Config::Inst().BoidCount);
+						m_boids.Reserve(Config::Inst().BoidCount);
 
 						for (int i = prev.BoidCount; i < Config::Inst().BoidCount; ++i)
 						{
@@ -119,33 +116,21 @@ bool MainState::PreUpdate(float dt)
 								util::random(0.0f, m_border.width()) - m_border.left,
 								util::random(0.0f, m_border.height()) - m_border.top);
 
-							m_boids.emplace_back(pos);
-							m_proxy.emplace_back(i);
+							m_boids.Push(pos);
 						}
 					}
 					else
 					{
-						m_boids.erase(m_boids.begin() + Config::Inst().BoidCount, m_boids.end());
-
-						m_proxy.erase(std::remove_if(
-							m_proxy.begin(), m_proxy.end(),
-							[this](const int index)
-							{
-								return index >= m_boids.size();
-							}), m_proxy.end());
+						m_boids.Pop(m_boids.GetSize() - Config::Inst().BoidCount);
 					}
 
-					m_vertices.resize(m_boids.size() * 3);
-					m_policy = m_boids.size() <= Config::Inst().PolicyThreshold ? Policy::unseq : Policy::par_unseq;
+					m_vertices.resize(m_boids.GetSize() * 3);
+					m_policy = m_boids.GetSize() <= Config::Inst().PolicyThreshold ? Policy::unseq : Policy::par_unseq;
 				}
 				break;
 			case RB_BoidsCycle:
 				{
-					for (Boid& Boid : m_boids)
-					{
-						Boid.SetCycleTime(Config::Inst().BoidCycleColorsRandom ?
-							util::random(0.0f, 1.0f) : 0.0f);
-					}
+					m_boids.ResetCycleTimes();
 				}
 				break;
 			case RB_BackgroundTex:
@@ -204,35 +189,24 @@ bool MainState::Update(float dt)
 				const sf::Vector2f center = sf::Vector2f(Config::Inst().BoidWidth, Config::Inst().BoidHeight) / 2.0f;
 				const sf::Vector2f initPos = m_mousePos - center;
 
-				Boid& Boid = m_boids.emplace_back(initPos,
-					vu::rotate_point(mouseDelta, {}, util::random(-1.0f, 1.0f)));
-
-				m_proxy.push_back(static_cast<std::uint32_t>(m_boids.size() - 1));
+				m_boids.Push(initPos, vu::rotate_point(mouseDelta, {}, util::random(-1.0f, 1.0f)));
 			}
 
-			m_vertices.resize(m_boids.size() * 3);
-			m_policy = m_boids.size() <= Config::Inst().PolicyThreshold ? Policy::unseq : Policy::par_unseq;
+			m_vertices.resize(m_boids.GetSize() * 3);
+			m_policy = m_boids.GetSize() <= Config::Inst().PolicyThreshold ? Policy::unseq : Policy::par_unseq;
 		}
 	}
 	if (m_inputHandler->GetKeyHeld(sf::Keyboard::Key::Delete))
 	{
-		if (m_boids.size() > Config::Inst().BoidCount)
+		if (m_boids.GetSize() > Config::Inst().BoidCount)
 		{
-			std::size_t remove_amount = (m_boids.size() - Config::Inst().BoidCount) >= Config::Inst().BoidRemoveAmount ? 
-				Config::Inst().BoidRemoveAmount : m_boids.size() - Config::Inst().BoidCount;
+			std::size_t remove_amount = (m_boids.GetSize() - Config::Inst().BoidCount) >= Config::Inst().BoidRemoveAmount ? 
+				Config::Inst().BoidRemoveAmount : m_boids.GetSize() - Config::Inst().BoidCount;
 
-			for (std::size_t i = 0; i < remove_amount; ++i)
-				m_boids.pop_back();
+			m_boids.Pop(remove_amount);
 
-			m_proxy.erase(std::remove_if(
-				m_proxy.begin(), m_proxy.end(),
-				[this](const int index)
-				{
-					return index >= m_boids.size();
-				}), m_proxy.end());
-
-			m_vertices.resize(m_boids.size() * 3);
-			m_policy = m_boids.size() <= Config::Inst().PolicyThreshold ? Policy::unseq : Policy::par_unseq;
+			m_vertices.resize(m_boids.GetSize() * 3);
+			m_policy = m_boids.GetSize() <= Config::Inst().PolicyThreshold ? Policy::unseq : Policy::par_unseq;
 		}
 	}
 
@@ -273,142 +247,19 @@ bool MainState::FixedUpdate(float dt)
 {
 	m_grid.ResetBuffers();
 
-	std::for_each(m_boids.begin(), m_boids.end(),
-		[this](Boid& boid)
-		{
-			boid.PreUpdate(m_grid);
-		});
-
-	std::sort(m_proxy.begin(), m_proxy.end(),
-		[this](const std::uint32_t& i0, const std::uint32_t& i1)
-		{
-			return m_boids[i0].GetCellIndex() < m_boids[i1].GetCellIndex();
-		});
-
-	std::for_each(m_proxy.begin(), m_proxy.end(),
-		[this](const std::uint32_t& index)
-		{
-			m_boids[index].UpdateGridCells(m_grid, m_boids, m_proxy, (std::uint32_t)(&index - m_proxy.data()));
-		});
-
-	PolicySelect(
-		[this](auto& pol)
-		{
-			std::for_each(pol, m_boids.begin(), m_boids.end(),
-				[this](Boid& boid)
-				{
-					bool holdLeft  = m_inputHandler->GetButtonHeld(sf::Mouse::Button::Left);
-					bool holdRight = m_inputHandler->GetButtonHeld(sf::Mouse::Button::Right);
-
-					if (Config::Inst().SteerEnabled && (holdLeft || holdRight))
-					{
-						sf::Vector2f dir = vu::direction(boid.GetPosition(), m_mousePos);
-
-						const float factor = holdLeft ? 1.0f :
-							(holdRight ? -1.0f : 0.0f);
-
-						const float lengthOpt = vu::distance_opt(dir);
-						const float weight = 15.0f / (std::sqrtf(lengthOpt) + FLT_EPSILON); // hard coded because cant update Config::Inst().. 
-
-						boid.SteerTowards(dir, lengthOpt, Config::Inst().SteerTowardsFactor * weight * factor);
-					}
-					else if (Config::Inst().PredatorEnabled)
-					{
-						sf::Vector2f dir = vu::direction(boid.GetPosition(), m_mousePos);
-
-						float lengthSqr = dir.lengthSq();
-						if (lengthSqr <= Config::Inst().PredatorDistance)
-						{
-							float weight = std::sqrtf(lengthSqr / Config::Inst().PredatorDistance);
-							boid.SteerTowards(dir, -Config::Inst().PredatorFactor / (weight + FLT_EPSILON));
-						}
-					}
-
-					boid.Flock(m_grid, m_boids, m_proxy);
-				});
-		}, m_policy);
-
-
-	std::for_each(m_boids.begin(), m_boids.end(),
-		[&dt, this](Boid& boid)
-		{
-			boid.Update(m_border, m_impulses, dt);
-		});
+	m_boids.PreUpdate(m_grid);
+	m_boids.Sort();
+	m_boids.UpdateCells(m_grid);
+	m_boids.Interaction(*m_inputHandler, m_mousePos);
+	m_boids.Flock(m_grid, m_policy);
+	m_boids.Update(m_border, dt);
 
     return true;
 }
 
 bool MainState::PostUpdate(float dt, float interp)
 {
-	PolicySelect(
-		[&interp, this](auto& pol)
-		{
-			std::for_each(pol, m_boids.begin(), m_boids.end(),
-				[&interp, this](const Boid& boid)
-				{
-					Config& config = Config::Inst();
-
-					const sf::Vector2f ori = boid.GetOrigin();
-					const sf::Vector2f prevOri = boid.GetPrevOrigin();
-
-					const float rot = boid.GetVelocity().angle().asRadians();
-					const float prev_rot = boid.GetPrevVelocity().angle().asRadians();
-
-					const sf::Vector2f pointA = vu::rotate_point({ ori.x + (config.BoidWidth / 2), ori.y							}, ori, rot); // middle right tip
-					const sf::Vector2f pointB = vu::rotate_point({ ori.x - (config.BoidWidth / 2), ori.y - (config.BoidHeight / 2)	}, ori, rot); // top left corner
-					const sf::Vector2f pointC = vu::rotate_point({ ori.x - (config.BoidWidth / 2), ori.y + (config.BoidHeight / 2)	}, ori, rot); // bot left corner
-
-					const sf::Vector2f prevPointA = vu::rotate_point({ prevOri.x + (config.BoidWidth / 2), prevOri.y							}, prevOri, prev_rot); // middle right tip
-					const sf::Vector2f prevPointB = vu::rotate_point({ prevOri.x - (config.BoidWidth / 2), prevOri.y - (config.BoidHeight / 2)	}, prevOri, prev_rot); // top left corner
-					const sf::Vector2f prevPointC = vu::rotate_point({ prevOri.x - (config.BoidWidth / 2), prevOri.y + (config.BoidHeight / 2)	}, prevOri, prev_rot); // bot left corner
-
-					const sf::Vector2f p0 = pointA * interp + prevPointA * (1.0f - interp);
-					const sf::Vector2f p1 = pointB * interp + prevPointB * (1.0f - interp);
-					const sf::Vector2f p2 = pointC * interp + prevPointC * (1.0f - interp);
-
-					sf::Vector3f bc = boid.GetColor(m_border, m_audioMeter.get(), m_impulses);
-
-					sf::Vector3f bc0 = bc;
-					sf::Vector3f bc1 = bc;
-					sf::Vector3f bc2 = bc;
-
-					if ((config.ColorFlag & CF_Fluid) == CF_Fluid)
-					{
-						bc0 += m_fluid.GetColor(p0);
-						bc1 += m_fluid.GetColor(p1);
-						bc2 += m_fluid.GetColor(p2);
-					}
-
-					bc0.x = std::clamp(bc0.x, 0.0f, 1.0f);
-					bc0.y = std::clamp(bc0.y, 0.0f, 1.0f);
-					bc0.z = std::clamp(bc0.z, 0.0f, 1.0f);
-
-					bc1.x = std::clamp(bc1.x, 0.0f, 1.0f);
-					bc1.y = std::clamp(bc1.y, 0.0f, 1.0f);
-					bc1.z = std::clamp(bc1.z, 0.0f, 1.0f);
-
-					bc2.x = std::clamp(bc2.x, 0.0f, 1.0f);
-					bc2.y = std::clamp(bc2.y, 0.0f, 1.0f);
-					bc2.z = std::clamp(bc2.z, 0.0f, 1.0f);
-
-					const sf::Color c0 = sf::Color(
-						(sf::Uint8)(bc0.x * 255.0f), (sf::Uint8)(bc0.y * 255.0f), (sf::Uint8)(bc0.z * 255.0f));
-					const sf::Color c1 = sf::Color(
-						(sf::Uint8)(bc1.x * 255.0f), (sf::Uint8)(bc1.y * 255.0f), (sf::Uint8)(bc1.z * 255.0f));
-					const sf::Color c2 = sf::Color(
-						(sf::Uint8)(bc2.x * 255.0f), (sf::Uint8)(bc2.y * 255.0f), (sf::Uint8)(bc2.z * 255.0f));
-
-					const auto v = (&boid - m_boids.data()) * 3;
-
-					m_vertices[v + 0].position = p0;
-					m_vertices[v + 1].position = p1;
-					m_vertices[v + 2].position = p2;
-
-					m_vertices[v + 0].color = c0;
-					m_vertices[v + 1].color = c1;
-					m_vertices[v + 2].color = c2;
-				});
-		}, m_policy);
+	m_boids.UpdateVertices(m_vertices, m_border, m_fluid, m_audioMeter.get(), m_impulses, m_policy, interp);
 
     return true;
 }

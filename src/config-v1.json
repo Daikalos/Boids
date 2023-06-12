@@ -15,7 +15,7 @@
 
         "Boid" :
         {
-            "BoidCount" : 6000,
+            "BoidCount" : 14000,
             "BoidWidth" : 22.0,
             "BoidHeight" : 11.0,
             "BoidSpeedMax" : 200.0,
@@ -171,7 +171,7 @@
             "PredatorDistance" : 250.0,
             "PredatorFactor" : 0.6,
 
-            "TurnAtBorder" : true,
+            "TurnAtBorder" : false,
             "TurnMarginFactor" : 1.0,
             "TurnFactor" : 275.0,
 
@@ -179,11 +179,11 @@
             "CameraEnabled" : false,
             "CameraZoom" : 1.0,
             "VerticalSync" : false,
-            "MaxFramerate" : 144,
+            "MaxFramerate" : 500,
             "PhysicsUpdateFreq" : 60,
             "PolicyThreshold" : 1500,
 
-            "DebugEnabled" : false,
+            "DebugEnabled" : true,
             "DebugUpdateFreq" : 0.5,
             "DebugToggleKey" : 85
         }

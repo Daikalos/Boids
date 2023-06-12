@@ -3,6 +3,8 @@
 #include <SFML/Graphics.hpp>
 
 #include <span>
+#include <ranges>
+#include <memory>
 
 #include "Grid.h"
 #include "Config.h"
@@ -13,62 +15,93 @@
 #include "../utilities/Rectangle.hpp"
 #include "../utilities/VectorUtilities.h"
 #include "../utilities/Utilities.h"
+#include "../utilities/PolicySelect.h"
 
-class Boid
+#include "../window/InputHandler.h"
+
+class BoidContainer
 {
 public:
-	Boid(const sf::Vector2f& pos);
-	Boid(const sf::Vector2f& pos, const sf::Vector2f& velocity);
-
-public: // Properties
-	[[nodiscard]] const sf::Vector2f& GetPosition() const noexcept;
-	[[nodiscard]] const sf::Vector2f& GetPrevPosition() const noexcept;
-	[[nodiscard]] const sf::Vector2f& GetRelativePosition() const noexcept;
-	[[nodiscard]] const sf::Vector2f& GetVelocity() const noexcept;
-	[[nodiscard]] const sf::Vector2f& GetPrevVelocity() const noexcept;
-	[[nodiscard]] std::uint16_t GetCellIndex() const noexcept;
-
-	[[nodiscard]] sf::Vector2f GetOrigin() const noexcept;
-	[[nodiscard]] sf::Vector2f GetPrevOrigin() const noexcept;
-
-	void SetCycleTime(const float val) noexcept;
+	BoidContainer(std::size_t capacity);
 
 public:
-	void SteerTowards(const sf::Vector2f& direction, const float length, const float weight);
-	void SteerTowards(const sf::Vector2f& point, const float weight);
+	std::size_t GetSize() const noexcept;
+	std::size_t GetCapacity() const noexcept;
 
 public:
-	void PreUpdate(const Grid& grid) noexcept;
-	void UpdateGridCells(Grid& grid, std::span<const Boid> boids, std::span<const std::uint32_t> proxy, const std::uint32_t index) const;
-	void Flock(const Grid& grid, std::span<const Boid> boids, std::span<const std::uint32_t> proxy);
-	void Update(const RectFloat& border, std::span<const Impulse> impulses, float dt);
+	void Push(const sf::Vector2f& pos);
+	void Push(const sf::Vector2f& pos, const sf::Vector2f& velocity);
 
-	sf::Vector3f GetColor(const RectFloat& border, const IAudioMeterInfo* audioMeter, std::span<const Impulse> impulses) const noexcept;
+	void Pop(std::size_t count = 1);
+
+public:
+	void Reallocate(std::size_t capacity);
+	void Reserve(std::size_t capacity);
+
+public:
+	void PreUpdate(const Grid& grid);
+
+	void Sort();
+
+	void UpdateCells(Grid& grid);
+
+	void Interaction(const InputHandler& inputHandler, const sf::Vector2f& mousePos);
+
+	void Flock(const Grid& grid, Policy policy);
+
+	void Update(const RectFloat& border, float dt);
+
+	void UpdateVertices(
+		sf::VertexArray& vertices,
+		const RectFloat& border, 
+		const Fluid& fluid,
+		const IAudioMeterInfo* audioMeter,
+		std::span<const Impulse> impulses,
+		Policy policy, float interp);
+
+public:
+	bool OutsideBorder(		std::uint32_t i, const RectFloat& border, float dt);
+	bool TurnAtBorder(		std::uint32_t i, const RectFloat& border, float dt);
+	bool TeleportAtBorder(	std::uint32_t i, const RectFloat& border);
+
+public:
+	sf::Vector2f SteerAt(std::uint32_t i, const sf::Vector2f& steerDir) const;
+
+	void SteerTowards(std::uint32_t i, const sf::Vector2f& direction, float length, float weight);
+	void SteerTowards(std::uint32_t i, const sf::Vector2f& point, float weight);
+
+	void ResetCycleTimes();
 
 private:
-	sf::Vector2f SteerAt(const sf::Vector2f& steerDir) const;
+	sf::Vector2f GetOrigin(const sf::Vector2f& pos) const;
 
-	bool OutsideBorder(const RectFloat& border, float dt);
-	bool TurnAtBorder(const RectFloat& border, float dt);
-	bool TeleportAtBorder(const RectFloat& border);
+	sf::Vector3f GetColor(std::uint32_t i, const RectFloat& border, const IAudioMeterInfo* audioMeter, std::span<const Impulse> impulses);
 
-	sf::Vector3f PositionColor(const RectFloat& border) const;
-	sf::Vector3f CycleColor() const;
-	sf::Vector3f DensityColor() const;
-	sf::Vector3f VelocityColor() const;
-	sf::Vector3f RotationColor() const;
-	sf::Vector3f AudioColor(const IAudioMeterInfo* audioMeter) const;
-	void ImpulseColor(sf::Vector3f& color, std::span<const Impulse> impulses) const;
+	sf::Vector3f PositionColor(	std::uint32_t i, const RectFloat& border) const;
+	sf::Vector3f CycleColor(	std::uint32_t i) const;
+	sf::Vector3f DensityColor(	std::uint32_t i) const;
+	sf::Vector3f VelocityColor(	std::uint32_t i) const;
+	sf::Vector3f RotationColor(	std::uint32_t i) const;
+	sf::Vector3f AudioColor(	std::uint32_t i, const IAudioMeterInfo* audioMeter) const;
+	void ImpulseColor(			std::uint32_t i, sf::Vector3f& color, std::span<const Impulse> impulses) const;
 
 private:
-	sf::Vector2f	m_position, m_prevPosition, m_relativePos;
-	sf::Vector2f	m_velocity, m_prevVelocity;
+	std::unique_ptr<std::uint32_t[]>	m_indices;
 
-	float			m_speed			{0.0f};
-	float			m_cycleTime		{0.0f};
-	float			m_densityTime	{0.0f};
+	std::unique_ptr<sf::Vector2f[]>		m_positions;
+	std::unique_ptr<sf::Vector2f[]>		m_prevPositions;
+	std::unique_ptr<sf::Vector2f[]>		m_velocities;
+	std::unique_ptr<sf::Vector2f[]>		m_prevVelocities;
+	std::unique_ptr<sf::Vector2f[]>		m_relativePositions;
 
-	std::uint16_t	m_density		{0};
-	std::uint16_t	m_cellIndex		{0};
+	std::unique_ptr<float[]>			m_speeds;
+	std::unique_ptr<float[]>			m_angles;
+	std::unique_ptr<float[]>			m_cycleTimes;
+	std::unique_ptr<float[]>			m_densityTimes;
+
+	std::unique_ptr<std::uint16_t[]>	m_densities;
+	std::unique_ptr<std::uint16_t[]>	m_cellIndices;
+
+	std::size_t	m_size		{0};
+	std::size_t	m_capacity	{0};
 };
-

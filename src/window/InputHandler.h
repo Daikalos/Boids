@@ -6,8 +6,6 @@
 #include <unordered_set>
 #include <string>
 
-#include "../utilities/NonCopyable.h"
-
 namespace Binding
 {
 	enum class Button : uint32_t
@@ -27,7 +25,7 @@ namespace Binding
 
 // translates basic input from keyboard and mouse for more extensible usage
 //
-class InputHandler : NonCopyable
+class InputHandler
 {
 public:
 	InputHandler();

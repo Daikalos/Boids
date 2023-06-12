@@ -63,6 +63,9 @@
     <ClCompile Include="boids\Impulse.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="utilities\FPSCounter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="window\Application.h">
@@ -116,9 +119,6 @@
     <ClInclude Include="utilities\HideTaskbarIcon.h">
       <Filter>Header Files\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="utilities\NonCopyable.h">
-      <Filter>Header Files\Utils</Filter>
-    </ClInclude>
     <ClInclude Include="utilities\PolicySelect.h">
       <Filter>Header Files\Utils</Filter>
     </ClInclude>
@@ -127,6 +127,9 @@
     </ClInclude>
     <ClInclude Include="utilities\Utilities.h">
       <Filter>Header Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="utilities\FPSCounter.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

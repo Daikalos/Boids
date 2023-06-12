@@ -46,8 +46,7 @@ private:
 	Fluid						m_fluid;
 
 	std::vector<Impulse>		m_impulses;
-	std::vector<Boid>			m_boids;
-	std::vector<std::uint32_t>	m_proxy;
+	BoidContainer				m_boids;
 	sf::VertexArray				m_vertices;
 	RectFloat					m_border;
 

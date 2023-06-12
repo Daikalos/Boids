@@ -3,12 +3,11 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/OpenGL.hpp>
 
-#include "../utilities/NonCopyable.h"
 #include "../utilities/VectorUtilities.h"
 
 #include "InputHandler.h"
 
-class Camera : public sf::View, NonCopyable
+class Camera : public sf::View
 {
 public:
 	Camera();

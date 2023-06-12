@@ -8,8 +8,6 @@
 #include <iostream>
 #include <filesystem>
 
-#include "../utilities/NonCopyable.h"
-
 enum class TextureID
 {
 	Background
@@ -23,7 +21,7 @@ enum class FontID
 static const std::string RESOURCE_FOLDER = "content/";
 
 template <class Resource, class Identifier>
-class ResourceHolder : private NonCopyable
+class ResourceHolder
 {
 public:
 	using Ptr = std::unique_ptr<Resource>;

@@ -4,11 +4,11 @@
 
 #include "../window/ResourceHolder.hpp"
 #include "../window/InputHandler.h"
-#include "../utilities/NonCopyable.h"
+#include "../utilities/FPSCounter.h"
 
 #include "Config.h"
 
-class Debug : public NonCopyable
+class Debug
 {
 public:
 	Debug();
@@ -37,5 +37,7 @@ private:
 	sf::Text		m_textState;
 	sf::Text		m_textInfo;
 	std::string		m_info;
+
+	FPSCounter		m_fpsCounter;
 };
 

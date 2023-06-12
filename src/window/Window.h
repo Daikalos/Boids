@@ -2,7 +2,6 @@
 
 #include <SFML/Graphics.hpp>
 
-#include "../utilities/NonCopyable.h"
 #include "../utilities/Rectangle.hpp"
 #include "../utilities/HideTaskbarIcon.h"
 
@@ -17,7 +16,7 @@ enum class WindowBorder
 
 // allow for toggle fullscreen, change resolution, and other settings
 //
-class Window : public sf::RenderWindow, NonCopyable
+class Window : public sf::RenderWindow
 {
 public:
 	Window(std::string name, sf::VideoMode mode, WindowBorder windowBorder, sf::ContextSettings settings, bool verticalSync, int framerate, Camera& camera);

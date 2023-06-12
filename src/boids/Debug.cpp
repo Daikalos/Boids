@@ -43,6 +43,8 @@ void Debug::Update(const InputHandler& inputHandler, std::uint32_t boidCount, st
 	if (!m_enabled)
 		return;
 
+	m_fpsCounter.Update(dt);
+
 	m_updateFreq -= dt;
 	if (m_updateFreq <= 0.0f)
 	{
@@ -50,7 +52,7 @@ void Debug::Update(const InputHandler& inputHandler, std::uint32_t boidCount, st
 			"\nCONFIG STATUS: " + std::string(Config::Inst().LoadStatus ? "SUCCESS" : "FAILED TO LOAD") +
 			"\n\nBOIDS: " + std::to_string(boidCount) +
 			"\nCELLS: " + std::to_string(cellCount) +
-			"\nFPS: " + std::to_string((int)std::floorf(1.0f / dt));
+			"\nFPS: " + std::to_string((int)std::floorf(m_fpsCounter.GetFPS()));
 
 		m_refresh = true;
 		m_updateFreq = Config::Inst().DebugUpdateFreq;

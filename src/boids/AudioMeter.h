@@ -2,10 +2,9 @@
 
 #include <memory>
 
-#include "../utilities/NonCopyable.h"
 #include "Config.h"
 
-class IAudioMeterInfo : public NonCopyable
+class IAudioMeterInfo
 {
 public:
 	using Ptr = std::unique_ptr<IAudioMeterInfo>;
