@@ -39,7 +39,7 @@
     <ClCompile Include="boids\AudioMeter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="boids\Boid.cpp">
+    <ClCompile Include="boids\BoidContainer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="boids\Config.cpp">
@@ -92,7 +92,7 @@
     <ClInclude Include="boids\Background.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="boids\Boid.h">
+    <ClInclude Include="boids\BoidContainer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="boids\Config.h">

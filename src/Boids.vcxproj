@@ -21,7 +21,7 @@
   <ItemGroup>
     <ClCompile Include="boids\Background.cpp" />
     <ClCompile Include="boids\AudioMeter.cpp" />
-    <ClCompile Include="boids\Boid.cpp" />
+    <ClCompile Include="boids\BoidContainer.cpp" />
     <ClCompile Include="boids\Config.cpp" />
     <ClCompile Include="boids\Debug.cpp" />
     <ClCompile Include="boids\Fluid.cpp" />
@@ -39,7 +39,7 @@
   <ItemGroup>
     <ClInclude Include="boids\AudioMeter.h" />
     <ClInclude Include="boids\Background.h" />
-    <ClInclude Include="boids\Boid.h" />
+    <ClInclude Include="boids\BoidContainer.h" />
     <ClInclude Include="boids\Config.h" />
     <ClInclude Include="boids\Debug.h" />
     <ClInclude Include="boids\Fluid.h" />

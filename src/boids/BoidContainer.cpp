@@ -1,4 +1,4 @@
-#include "Boid.h"
+#include "BoidContainer.h"
 
 BoidContainer::BoidContainer(std::size_t capacity) : m_capacity(capacity)
 {
@@ -32,7 +32,7 @@ std::size_t BoidContainer::GetCapacity() const noexcept
 void BoidContainer::Push(const sf::Vector2f& pos)
 {
 	if (m_size == m_capacity)
-		Reallocate(1.5f * m_capacity + 1);
+		Reallocate(1.5 * m_capacity + 1);
 
 	m_indices[m_size] = m_size;
 
@@ -50,7 +50,7 @@ void BoidContainer::Push(const sf::Vector2f& pos)
 void BoidContainer::Push(const sf::Vector2f& pos, const sf::Vector2f& velocity)
 {
 	if (m_size == m_capacity)
-		Reallocate(1.5f * m_capacity + 1);
+		Reallocate(1.5 * m_capacity + 1);
 
 	m_indices[m_size] = m_size;
 
@@ -79,53 +79,29 @@ void BoidContainer::Pop(std::size_t count)
 
 void BoidContainer::Reallocate(std::size_t capacity)
 {
-	auto indices			= std::make_unique<std::uint32_t[]>(capacity);
+	const auto realloc = 
+		[this, &capacity]<typename T>(std::unique_ptr<T[]>& ptr)
+		{
+			auto newPtr = std::make_unique<T[]>(capacity);
+			std::move(ptr.get(), ptr.get() + m_size, newPtr.get());
+			ptr = std::move(newPtr);
+		};
 
-	auto positions			= std::make_unique<sf::Vector2f[]>(capacity);
-	auto prevPositions		= std::make_unique<sf::Vector2f[]>(capacity);
-	auto velocities			= std::make_unique<sf::Vector2f[]>(capacity);
-	auto prevVelocities		= std::make_unique<sf::Vector2f[]>(capacity);
-	auto relativePositions	= std::make_unique<sf::Vector2f[]>(capacity);
+	realloc(m_indices);
 
-	auto speeds				= std::make_unique<float[]>(capacity);
-	auto angles				= std::make_unique<float[]>(capacity);
-	auto cycleTimes			= std::make_unique<float[]>(capacity);
-	auto densityTimes		= std::make_unique<float[]>(capacity);
+	realloc(m_positions);
+	realloc(m_prevPositions);
+	realloc(m_velocities);
+	realloc(m_prevVelocities);
+	realloc(m_relativePositions);
 
-	auto densities			= std::make_unique<std::uint16_t[]>(capacity);
-	auto cellIndices		= std::make_unique<std::uint16_t[]>(capacity);
+	realloc(m_speeds);
+	realloc(m_angles);
+	realloc(m_cycleTimes);
+	realloc(m_densityTimes);
 
-	std::move(m_indices.get(),				m_indices.get() + m_size,				indices.get());
-
-	std::move(m_positions.get(),			m_positions.get() + m_size,				positions.get());
-	std::move(m_prevPositions.get(),		m_prevPositions.get() + m_size,			prevPositions.get());
-	std::move(m_velocities.get(),			m_velocities.get() + m_size,			velocities.get());
-	std::move(m_prevVelocities.get(),		m_prevVelocities.get() + m_size,		prevVelocities.get());
-	std::move(m_relativePositions.get(),	m_relativePositions.get() + m_size,		relativePositions.get());
-
-	std::move(m_speeds.get(),				m_speeds.get() + m_size,				speeds.get());
-	std::move(m_angles.get(),				m_angles.get() + m_size,				angles.get());
-	std::move(m_cycleTimes.get(),			m_cycleTimes.get() + m_size,			cycleTimes.get());
-	std::move(m_densityTimes.get(),			m_densityTimes.get() + m_size,			densityTimes.get());
-
-	std::move(m_densities.get(),			m_densities.get() + m_size,				densities.get());
-	std::move(m_cellIndices.get(),			m_cellIndices.get() + m_size,			cellIndices.get());
-
-	m_indices			= std::move(indices);
-
-	m_positions			= std::move(positions);
-	m_prevPositions		= std::move(prevPositions);
-	m_velocities		= std::move(velocities);
-	m_prevVelocities	= std::move(prevVelocities);
-	m_relativePositions = std::move(relativePositions);
-
-	m_speeds			= std::move(speeds);
-	m_angles			= std::move(angles);
-	m_cycleTimes		= std::move(cycleTimes);
-	m_densityTimes		= std::move(densityTimes);
-
-	m_densities			= std::move(densities);
-	m_cellIndices		= std::move(cellIndices);
+	realloc(m_densities);
+	realloc(m_cellIndices);
 
 	m_capacity = capacity;
 }

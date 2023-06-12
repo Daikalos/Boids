@@ -14,7 +14,7 @@
 #include "Background.h"
 #include "Grid.h"
 #include "Impulse.h"
-#include "Boid.h"
+#include "BoidContainer.h"
 #include "Fluid.h"
 
 class MainState final : public State
@@ -45,9 +45,9 @@ private:
 	Background					m_background;
 	Fluid						m_fluid;
 
-	std::vector<Impulse>		m_impulses;
 	BoidContainer				m_boids;
 	sf::VertexArray				m_vertices;
+	std::vector<Impulse>		m_impulses;
 	RectFloat					m_border;
 
 	sf::Vector2f				m_mousePos;
