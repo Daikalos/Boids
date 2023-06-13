@@ -33,11 +33,11 @@ sf::Vector3f Fluid::GetColor(const sf::Vector2f& origin) const
 	float scaled_speed = sf::Vector2f(vel_x, vel_y).length() * bnd;
 	scaled_speed = std::clamp(scaled_speed, 0.0f, bnd);
 
-	const int index1 = (int)scaled_speed;
-	const int index2 = ((int)scaled_speed + 1) % (int)Config::Inst().FluidColors.size();
+	const int i1 = (int)scaled_speed;
+	const int i2 = (i1 == Config::Inst().FluidColors.size() - 1) ? 0 : i1 + 1;
 
-	const sf::Vector3f color1 = Config::Inst().FluidColors[index1];
-	const sf::Vector3f color2 = Config::Inst().FluidColors[index2];
+	const sf::Vector3f color1 = Config::Inst().FluidColors[i1];
+	const sf::Vector3f color2 = Config::Inst().FluidColors[i2];
 
 	const float newT = scaled_speed - std::floorf(scaled_speed);
 
@@ -57,8 +57,10 @@ void Fluid::AddVelocity(int x, int y, float vx, float vy)
 	this->vy[index] += vy;
 }
 
-void Fluid::LinSolve(float* x, const float* x0, const float a, const int b, const float c)
+void Fluid::LinSolve(float* x, const float* x0, float a, int b, float c)
 {
+	c = 1.0f / c;
+
 	for (int k = 0; k < 2; ++k)
 	{
 		for (int i = 1; i < H - 1; ++i)
@@ -69,28 +71,26 @@ void Fluid::LinSolve(float* x, const float* x0, const float a, const int b, cons
 					(x[IX(j - 1, i)] +
 					 x[IX(j + 1, i)] +
 					 x[IX(j, i - 1)] +
-					 x[IX(j, i + 1)])) / c;
+					 x[IX(j, i + 1)])) * c;
 			}
 		}
+
 		SetBnd(x, b);
 	}
 }
 
-void Fluid::SetBnd(float* x, const int b)
+void Fluid::SetBnd(float* x, int b)
 {
-	for (int i = 1; i < std::max(H - 1, W - 1); ++i)
+	for (int i = 1; i < H - 1; ++i)
 	{
-		if (i < H - 1) [[likely]]
-		{
-			x[IX(0,		i)] = b == 1 ? -x[IX(1,		i)] : x[IX(1,	  i)];
-			x[IX(W - 1, i)] = b == 1 ? -x[IX(W - 2, i)] : x[IX(W - 2, i)];
-		}
+		x[IX(0,		i)] = b == 1 ? -x[IX(1,		i)] : x[IX(1,	  i)];
+		x[IX(W - 1, i)] = b == 1 ? -x[IX(W - 2, i)] : x[IX(W - 2, i)];
+	}
 
-		if (i < W - 1) [[likely]]
-		{
-			x[IX(i, 0	 )] = b == 2 ? -x[IX(i, 1	 )] : x[IX(i, 1	   )];
-			x[IX(i, H - 1)] = b == 2 ? -x[IX(i, H - 2)] : x[IX(i, H - 2)];
-		}
+	for (int i = 1; i < W - 1; ++i)
+	{
+		x[IX(i, 0	 )] = b == 2 ? -x[IX(i, 1	 )] : x[IX(i, 1	   )];
+		x[IX(i, H - 1)] = b == 2 ? -x[IX(i, H - 2)] : x[IX(i, H - 2)];
 	}
 
 	x[IX(0,		0	 )] = 0.5f * (x[IX(1,	  0	   )] + x[IX(0,		1	 )]);
@@ -100,13 +100,13 @@ void Fluid::SetBnd(float* x, const int b)
 
 }
 
-void Fluid::Diffuse(float* x, const float* x0, const float diff, const int b, const float dt)
+void Fluid::Diffuse(float* x, const float* x0, float diff, int b, float dt)
 {
 	float a = dt * diff * (W - 2) * (H - 2);
 	LinSolve(x, x0, a, b, 1 + 6 * a);
 }
 
-void Fluid::Advect(float* d, const float* d0, const float* vx, const float* vy, const int b, const float dt)
+void Fluid::Advect(float* d, const float* d0, const float* vx, const float* vy, int b, float dt)
 {
 	float i0, j0, i1, j1;
 	float x, y, s0, t0, s1, t1;
@@ -157,15 +157,17 @@ void Fluid::Advect(float* d, const float* d0, const float* vx, const float* vy, 
 
 void Fluid::Project(float* vx, float* vy, float* p, float* div)
 {
+	const float inv = -1.0f / (W + H);
+
 	for (int y = 1; y < H - 1; ++y)
 	{
 		for (int x = 1; x < W - 1; ++x) 
 		{
-			div[IX(x, y)] = -0.5f * (
+			div[IX(x, y)] = inv * (
 				vx[IX(x + 1, y	  )] - 
 				vx[IX(x - 1, y	  )] +
 				vy[IX(x,	 y + 1)] - 
-				vy[IX(x,	 y - 1)]) / ((W + H) * 0.5f);
+				vy[IX(x,	 y - 1)]);
 
 			p[IX(x, y)] = 0;
 		}
@@ -230,7 +232,7 @@ void Fluid::StepLine(int x0, int y0, int x1, int y1, int dx, int dy, float a)
 	}
 }
 
-void Fluid::Update(const float dt)
+void Fluid::Update(float dt)
 {
 	const auto diffuseFunc = std::bind(&Fluid::Diffuse, this,
 		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, dt);
@@ -278,7 +280,7 @@ void Fluid::Update(const float dt)
 	}
 }
 
-int Fluid::IX(const int x, const int y) const noexcept	
+int Fluid::IX(int x, int y) const noexcept	
 { 
 	return x + y * W; 
 }

@@ -21,7 +21,6 @@ public:
 	[[nodiscard]] int AtPos(const sf::Vector2f& position) const;
 	[[nodiscard]] int AtPos(const sf::Vector2i& position) const noexcept;
 	[[nodiscard]] int AtPos(int x, int y) const noexcept;
-	[[nodiscard]] sf::Vector2i AtPos(const int i) const;
 
 public:
 	void ResetBuffers();
@@ -30,8 +29,8 @@ public:
 	RectFloat		rootRect;
 	sf::Vector2f	contDims;
 
-	std::vector<int> startIndices;
-	std::vector<int> endIndices;
+	std::unique_ptr<int[]> startIndices;
+	std::unique_ptr<int[]> endIndices;
 
 private:
 	int m_width{0}, m_height{0}, m_count{0};

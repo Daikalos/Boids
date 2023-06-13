@@ -19,8 +19,8 @@ Grid::Grid(const RectFloat& rect, const sf::Vector2f& cont_dims)
 
 	m_count = m_width * m_height;
 
-	startIndices.resize(m_count, -1);
-	endIndices.resize(m_count, -1);
+	startIndices = std::make_unique<int[]>(m_count);
+	endIndices = std::make_unique<int[]>(m_count);
 }
 
 int Grid::GetCount() const noexcept
@@ -47,13 +47,9 @@ int Grid::AtPos(int x, int y) const noexcept
 
 	return x + y * m_width;
 }
-sf::Vector2i Grid::AtPos(const int i) const
-{
-	return sf::Vector2i(i % m_width, i / m_width);
-}
 
 void Grid::ResetBuffers()
 {
-	std::fill_n(startIndices.begin(), startIndices.size(), -1);
-	std::fill_n(endIndices.begin(), endIndices.size(), -1);
+	std::fill_n(startIndices.get(), m_count, -1);
+	std::fill_n(endIndices.get(), m_count, -1);
 }

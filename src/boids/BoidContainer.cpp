@@ -144,14 +144,10 @@ void BoidContainer::UpdateCells(Grid& grid)
 
 	grid.startIndices[m_cellIndices[m_indices[0]]] = 0;
 
-	for (std::size_t i = 1; i < m_size; ++i)
+	for (std::size_t i = 1; i < (m_size - 1); ++i)
 	{
-		std::uint16_t cellIndex = m_cellIndices[m_indices[i]];
-
-		if (i == m_size - 1)
-			grid.endIndices[cellIndex] = i;
-
-		const int otherIndex = m_cellIndices[m_indices[i - 1]];
+		const std::uint16_t cellIndex	= m_cellIndices[m_indices[i]];
+		const std::uint16_t otherIndex	= m_cellIndices[m_indices[i - 1]];
 
 		if (otherIndex != cellIndex)
 		{
@@ -159,6 +155,8 @@ void BoidContainer::UpdateCells(Grid& grid)
 			grid.endIndices[otherIndex] = i - 1;
 		}
 	}
+
+	grid.endIndices[m_cellIndices[m_indices[m_size - 1]]] = m_size - 1;
 }
 
 void BoidContainer::Interaction(const InputHandler& inputHandler, const sf::Vector2f& mousePos)
@@ -176,7 +174,7 @@ void BoidContainer::Interaction(const InputHandler& inputHandler, const sf::Vect
 				(holdRight ? -1.0f : 0.0f);
 
 			const float lengthOpt = vu::distance_opt(dir);
-			const float weight = 15.0f / (std::sqrtf(lengthOpt) + FLT_EPSILON); // hard coded because cant update Config::Inst().. 
+			const float weight = 15.0f / (std::sqrtf(lengthOpt) + FLT_EPSILON);
 
 			SteerTowards(i, dir, lengthOpt, Config::Inst().SteerTowardsFactor * weight * factor);
 		}
@@ -226,15 +224,15 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 					const int neighbour_x = gridCell.x + x;
 					const int neighbour_y = gridCell.y + y;
 
-					neighbours[0] = grid.contDims * sf::Vector2f(0, 0);
-					neighbours[1] = grid.contDims * sf::Vector2f((float)x, 0);
-					neighbours[2] = grid.contDims * sf::Vector2f(0, (float)y);
-					neighbours[3] = grid.contDims * sf::Vector2f((float)x, (float)y);
+					neighbours[0] = grid.contDims * sf::Vector2f(0,			0);
+					neighbours[1] = grid.contDims * sf::Vector2f((float)x,	0);
+					neighbours[2] = grid.contDims * sf::Vector2f(0,			(float)y);
+					neighbours[3] = grid.contDims * sf::Vector2f((float)x,	(float)y);
 
-					neighIndices[0] = grid.AtPos(gridCell.x, gridCell.y);		// current
-					neighIndices[1] = grid.AtPos(neighbour_x, gridCell.y);		// left or right of current
-					neighIndices[2] = grid.AtPos(gridCell.x, neighbour_y);	// top or bot of current
-					neighIndices[3] = grid.AtPos(neighbour_x, neighbour_y);	// top left/right bot left/right of current
+					neighIndices[0] = grid.AtPos(gridCell.x,	gridCell.y);	// current
+					neighIndices[1] = grid.AtPos(neighbour_x,	gridCell.y);	// left or right of current
+					neighIndices[2] = grid.AtPos(gridCell.x,	neighbour_y);	// top or bot of current
+					neighIndices[3] = grid.AtPos(neighbour_x,	neighbour_y);	// top left/right bot left/right of current
 
 					Config& config = Config::Inst();
 
@@ -511,11 +509,11 @@ sf::Vector3f BoidContainer::CycleColor(std::uint32_t i) const
 
 	float scaledTime = m_cycleTimes[i] * (float)(Config::Inst().BoidCycleColors.size() - 1);
 
-	const auto index1 = (int)scaledTime;
-	const auto index2 = ((int)scaledTime + 1) % (int)Config::Inst().BoidCycleColors.size();
+	const auto i1 = (int)scaledTime;
+	const auto i2 = (i1 == Config::Inst().BoidCycleColors.size() - 1) ? 0 : i1 + 1;
 
-	const sf::Vector3f color1 = Config::Inst().BoidCycleColors[index1];
-	const sf::Vector3f color2 = Config::Inst().BoidCycleColors[index2];
+	const sf::Vector3f color1 = Config::Inst().BoidCycleColors[i1];
+	const sf::Vector3f color2 = Config::Inst().BoidCycleColors[i2];
 
 	const float newT = scaledTime - std::floorf(scaledTime);
 
@@ -531,11 +529,11 @@ sf::Vector3f BoidContainer::DensityColor(std::uint32_t i) const
 
 	const float scaledDensity = std::fmodf(densityPercentage + m_densityTimes[i], 1.0f) * (float)(Config::Inst().BoidDensityColors.size() - 1);
 
-	const auto index1 = (int)scaledDensity;
-	const auto index2 = ((int)scaledDensity + 1) % (int)Config::Inst().BoidDensityColors.size();
+	const auto i1 = (int)scaledDensity;
+	const auto i2 = (i1 == Config::Inst().BoidDensityColors.size() - 1) ? 0 : i1 + 1;
 
-	const sf::Vector3f color1 = Config::Inst().BoidDensityColors[index1];
-	const sf::Vector3f color2 = Config::Inst().BoidDensityColors[index2];
+	const sf::Vector3f color1 = Config::Inst().BoidDensityColors[i1];
+	const sf::Vector3f color2 = Config::Inst().BoidDensityColors[i2];
 
 	const float newT = scaledDensity - std::floorf(scaledDensity);
 
@@ -554,11 +552,11 @@ sf::Vector3f BoidContainer::VelocityColor(std::uint32_t i) const
 
 	const float scaled_velocity = velocity_percentage * (float)(Config::Inst().BoidVelocityColors.size() - 1);
 
-	const auto index1 = (int)scaled_velocity;
-	const auto index2 = ((int)scaled_velocity + 1) % (int)Config::Inst().BoidVelocityColors.size();
+	const auto i1 = (int)scaled_velocity;
+	const auto i2 = (i1 == Config::Inst().BoidVelocityColors.size() - 1) ? 0 : i1 + 1;
 
-	const sf::Vector3f color1 = Config::Inst().BoidVelocityColors[index1];
-	const sf::Vector3f color2 = Config::Inst().BoidVelocityColors[index2];
+	const sf::Vector3f color1 = Config::Inst().BoidVelocityColors[i1];
+	const sf::Vector3f color2 = Config::Inst().BoidVelocityColors[i2];
 
 	const float newT = scaled_velocity - std::floorf(scaled_velocity);
 
@@ -574,11 +572,11 @@ sf::Vector3f BoidContainer::RotationColor(std::uint32_t i) const
 
 	const float scaledRotation = rotationPercentage * (float)(Config::Inst().BoidRotationColors.size() - 1);
 
-	const auto index1 = (int)scaledRotation;
-	const auto index2 = ((int)scaledRotation + 1) % (int)Config::Inst().BoidRotationColors.size();
+	const auto i1 = (int)scaledRotation;
+	const auto i2 = (i1 == Config::Inst().BoidRotationColors.size() - 1) ? 0 : i1 + 1;
 
-	const sf::Vector3f color1 = Config::Inst().BoidRotationColors[index1];
-	const sf::Vector3f color2 = Config::Inst().BoidRotationColors[index2];
+	const sf::Vector3f color1 = Config::Inst().BoidRotationColors[i1];
+	const sf::Vector3f color2 = Config::Inst().BoidRotationColors[i2];
 
 	const float newT = scaledRotation - std::floorf(scaledRotation);
 
@@ -595,11 +593,11 @@ sf::Vector3f BoidContainer::AudioColor(std::uint32_t i, const IAudioMeterInfo* a
 
 	const float scaledVolume = std::fminf(maxVolume * densityPercentage, 1.0f) * (float)(Config::Inst().AudioResponsiveColors.size() - 1);
 
-	const auto index1 = (int)scaledVolume;
-	const auto index2 = ((int)scaledVolume + 1) % (int)Config::Inst().AudioResponsiveColors.size();
+	const auto i1 = (int)scaledVolume;
+	const auto i2 = (i1 == Config::Inst().AudioResponsiveColors.size() - 1) ? 0 : i1 + 1;
 
-	const sf::Vector3f color1 = Config::Inst().AudioResponsiveColors[index1];
-	const sf::Vector3f color2 = Config::Inst().AudioResponsiveColors[index2];
+	const sf::Vector3f color1 = Config::Inst().AudioResponsiveColors[i1];
+	const sf::Vector3f color2 = Config::Inst().AudioResponsiveColors[i2];
 
 	const float newT = scaledVolume - std::floorf(scaledVolume);
 
@@ -626,11 +624,11 @@ void BoidContainer::ImpulseColor(std::uint32_t i, sf::Vector3f& color, std::span
 		{
 			const float scaled_length = std::fmodf(percentage, 1.0f) * (float)(Config::Inst().ImpulseColors.size() - 1);
 
-			const auto index1 = (int)scaled_length;
-			const auto index2 = ((int)scaled_length + 1) % (int)Config::Inst().ImpulseColors.size();
+			const auto i1 = (int)scaled_length;
+			const auto i2 = (i1 == Config::Inst().ImpulseColors.size() - 1) ? 0 : i1 + 1;
 
-			const sf::Vector3f color1 = Config::Inst().ImpulseColors[index1];
-			const sf::Vector3f color2 = Config::Inst().ImpulseColors[index2];
+			const sf::Vector3f color1 = Config::Inst().ImpulseColors[i1];
+			const sf::Vector3f color2 = Config::Inst().ImpulseColors[i2];
 
 			const float newT = scaled_length - std::floorf(scaled_length);
 

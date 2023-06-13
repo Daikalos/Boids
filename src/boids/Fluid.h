@@ -29,19 +29,19 @@ public:
 
 	void StepLine(int x0, int y0, int x1, int y1, int dx, int dy, float a);
 
-	void Update(const float dt);
+	void Update(float dt);
 
 private:
-	void LinSolve(float* x, const float* x0, const float a, const int b, const float c);
+	void LinSolve(float* x, const float* x0, float a, int b, float c);
 
-	void SetBnd(float* x, const int b);
+	void SetBnd(float* x, int b);
 
-	void Diffuse(float* x, const float* x0, const float diff, const int b, const float dt);
-	void Advect(float* d, const float* d0, const float* vx, const float* vy, const int b, const float dt);
+	void Diffuse(float* x, const float* x0, float diff, int b, float dt);
+	void Advect(float* d, const float* d0, const float* vx, const float* vy, int b, float dt);
 	void Project(float* u, float* v, float* p, float* div);
 
 private:
-	[[nodiscard]] int IX(const int x, const int y) const noexcept;
+	[[nodiscard]] int IX(int x, int y) const noexcept;
 	[[nodiscard]] int SafeIX(int x, int y) const noexcept;
 
 private:
