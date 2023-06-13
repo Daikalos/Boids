@@ -305,16 +305,34 @@ void BoidContainer::Update(const RectFloat& border, float dt)
 {
 	for (std::size_t i = 0; i < m_size; ++i)
 	{
-		m_speeds[i] = std::clamp(m_velocities[i].length(), Config::Inst().BoidSpeedMin, Config::Inst().BoidSpeedMax);
-		m_velocities[i] = vu::normalize(m_velocities[i], m_speeds[i]);
+		float lengthSq = m_velocities[i].lengthSq();
+
+		if (lengthSq < Config::Inst().BoidSpeedMinSq)
+		{
+			m_velocities[i] = vu::normalize(m_velocities[i], std::sqrt(lengthSq), Config::Inst().BoidSpeedMin);
+			m_speeds[i] = Config::Inst().BoidSpeedMin;
+		}
+		else if (lengthSq > Config::Inst().BoidSpeedMaxSq)
+		{
+			m_velocities[i] = vu::normalize(m_velocities[i], std::sqrt(lengthSq), Config::Inst().BoidSpeedMax);
+			m_speeds[i] = Config::Inst().BoidSpeedMax;
+		}
+		else
+		{
+			m_speeds[i] = std::sqrt(lengthSq);
+		}
 
 		m_positions[i] += m_velocities[i] * dt;
 
 		if (OutsideBorder(i, border, dt))
-			m_prevPositions[i] = m_positions[i];
+			m_prevPositions[i] = m_positions[i]; // prevent interpolation effect
+	}
 
+	for (std::size_t i = 0; i < m_size; ++i)
+	{
 		if ((Config::Inst().ColorFlag & CF_Cycle) == CF_Cycle)
 			m_cycleTimes[i] = std::fmodf(m_cycleTimes[i] + dt * Config::Inst().BoidCycleColorsSpeed, 1.0f);
+
 		if ((Config::Inst().ColorFlag & CF_Density) == CF_Density)
 			m_densityTimes[i] = (Config::Inst().BoidDensityCycleEnabled) ? std::fmodf(m_densityTimes[i] + dt * Config::Inst().BoidDensityCycleSpeed, 1.0f) : 0.0f;
 	}

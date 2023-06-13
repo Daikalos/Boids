@@ -10,6 +10,9 @@ Config::Config()
 
 	PredatorDistance *= PredatorDistance;
 
+	BoidSpeedMinSq = BoidSpeedMin * BoidSpeedMin;
+	BoidSpeedMaxSq = BoidSpeedMax * BoidSpeedMax;
+
 	load();
 }
 
@@ -36,6 +39,9 @@ void Config::load()
 			CohDistance *= CohDistance;
 
 			PredatorDistance *= PredatorDistance;
+
+			BoidSpeedMinSq = BoidSpeedMin * BoidSpeedMin;
+			BoidSpeedMaxSq = BoidSpeedMax * BoidSpeedMax;
 		}
 		catch (nlohmann::json::parse_error) { }
 		catch (nlohmann::detail::type_error e) { }

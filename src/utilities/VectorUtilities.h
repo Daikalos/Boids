@@ -46,12 +46,12 @@ namespace vu
 	}
 
 	template<Arithmetic T>
-	static constexpr sf::Vector2<T> normalize(sf::Vector2<T> vector, const float length, const float radius)
+	static constexpr sf::Vector2<T> normalize(sf::Vector2<T> vector, float length, float radius)
 	{
 		if (length < FLT_EPSILON || std::abs(length - radius) < FLT_EPSILON)
 			return vector;
 
-		const float inv = (radius / length);
+		float inv = (radius / length);
 
 		vector.x *= inv;
 		vector.y *= inv;
@@ -59,13 +59,13 @@ namespace vu
 		return vector;
 	}
 	template<Arithmetic T>
-	static constexpr sf::Vector2<T> normalize(const sf::Vector2<T>& vector, const float radius = 1.0f)
+	static constexpr sf::Vector2<T> normalize(const sf::Vector2<T>& vector, float radius = 1.0f)
 	{
 		return normalize(vector, vector.length(), radius);
 	}
 
 	template<Arithmetic T>
-	static constexpr sf::Vector2<T> limit(const sf::Vector2<T>& vector, const float length, const float max_length)
+	static constexpr sf::Vector2<T> limit(const sf::Vector2<T>& vector, float length, float max_length)
 	{
 		if (length > max_length)
 			return normalize(vector, length, max_length);
@@ -73,13 +73,13 @@ namespace vu
 		return vector;
 	}
 	template<Arithmetic T>
-	static constexpr sf::Vector2<T> limit(const sf::Vector2<T>& vector, const float max_length)
+	static constexpr sf::Vector2<T> limit(const sf::Vector2<T>& vector, float max_length)
 	{
 		return limit(vector, vector.length(), max_length);
 	}
 
 	template<Arithmetic T>
-	static constexpr sf::Vector2<T> rotate_point(const sf::Vector2<T>& point, const sf::Vector2<T>& center, const float angle)
+	static constexpr sf::Vector2<T> rotate_point(const sf::Vector2<T>& point, const sf::Vector2<T>& center, float angle)
 	{
 		const sf::Vector2<T> dir = direction(center, point);
 
@@ -110,20 +110,20 @@ namespace vu
 	}
 
 	template<Arithmetic T>
-	static constexpr auto lerp(const T a, const T b, const float f)
+	static constexpr auto lerp(const T a, const T b, float f)
 	{
 		return (a * (1.0f - f)) + (b * f);
 	}
 
 	template<Arithmetic T>
-	static constexpr sf::Vector2<T> lerp(const sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs, const float a)
+	static constexpr sf::Vector2<T> lerp(const sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs, float a)
 	{
 		return sf::Vector3<T>(
 			lerp(lhs.x, rhs.x, a),
 			lerp(lhs.y, rhs.y, a));
 	}
 	template<Arithmetic T>
-	static constexpr sf::Vector3<T> lerp(const sf::Vector3<T>& lhs, const sf::Vector3<T>& rhs, const float a)
+	static constexpr sf::Vector3<T> lerp(const sf::Vector3<T>& lhs, const sf::Vector3<T>& rhs, float a)
 	{
 		return sf::Vector3<T>(
 			lerp(lhs.x, rhs.x, a),

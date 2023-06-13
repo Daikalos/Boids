@@ -226,6 +226,8 @@ public:
 
 	// Misc
 
+	float			BoidSpeedMinSq				{0.0f};
+	float			BoidSpeedMaxSq				{0.0f};
 	bool			LoadStatus					{false};
 
 public:
