@@ -253,13 +253,14 @@ bool MainState::FixedUpdate(float dt)
 	m_boids.Interaction(*m_inputHandler, m_mousePos);
 	m_boids.Flock(m_grid, m_policy);
 	m_boids.Update(m_border, dt);
+	m_boids.UpdateColors(m_border, m_fluid, m_audioMeter.get(), m_impulses);
 
     return true;
 }
 
 bool MainState::PostUpdate(float dt, float interp)
 {
-	m_boids.UpdateVertices(m_vertices, m_border, m_fluid, m_audioMeter.get(), m_impulses, m_policy, interp);
+	m_boids.UpdateVertices(m_vertices, m_policy, interp);
 
     return true;
 }

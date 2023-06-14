@@ -10,6 +10,11 @@ Config::Config()
 
 	PredatorDistance *= PredatorDistance;
 
+	BoidHalfSize = sf::Vector2f(BoidWidth, BoidHeight) / 2.0f;
+
+	BoidSpeedInv = (BoidSpeedMax == BoidSpeedMin) ? 1.0f
+		: (1.0f / (BoidSpeedMax - BoidSpeedMin));
+
 	BoidSpeedMinSq = BoidSpeedMin * BoidSpeedMin;
 	BoidSpeedMaxSq = BoidSpeedMax * BoidSpeedMax;
 
@@ -39,6 +44,11 @@ void Config::load()
 			CohDistance *= CohDistance;
 
 			PredatorDistance *= PredatorDistance;
+
+			BoidHalfSize = sf::Vector2f(BoidWidth, BoidHeight) / 2.0f;
+
+			BoidSpeedInv = (BoidSpeedMax == BoidSpeedMin) ? 1.0f
+				: (1.0f / (BoidSpeedMax - BoidSpeedMin));
 
 			BoidSpeedMinSq = BoidSpeedMin * BoidSpeedMin;
 			BoidSpeedMaxSq = BoidSpeedMax * BoidSpeedMax;

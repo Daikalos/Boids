@@ -9,9 +9,11 @@ BoidContainer::BoidContainer(std::size_t capacity) : m_capacity(capacity)
 	m_velocities		= std::make_unique<sf::Vector2f[]>(m_capacity);
 	m_prevVelocities	= std::make_unique<sf::Vector2f[]>(m_capacity);
 	m_relativePositions = std::make_unique<sf::Vector2f[]>(m_capacity);
+	m_colors			= std::make_unique<sf::Vector3f[]>(m_capacity);
 
 	m_speeds			= std::make_unique<float[]>(m_capacity);
 	m_angles			= std::make_unique<float[]>(m_capacity);
+	m_prevAngles		= std::make_unique<float[]>(m_capacity);
 	m_cycleTimes		= std::make_unique<float[]>(m_capacity);
 	m_densityTimes		= std::make_unique<float[]>(m_capacity);
 
@@ -31,20 +33,9 @@ std::size_t BoidContainer::GetCapacity() const noexcept
 
 void BoidContainer::Push(const sf::Vector2f& pos)
 {
-	if (m_size == m_capacity)
-		Reallocate(1.5 * m_capacity + 1);
-
-	m_indices[m_size] = m_size;
-
-	m_positions[m_size] = pos;
-	m_prevVelocities[m_size] = m_velocities[m_size] = vu::normalize(sf::Vector2f(
+	Push(pos, sf::Vector2f(
 		util::random(-1.0f, 1.0f),
-		util::random(-1.0f, 1.0f)), Config::Inst().BoidSpeedMax);
-
-	if (Config::Inst().BoidCycleColorsRandom)
-		m_cycleTimes[m_size] = util::random(0.0f, 1.0f);
-
-	++m_size;
+		util::random(-1.0f, 1.0f)) * Config::Inst().BoidSpeedMax);
 }
 
 void BoidContainer::Push(const sf::Vector2f& pos, const sf::Vector2f& velocity)
@@ -54,8 +45,9 @@ void BoidContainer::Push(const sf::Vector2f& pos, const sf::Vector2f& velocity)
 
 	m_indices[m_size] = m_size;
 
-	m_positions[m_size] = pos;
-	m_prevVelocities[m_size] = m_velocities[m_size] = velocity;
+	m_prevPositions[m_size]		= m_positions[m_size]	= pos;
+	m_prevVelocities[m_size]	= m_velocities[m_size]	= velocity;
+	m_prevAngles[m_size]		= m_angles[m_size]		= velocity.angle().asRadians();
 
 	if (Config::Inst().BoidCycleColorsRandom)
 		m_cycleTimes[m_size] = util::random(0.0f, 1.0f);
@@ -94,9 +86,11 @@ void BoidContainer::Reallocate(std::size_t capacity)
 	realloc(m_velocities);
 	realloc(m_prevVelocities);
 	realloc(m_relativePositions);
+	realloc(m_colors);
 
 	realloc(m_speeds);
 	realloc(m_angles);
+	realloc(m_prevAngles);
 	realloc(m_cycleTimes);
 	realloc(m_densityTimes);
 
@@ -118,6 +112,7 @@ void BoidContainer::PreUpdate(const Grid& grid)
 	{
 		m_prevPositions[i]	= m_positions[i];
 		m_prevVelocities[i]	= m_velocities[i];
+		m_prevAngles[i]		= m_angles[i];
 
 		const sf::Vector2f gridCellRaw		= grid.RelativePos(GetOrigin(m_positions[i]));
 		const sf::Vector2i gridCell			= sf::Vector2i(gridCellRaw);
@@ -144,7 +139,7 @@ void BoidContainer::UpdateCells(Grid& grid)
 
 	grid.startIndices[m_cellIndices[m_indices[0]]] = 0;
 
-	for (std::size_t i = 1; i < (m_size - 1); ++i)
+	for (std::size_t i = 1; i < m_size; ++i)
 	{
 		const std::uint16_t cellIndex	= m_cellIndices[m_indices[i]];
 		const std::uint16_t otherIndex	= m_cellIndices[m_indices[i - 1]];
@@ -208,6 +203,8 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 					std::uint16_t cohCount = 0;
 
 					const sf::Vector2f origin = GetOrigin(m_positions[lhs]);
+					const sf::Vector2f thisRelative = m_relativePositions[lhs];
+					const sf::Vector2f thisVelocity = m_prevVelocities[lhs];
 
 					constexpr auto neighbourCount = 4; // max 4 neighbours at a time
 
@@ -257,7 +254,7 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 							const sf::Vector2f otherRelativePos =
 								neighbourCell + m_relativePositions[rhs]; // need to get relative to this Boid
 
-							const sf::Vector2f dir = otherRelativePos - m_relativePositions[lhs];
+							const sf::Vector2f dir = otherRelativePos - thisRelative;
 							const float distanceSqr = dir.lengthSq();
 
 							if (distanceSqr == 0.0f)
@@ -268,7 +265,7 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 
 							if (withinCohesion || withinAlignment)
 							{
-								const float angle = m_prevVelocities[lhs].angleTo(dir).asRadians();
+								const float angle = thisVelocity.angleTo(dir).asRadians();
 								if (angle >= -config.BoidViewAngle && angle <= config.BoidViewAngle)
 								{
 									if (withinCohesion)
@@ -321,11 +318,16 @@ void BoidContainer::Update(const RectFloat& border, float dt)
 		{
 			m_speeds[i] = std::sqrt(lengthSq);
 		}
+	}
 
+	for (std::size_t i = 0; i < m_size; ++i)
+	{
 		m_positions[i] += m_velocities[i] * dt;
 
 		if (OutsideBorder(i, border, dt))
 			m_prevPositions[i] = m_positions[i]; // prevent interpolation effect
+
+		m_angles[i] = m_velocities[i].angle().asRadians();
 	}
 
 	for (std::size_t i = 0; i < m_size; ++i)
@@ -338,41 +340,91 @@ void BoidContainer::Update(const RectFloat& border, float dt)
 	}
 }
 
-void BoidContainer::UpdateVertices(sf::VertexArray& vertices, const RectFloat& border, const Fluid& fluid, const IAudioMeterInfo* audioMeter, std::span<const Impulse> impulses, Policy policy, float interp)
+void BoidContainer::UpdateColors(const RectFloat& border, const Fluid& fluid, const IAudioMeterInfo* audioMeter, const std::vector<Impulse>& impulses)
 {
-	PolicySelect([&](auto& pol)
+	Config& config = Config::Inst();
+	std::uint32_t flag = config.ColorFlag;
+
+	std::fill_n(m_colors.get(), m_size, sf::Vector3f());
+
+	if ((flag & CF_Positional) == CF_Positional)
+	{
+		for (std::size_t i = 0; i < m_size; ++i)
+			m_colors[i] += PositionColor(i, border) * config.ColorPositionalWeight;
+	}
+	if ((flag & CF_Cycle) == CF_Cycle && !config.BoidCycleColors.empty())
+	{
+		for (std::size_t i = 0; i < m_size; ++i)
+			m_colors[i] += CycleColor(i) * config.ColorCycleWeight;
+	}
+	if ((flag & CF_Density) == CF_Density && !config.BoidDensityColors.empty() && config.BoidDensity > 0)
+	{
+		for (std::size_t i = 0; i < m_size; ++i)
+			m_colors[i] += DensityColor(i) * config.ColorDensityWeight;
+	}
+	if ((flag & CF_Velocity) == CF_Velocity && !config.BoidVelocityColors.empty())
+	{
+		for (std::size_t i = 0; i < m_size; ++i)
+			m_colors[i] += VelocityColor(i) * config.ColorVelocityWeight;
+	}
+	if ((flag & CF_Rotation) == CF_Rotation && !config.BoidRotationColors.empty())
+	{
+		for (std::size_t i = 0; i < m_size; ++i)
+			m_colors[i] += RotationColor(i) * config.ColorRotationWeight;
+	}
+	if ((flag & CF_Audio) == CF_Audio && !config.AudioResponsiveColors.empty() && audioMeter != nullptr)
+	{
+		float volume = std::fminf(audioMeter->GetVolume() * Config::Inst().AudioResponsiveStrength, Config::Inst().AudioResponsiveLimit);
+
+		for (std::size_t i = 0; i < m_size; ++i)
+			m_colors[i] += AudioColor(i, volume) * config.ColorAudioWeight;
+	}
+	if ((flag & CF_Fluid) == CF_Fluid && !config.FluidColors.empty())
+	{
+		for (std::size_t i = 0; i < m_size; ++i)
+			m_colors[i] += fluid.GetColor(GetOrigin(m_positions[i]));
+	}
+
+	if (!config.ImpulseColors.empty() && !impulses.empty())
+	{
+		for (std::size_t i = 0; i < m_size; ++i)
+		{
+			for (const Impulse& impulse : impulses)
+			{
+				ImpulseColor(i, m_colors[i], impulse);
+			}
+		}
+	}
+}
+
+void BoidContainer::UpdateVertices(sf::VertexArray& vertices, Policy policy, float interp)
+{
+	PolicySelect([this, &vertices, &interp](auto& pol)
 		{
 			std::for_each(pol, m_indices.get(), m_indices.get() + m_size,
-				[&](std::uint32_t i)
+				[this, &vertices, &interp](std::uint32_t i)
 				{
 					Config& config = Config::Inst();
 
 					const sf::Vector2f ori		= GetOrigin(m_positions[i]);
 					const sf::Vector2f prevOri	= GetOrigin(m_prevPositions[i]);
 
-					const float rot			= m_velocities[i].angle().asRadians();
-					const float prev_rot	= m_prevVelocities[i].angle().asRadians();
+					const float rot		= m_angles[i];
+					const float prevRot	= m_prevAngles[i];
 
-					m_angles[i] = rot;
+					const sf::Vector2f pointA = vu::rotate_point({ ori.x + config.BoidHalfSize.x, ori.y							}, ori, rot); // middle right tip
+					const sf::Vector2f pointB = vu::rotate_point({ ori.x - config.BoidHalfSize.x, ori.y - config.BoidHalfSize.y }, ori, rot); // top left corner
+					const sf::Vector2f pointC = vu::rotate_point({ ori.x - config.BoidHalfSize.x, ori.y + config.BoidHalfSize.y }, ori, rot); // bot left corner
 
-					const sf::Vector2f pointA = vu::rotate_point({ ori.x + (config.BoidWidth / 2), ori.y }, ori, rot); // middle right tip
-					const sf::Vector2f pointB = vu::rotate_point({ ori.x - (config.BoidWidth / 2), ori.y - (config.BoidHeight / 2) }, ori, rot); // top left corner
-					const sf::Vector2f pointC = vu::rotate_point({ ori.x - (config.BoidWidth / 2), ori.y + (config.BoidHeight / 2) }, ori, rot); // bot left corner
-
-					const sf::Vector2f prevPointA = vu::rotate_point({ prevOri.x + (config.BoidWidth / 2), prevOri.y }, prevOri, prev_rot); // middle right tip
-					const sf::Vector2f prevPointB = vu::rotate_point({ prevOri.x - (config.BoidWidth / 2), prevOri.y - (config.BoidHeight / 2) }, prevOri, prev_rot); // top left corner
-					const sf::Vector2f prevPointC = vu::rotate_point({ prevOri.x - (config.BoidWidth / 2), prevOri.y + (config.BoidHeight / 2) }, prevOri, prev_rot); // bot left corner
+					const sf::Vector2f prevPointA = vu::rotate_point({ prevOri.x + config.BoidHalfSize.x, prevOri.y							}, prevOri, prevRot); // middle right tip
+					const sf::Vector2f prevPointB = vu::rotate_point({ prevOri.x - config.BoidHalfSize.x, prevOri.y - config.BoidHalfSize.y }, prevOri, prevRot); // top left corner
+					const sf::Vector2f prevPointC = vu::rotate_point({ prevOri.x - config.BoidHalfSize.x, prevOri.y + config.BoidHalfSize.y }, prevOri, prevRot); // bot left corner
 
 					const sf::Vector2f p0 = pointA * interp + prevPointA * (1.0f - interp);
 					const sf::Vector2f p1 = pointB * interp + prevPointB * (1.0f - interp);
 					const sf::Vector2f p2 = pointC * interp + prevPointC * (1.0f - interp);
 
-					sf::Vector3f bc = GetColor(i, border, audioMeter, impulses);
-
-					if ((config.ColorFlag & CF_Fluid) == CF_Fluid)
-					{
-						bc += fluid.GetColor((p0 + p1 + p2) / 3.0f);
-					}
+					sf::Vector3f bc = m_colors[i];
 
 					bc.x = std::clamp(bc.x, 0.0f, 1.0f);
 					bc.y = std::clamp(bc.y, 0.0f, 1.0f);
@@ -482,31 +534,7 @@ void BoidContainer::ResetCycleTimes()
 
 sf::Vector2f BoidContainer::GetOrigin(const sf::Vector2f& pos) const
 {
-	return pos + (sf::Vector2f(Config::Inst().BoidWidth, Config::Inst().BoidHeight) / 2.0f);
-}
-
-sf::Vector3f BoidContainer::GetColor(std::uint32_t i, const RectFloat& border, const IAudioMeterInfo* audioMeter, std::span<const Impulse> impulses)
-{
-	sf::Vector3f color = sf::Vector3f();
-
-	std::uint32_t flag = Config::Inst().ColorFlag;
-
-	if ((flag & CF_Positional) == CF_Positional)
-		color += PositionColor(i, border) * Config::Inst().ColorPositionalWeight;
-	if ((flag & CF_Cycle) == CF_Cycle)
-		color += CycleColor(i) * Config::Inst().ColorCycleWeight;
-	if ((flag & CF_Density) == CF_Density)
-		color += DensityColor(i) * Config::Inst().ColorDensityWeight;
-	if ((flag & CF_Velocity) == CF_Velocity)
-		color += VelocityColor(i) * Config::Inst().ColorVelocityWeight;
-	if ((flag & CF_Rotation) == CF_Rotation)
-		color += RotationColor(i) * Config::Inst().ColorRotationWeight;
-	if ((flag & CF_Audio) == CF_Audio && audioMeter != nullptr)
-		color += AudioColor(i, audioMeter) * Config::Inst().ColorAudioWeight;
-
-	ImpulseColor(i, color, impulses);
-
-	return color;
+	return pos + Config::Inst().BoidHalfSize;
 }
 
 sf::Vector3f BoidContainer::PositionColor(std::uint32_t i, const RectFloat& border) const
@@ -522,9 +550,6 @@ sf::Vector3f BoidContainer::PositionColor(std::uint32_t i, const RectFloat& bord
 
 sf::Vector3f BoidContainer::CycleColor(std::uint32_t i) const
 {
-	if (Config::Inst().BoidCycleColors.empty()) [[unlikely]]
-		return sf::Vector3f();
-
 	float scaledTime = m_cycleTimes[i] * (float)(Config::Inst().BoidCycleColors.size() - 1);
 
 	const auto i1 = (int)scaledTime;
@@ -540,9 +565,6 @@ sf::Vector3f BoidContainer::CycleColor(std::uint32_t i) const
 
 sf::Vector3f BoidContainer::DensityColor(std::uint32_t i) const
 {
-	if (Config::Inst().BoidDensityColors.empty() || Config::Inst().BoidDensity <= 0) [[unlikely]]
-		return sf::Vector3f();
-
 	const float densityPercentage = (m_densities[i] / (float)Config::Inst().BoidDensity);
 
 	const float scaledDensity = std::fmodf(densityPercentage + m_densityTimes[i], 1.0f) * (float)(Config::Inst().BoidDensityColors.size() - 1);
@@ -560,13 +582,7 @@ sf::Vector3f BoidContainer::DensityColor(std::uint32_t i) const
 
 sf::Vector3f BoidContainer::VelocityColor(std::uint32_t i) const
 {
-	if (Config::Inst().BoidVelocityColors.empty()) [[unlikely]]
-		return sf::Vector3f();
-
-	const float inv = (Config::Inst().BoidSpeedMax == Config::Inst().BoidSpeedMin) ? 1.0f
-		: (1.0f / (Config::Inst().BoidSpeedMax - Config::Inst().BoidSpeedMin));
-
-	const float velocity_percentage = std::clamp((m_speeds[i] - Config::Inst().BoidSpeedMin) * inv, 0.0f, 1.0f);
+	const float velocity_percentage = std::clamp((m_speeds[i] - Config::Inst().BoidSpeedMin) * Config::Inst().BoidSpeedInv, 0.0f, 1.0f);
 
 	const float scaled_velocity = velocity_percentage * (float)(Config::Inst().BoidVelocityColors.size() - 1);
 
@@ -583,9 +599,6 @@ sf::Vector3f BoidContainer::VelocityColor(std::uint32_t i) const
 
 sf::Vector3f BoidContainer::RotationColor(std::uint32_t i) const
 {
-	if (Config::Inst().BoidRotationColors.empty()) [[unlikely]]
-		return sf::Vector3f();
-
 	const float rotationPercentage = (m_angles[i] + float(M_PI)) / (2.0f * float(M_PI));
 
 	const float scaledRotation = rotationPercentage * (float)(Config::Inst().BoidRotationColors.size() - 1);
@@ -601,15 +614,11 @@ sf::Vector3f BoidContainer::RotationColor(std::uint32_t i) const
 	return vu::lerp(color1, color2, newT);
 }
 
-sf::Vector3f BoidContainer::AudioColor(std::uint32_t i, const IAudioMeterInfo* audioMeter) const
+sf::Vector3f BoidContainer::AudioColor(std::uint32_t i, float volume) const
 {
-	if (Config::Inst().AudioResponsiveColors.empty()) [[unlikely]]
-		return sf::Vector3f();
-
 	const float densityPercentage = (m_densities[i] / (float)Config::Inst().AudioResponsiveDensity);
-	const float maxVolume = std::fminf(audioMeter->GetVolume() * Config::Inst().AudioResponsiveStrength, Config::Inst().AudioResponsiveLimit);
 
-	const float scaledVolume = std::fminf(maxVolume * densityPercentage, 1.0f) * (float)(Config::Inst().AudioResponsiveColors.size() - 1);
+	const float scaledVolume = std::fminf(volume * densityPercentage, 1.0f) * (float)(Config::Inst().AudioResponsiveColors.size() - 1);
 
 	const auto i1 = (int)scaledVolume;
 	const auto i2 = (i1 == Config::Inst().AudioResponsiveColors.size() - 1) ? 0 : i1 + 1;
@@ -622,35 +631,29 @@ sf::Vector3f BoidContainer::AudioColor(std::uint32_t i, const IAudioMeterInfo* a
 	return vu::lerp(color1, color2, newT);
 }
 
-void BoidContainer::ImpulseColor(std::uint32_t i, sf::Vector3f& color, std::span<const Impulse> impulses) const
+void BoidContainer::ImpulseColor(std::uint32_t i, sf::Vector3f& color, const Impulse& impulse) const
 {
-	if (Config::Inst().ImpulseColors.empty()) [[unlikely]]
-		return;
+	const sf::Vector2f impulsePos = impulse.GetPosition();
+	const float impulseLength = impulse.GetLength();
 
-	for (const Impulse& impulse : impulses)
+	const float length = vu::distance(m_positions[i], impulsePos);
+	const float diff = std::abs(length - impulseLength);
+
+	const float percentage = (impulseLength / Config::Inst().ImpulseFadeDistance);
+	const float size = impulse.GetSize() * (1.0f - percentage);
+
+	if (diff <= size)
 	{
-		const sf::Vector2f impulsePos = impulse.GetPosition();
-		const float impulseLength = impulse.GetLength();
+		const float scaled_length = std::fmodf(percentage, 1.0f) * (float)(Config::Inst().ImpulseColors.size() - 1);
 
-		const float length = vu::distance(m_positions[i], impulsePos);
-		const float diff = std::abs(length - impulseLength);
+		const auto i1 = (int)scaled_length;
+		const auto i2 = (i1 == Config::Inst().ImpulseColors.size() - 1) ? 0 : i1 + 1;
 
-		const float percentage = (impulseLength / Config::Inst().ImpulseFadeDistance);
-		const float size = impulse.GetSize() * (1.0f - percentage);
+		const sf::Vector3f color1 = Config::Inst().ImpulseColors[i1];
+		const sf::Vector3f color2 = Config::Inst().ImpulseColors[i2];
 
-		if (diff <= size)
-		{
-			const float scaled_length = std::fmodf(percentage, 1.0f) * (float)(Config::Inst().ImpulseColors.size() - 1);
+		const float newT = scaled_length - std::floorf(scaled_length);
 
-			const auto i1 = (int)scaled_length;
-			const auto i2 = (i1 == Config::Inst().ImpulseColors.size() - 1) ? 0 : i1 + 1;
-
-			const sf::Vector3f color1 = Config::Inst().ImpulseColors[i1];
-			const sf::Vector3f color2 = Config::Inst().ImpulseColors[i2];
-
-			const float newT = scaled_length - std::floorf(scaled_length);
-
-			color = vu::lerp(color1, color2, newT);
-		}
+		color = vu::lerp(color1, color2, newT);
 	}
 }

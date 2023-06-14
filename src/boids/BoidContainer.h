@@ -51,12 +51,14 @@ public:
 
 	void Update(const RectFloat& border, float dt);
 
-	void UpdateVertices(
-		sf::VertexArray& vertices,
-		const RectFloat& border, 
+	void UpdateColors(
+		const RectFloat& border,
 		const Fluid& fluid,
 		const IAudioMeterInfo* audioMeter,
-		std::span<const Impulse> impulses,
+		const std::vector<Impulse>& impulses);
+
+	void UpdateVertices(
+		sf::VertexArray& vertices,
 		Policy policy, float interp);
 
 public:
@@ -82,8 +84,8 @@ private:
 	sf::Vector3f DensityColor(	std::uint32_t i) const;
 	sf::Vector3f VelocityColor(	std::uint32_t i) const;
 	sf::Vector3f RotationColor(	std::uint32_t i) const;
-	sf::Vector3f AudioColor(	std::uint32_t i, const IAudioMeterInfo* audioMeter) const;
-	void ImpulseColor(			std::uint32_t i, sf::Vector3f& color, std::span<const Impulse> impulses) const;
+	sf::Vector3f AudioColor(	std::uint32_t i, float volume) const;
+	void ImpulseColor(			std::uint32_t i, sf::Vector3f& color, const Impulse& impulse) const;
 
 private:
 	std::unique_ptr<std::uint32_t[]>	m_indices;
@@ -93,9 +95,11 @@ private:
 	std::unique_ptr<sf::Vector2f[]>		m_velocities;
 	std::unique_ptr<sf::Vector2f[]>		m_prevVelocities;
 	std::unique_ptr<sf::Vector2f[]>		m_relativePositions;
+	std::unique_ptr<sf::Vector3f[]>		m_colors;
 
 	std::unique_ptr<float[]>			m_speeds;
 	std::unique_ptr<float[]>			m_angles;
+	std::unique_ptr<float[]>			m_prevAngles;
 	std::unique_ptr<float[]>			m_cycleTimes;
 	std::unique_ptr<float[]>			m_densityTimes;
 

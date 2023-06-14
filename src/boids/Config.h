@@ -226,6 +226,8 @@ public:
 
 	// Misc
 
+	sf::Vector2f	BoidHalfSize;
+	float			BoidSpeedInv				{0.0f};
 	float			BoidSpeedMinSq				{0.0f};
 	float			BoidSpeedMaxSq				{0.0f};
 	bool			LoadStatus					{false};
