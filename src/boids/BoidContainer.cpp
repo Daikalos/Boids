@@ -204,7 +204,7 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 
 					const sf::Vector2f origin = GetOrigin(m_positions[lhs]);
 					const sf::Vector2f thisRelative = m_relativePositions[lhs];
-					const sf::Vector2f thisVelocity = m_prevVelocities[lhs];
+					const float thisAngle = m_prevAngles[lhs];
 
 					constexpr auto neighbourCount = 4; // max 4 neighbours at a time
 
@@ -265,8 +265,8 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 
 							if (withinCohesion || withinAlignment)
 							{
-								const float angle = thisVelocity.angleTo(dir).asRadians();
-								if (angle >= -config.BoidViewAngle && angle <= config.BoidViewAngle)
+								const float angle = M_PI - std::abs(std::abs(dir.angle().asRadians() - thisAngle) - M_PI);
+								if (angle > -config.BoidViewAngle && angle < config.BoidViewAngle)
 								{
 									if (withinCohesion)
 									{
