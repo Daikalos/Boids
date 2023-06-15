@@ -154,7 +154,7 @@ void BoidContainer::UpdateCells(Grid& grid)
 	grid.endIndices[m_cellIndices[m_indices[m_size - 1]]] = m_size - 1;
 }
 
-void BoidContainer::Interaction(const InputHandler& inputHandler, const sf::Vector2f& mousePos)
+void BoidContainer::Interaction(const InputHandler& inputHandler, const sf::Vector2f& mousePos, float dt)
 {
 	const bool holdLeft		= inputHandler.GetButtonHeld(sf::Mouse::Button::Left);
 	const bool holdRight	= inputHandler.GetButtonHeld(sf::Mouse::Button::Right);
@@ -169,9 +169,9 @@ void BoidContainer::Interaction(const InputHandler& inputHandler, const sf::Vect
 				(holdRight ? -1.0f : 0.0f);
 
 			const float lengthOpt = vu::distance_opt(dir);
-			const float weight = 15.0f / (std::sqrtf(lengthOpt) + FLT_EPSILON);
+			const float weight = 1.0f / (std::sqrtf(lengthOpt) + FLT_EPSILON);
 
-			SteerTowards(i, dir, lengthOpt, Config::Inst().SteerTowardsFactor * weight * factor);
+			SteerTowards(i, dir, lengthOpt, Config::Inst().SteerTowardsFactor * weight * factor * dt);
 		}
 		else if (Config::Inst().PredatorEnabled)
 		{
@@ -180,8 +180,8 @@ void BoidContainer::Interaction(const InputHandler& inputHandler, const sf::Vect
 			float lengthSqr = dir.lengthSq();
 			if (lengthSqr <= Config::Inst().PredatorDistance)
 			{
-				float weight = std::sqrtf(lengthSqr / Config::Inst().PredatorDistance);
-				SteerTowards(i, dir, -Config::Inst().PredatorFactor / (weight + FLT_EPSILON));
+				float weight = 1.0f / (std::sqrtf(lengthSqr / (Config::Inst().PredatorDistance + FLT_EPSILON)) + FLT_EPSILON);
+				SteerTowards(i, dir, -Config::Inst().PredatorFactor * weight * dt);
 			}
 		}
 	}
@@ -298,7 +298,7 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 		}, policy);
 }
 
-void BoidContainer::Update(const RectFloat& border, float dt)
+void BoidContainer::Update(const RectFloat& border, const std::vector<Impulse>& impulses, float dt)
 {
 	for (std::size_t i = 0; i < m_size; ++i)
 	{
@@ -337,6 +337,29 @@ void BoidContainer::Update(const RectFloat& border, float dt)
 
 		if ((Config::Inst().ColorFlag & CF_Density) == CF_Density)
 			m_densityTimes[i] = (Config::Inst().BoidDensityCycleEnabled) ? std::fmodf(m_densityTimes[i] + dt * Config::Inst().BoidDensityCycleSpeed, 1.0f) : 0.0f;
+	}
+
+	if (!impulses.empty() && Config::Inst().ImpulseForce != 0.0f)
+	{
+		for (std::size_t i = 0; i < m_size; ++i)
+		{
+			for (const Impulse& impulse : impulses)
+			{
+				const sf::Vector2f impulsePos = impulse.GetPosition();
+				const float impulseLength = impulse.GetLength();
+
+				const float length = vu::distance(m_positions[i], impulsePos);
+				const float diff = std::abs(length - impulseLength);
+
+				const float percentage = (impulseLength / Config::Inst().ImpulseFadeDistance);
+				const float size = impulse.GetSize() * (1.0f - percentage);
+
+				if (diff <= size)
+				{
+					SteerTowards(i, vu::direction(impulsePos, m_positions[i]), Config::Inst().ImpulseForce * (1.0f - percentage) * dt);
+				}
+			}
+		}
 	}
 }
 

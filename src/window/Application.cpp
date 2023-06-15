@@ -39,9 +39,6 @@ void Application::Run()
 
 		ProcessInput();
 
-		if (Config::Inst().CameraEnabled)
-			m_camera.Update(m_inputHandler, m_window);
-
 		PreUpdate(dt);
 
 		Update(dt);
@@ -74,6 +71,9 @@ void Application::ProcessInput()
 
 void Application::PreUpdate(float dt)
 {
+	if (Config::Inst().CameraEnabled)
+		m_camera.Update(m_inputHandler, m_window);
+
 	m_mainState.PreUpdate(dt);
 }
 

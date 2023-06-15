@@ -23,7 +23,7 @@ AudioMeterWin::~AudioMeterWin()
 
 float AudioMeterWin::GetVolume() const noexcept
 {
-	return m_volume;
+	return m_lerpVolume;
 }
 
 void AudioMeterWin::Initialize()
@@ -56,7 +56,7 @@ void AudioMeterWin::Initialize()
 	}
 	else
 	{
-		Refresh(nullptr);
+		RefreshAll();
 	}
 
 	SAFE_RELEASE(m_device);
@@ -67,7 +67,10 @@ void AudioMeterWin::Update(float dt)
 	m_volume = 0.0f;
 
 	if ((Config::Inst().ColorFlag & CF_Audio) == 0)
+	{
+		m_lerpVolume = 0.0f;
 		return;
+	}
 
 	if (Config::Inst().AudioResponsiveApps.empty() && m_meterInfo)
 	{
@@ -102,7 +105,6 @@ void AudioMeterWin::Update(float dt)
 			else
 			{
 				m_refreshFreq -= dt;
-
 				if (m_refreshFreq <= 0.0f)
 				{
 					Refresh(&processName);
@@ -111,6 +113,8 @@ void AudioMeterWin::Update(float dt)
 			}
 		}
 	}
+
+	m_lerpVolume = util::Lerp(m_lerpVolume, m_volume, std::clamp(Config::Inst().AudioResponsiveSpeed * dt, 0.0f, 1.0f));
 }
 
 void AudioMeterWin::Clear()
@@ -124,8 +128,75 @@ void AudioMeterWin::Clear()
 	m_psc.clear();
 }
 
-void AudioMeterWin::Refresh(const std::wstring* comp)
+void AudioMeterWin::RefreshAll()
 {
+	IAudioSessionEnumerator* pSessionEnumerator = NULL;
+
+	if (FAILED(m_sessionManager->GetSessionEnumerator(&pSessionEnumerator)))
+		return;
+
+	int sessionCount = 0;
+	if (FAILED(pSessionEnumerator->GetCount(&sessionCount)))
+		return;
+
+	for (int i = 0; i < sessionCount; ++i)
+	{
+		IAudioSessionControl* sessionControl = NULL;
+		IAudioSessionControl2* sessionControl2 = NULL;
+		IAudioMeterInformation* meterInformation = NULL;
+
+		const wchar_t* foundProcess = nullptr;
+
+		if (SUCCEEDED(pSessionEnumerator->GetSession(i, &sessionControl)))
+		{
+			AudioSessionState state;
+			if (SUCCEEDED(sessionControl->GetState(&state)) && state != AudioSessionStateExpired)
+			{
+				if (SUCCEEDED(sessionControl->QueryInterface(__uuidof(IAudioSessionControl2), (void**)&sessionControl2)))
+				{
+					LPWSTR sessionID;
+					if (SUCCEEDED(sessionControl2->GetSessionInstanceIdentifier(&sessionID)))
+					{
+						for (const std::wstring& processName : Config::Inst().AudioResponsiveApps)
+						{
+							if (processName.empty())
+								continue;
+
+							if (wcsstr(sessionID, processName.c_str()) != 0)
+							{
+								if (SUCCEEDED(sessionControl->QueryInterface(__uuidof(IAudioMeterInformation), (void**)&meterInformation)))
+								{
+									foundProcess = processName.c_str();
+									break;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		if (foundProcess != nullptr && sessionControl && meterInformation)
+		{
+			m_psc[foundProcess] = std::make_pair(sessionControl, meterInformation);
+		}
+		else
+		{
+			SAFE_RELEASE(sessionControl);
+			SAFE_RELEASE(meterInformation);
+		}
+
+		SAFE_RELEASE(sessionControl2);
+	}
+
+	SAFE_RELEASE(pSessionEnumerator);
+}
+
+void AudioMeterWin::Refresh(const std::wstring* processName)
+{
+	if (processName == nullptr || processName->empty())
+		return;
+
 	IAudioSessionEnumerator* pSessionEnumerator = NULL;
 
 	if (FAILED(m_sessionManager->GetSessionEnumerator(&pSessionEnumerator)))
@@ -141,7 +212,7 @@ void AudioMeterWin::Refresh(const std::wstring* comp)
 		IAudioSessionControl2* sessionControl2		= NULL;
 		IAudioMeterInformation* meterInformation	= NULL;
 
-		std::wstring processName;
+		const wchar_t* foundProcess = nullptr;
 
 		if (SUCCEEDED(pSessionEnumerator->GetSession(i, &sessionControl)))
 		{
@@ -153,30 +224,25 @@ void AudioMeterWin::Refresh(const std::wstring* comp)
 					LPWSTR sessionID;
 					if (SUCCEEDED(sessionControl2->GetSessionInstanceIdentifier(&sessionID)))
 					{
-						for (const std::wstring& pn : Config::Inst().AudioResponsiveApps)
+						if (wcsstr(sessionID, processName->c_str()) != 0)
 						{
-							if (pn.empty())
-								continue;
-
-							if (comp != nullptr && *comp != pn)
-								continue;
-
-							if (wcsstr(sessionID, pn.c_str()) != 0)
-							{
-								if (SUCCEEDED(sessionControl->QueryInterface(__uuidof(IAudioMeterInformation), (void**)&meterInformation)))
-								{
-									processName = pn;
-									break;
-								}
-							}
+							if (SUCCEEDED(sessionControl->QueryInterface(__uuidof(IAudioMeterInformation), (void**)&meterInformation)))
+								foundProcess = processName->c_str();
 						}
 					}
 				}
 			}
 		}
 
-		if (!processName.empty() && sessionControl && meterInformation)
-			m_psc[processName] = std::make_pair(sessionControl, meterInformation);
+		if (foundProcess != nullptr && sessionControl && meterInformation)
+		{
+			m_psc[foundProcess] = std::make_pair(sessionControl, meterInformation);
+		}
+		else
+		{
+			SAFE_RELEASE(sessionControl);
+			SAFE_RELEASE(meterInformation);
+		}
 
 		SAFE_RELEASE(sessionControl2);
 	}

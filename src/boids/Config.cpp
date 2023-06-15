@@ -195,6 +195,7 @@ void Config::load_var(nlohmann::json& json)
 
 		AudioResponsiveStrength		= color["AudioResponsiveStrength"];
 		AudioResponsiveLimit		= color["AudioResponsiveLimit"];
+		AudioResponsiveSpeed		= color["AudioResponsiveSpeed"];
 		AudioResponsiveDensity		= color["AudioResponsiveDensity"];
 
 		convert_to_color(AudioResponsiveColors, color["AudioResponsiveColors"]);
@@ -214,6 +215,7 @@ void Config::load_var(nlohmann::json& json)
 	ImpulseSize					= color["ImpulseSize"];
 	ImpulseSpeed				= color["ImpulseSpeed"];
 	ImpulseFadeDistance			= color["ImpulseFadeDistance"];
+	ImpulseForce				= color["ImpulseForce"];
 
 	convert_to_color(ImpulseColors, color["ImpulseColors"]);
 

@@ -144,6 +144,7 @@ public:
 	WStringCont		AudioResponsiveApps			{};
 	float			AudioResponsiveStrength		{4.75f};
 	float			AudioResponsiveLimit		{1.2f};
+	float			AudioResponsiveSpeed		{50.0f};
 	int				AudioResponsiveDensity		{25};
 	ColorCont		AudioResponsiveColors
 	{
@@ -168,6 +169,7 @@ public:
 	float			ImpulseSize					{50.0f};
 	float			ImpulseSpeed				{500.0f};
 	float			ImpulseFadeDistance			{400.0f};
+	float			ImpulseForce				{256.0f};
 	ColorCont		ImpulseColors
 	{
 		sf::Vector3f(1.0f, 0.15f, 1.0f),

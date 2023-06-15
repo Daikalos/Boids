@@ -106,8 +106,9 @@
             ],
 
             "AudioResponsiveApps" : [ "Spotify.exe" ],
-            "AudioResponsiveStrength" : 5.5,
+            "AudioResponsiveStrength" : 5.0,
             "AudioResponsiveLimit" : 1.2,
+            "AudioResponsiveSpeed" : 50.0,
             "AudioResponsiveDensity" : 25,
             "AudioResponsiveColors" : 
             [
@@ -128,6 +129,7 @@
             "ImpulseSize" : 50.0,
             "ImpulseSpeed" : 400.0,
             "ImpulseFadeDistance" : 300.0,
+            "ImpulseForce" : 256.0,
             "ImpulseColors" :
             [
                 "255 20 255",
@@ -163,13 +165,13 @@
             "BoidAddMouseDiff" : 1.0,
             "BoidRemoveAmount" : 50,
 
-            "SteerEnabled" : true,
-            "SteerTowardsFactor" : 0.9,
-            "SteerAwayFactor" : 0.9,
+            "SteerEnabled" : false,
+            "SteerTowardsFactor" : 512.0,
+            "SteerAwayFactor" : 512.0,
 
             "PredatorEnabled" : false,
             "PredatorDistance" : 250.0,
-            "PredatorFactor" : 0.6,
+            "PredatorFactor" : 8.0,
 
             "TurnAtBorder" : false,
             "TurnMarginFactor" : 1.0,

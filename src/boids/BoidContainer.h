@@ -45,11 +45,11 @@ public:
 
 	void UpdateCells(Grid& grid);
 
-	void Interaction(const InputHandler& inputHandler, const sf::Vector2f& mousePos);
+	void Interaction(const InputHandler& inputHandler, const sf::Vector2f& mousePos, float dt);
 
 	void Flock(const Grid& grid, Policy policy);
 
-	void Update(const RectFloat& border, float dt);
+	void Update(const RectFloat& border, const std::vector<Impulse>& impulses, float dt);
 
 	void UpdateColors(
 		const RectFloat& border,
@@ -76,8 +76,6 @@ public:
 
 private:
 	sf::Vector2f GetOrigin(const sf::Vector2f& pos) const;
-
-	sf::Vector3f GetColor(std::uint32_t i, const RectFloat& border, const IAudioMeterInfo* audioMeter, std::span<const Impulse> impulses);
 
 	sf::Vector3f PositionColor(	std::uint32_t i, const RectFloat& border) const;
 	sf::Vector3f CycleColor(	std::uint32_t i) const;

@@ -250,9 +250,9 @@ bool MainState::FixedUpdate(float dt)
 	m_boids.PreUpdate(m_grid);
 	m_boids.Sort();
 	m_boids.UpdateCells(m_grid);
-	m_boids.Interaction(*m_inputHandler, m_mousePos);
+	m_boids.Interaction(*m_inputHandler, m_mousePos, dt);
 	m_boids.Flock(m_grid, m_policy);
-	m_boids.Update(m_border, dt);
+	m_boids.Update(m_border, m_impulses, dt);
 	m_boids.UpdateColors(m_border, m_fluid, m_audioMeter.get(), m_impulses);
 
     return true;

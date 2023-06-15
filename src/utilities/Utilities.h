@@ -84,6 +84,12 @@ namespace util
 		return std::roundf(val * n) / n;
 	}
 
+	template<typename T>
+	static constexpr auto Lerp(const T a, const T b, float f)
+	{
+		return (a * (1.0f - f)) + (b * f);
+	}
+
 	static constexpr std::string remove_trailing_zeroes(const std::string_view str)
 	{
 		std::string result = std::string(str.data());

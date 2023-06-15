@@ -4,6 +4,8 @@
 
 #include "Config.h"
 
+#include "../utilities/Utilities.h"
+
 class IAudioMeterInfo
 {
 public:
@@ -57,10 +59,12 @@ public:
 	[[nodiscard]] float GetVolume() const noexcept override;
 
 private:
-	void Refresh(const std::wstring* comp);
+	void RefreshAll();
+	void Refresh(const std::wstring* processName);
 
 private:
 	float					m_volume			{0.0f};
+	float					m_lerpVolume		{0.0f};
 
 	float					m_refreshFreqMax	{0.0f};
 	float					m_refreshFreq		{0.0f};
