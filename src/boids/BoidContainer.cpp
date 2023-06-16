@@ -246,7 +246,7 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 
 						for (int j = start; j <= end; ++j) // do in one loop
 						{
-							const std::uint32_t rhs = m_indices[j];
+							const std::uint32_t& rhs = m_indices[j];
 
 							if (lhs == rhs)
 								continue;
@@ -257,11 +257,8 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 							const sf::Vector2f dir = otherRelativePos - thisRelative;
 							const float distanceSqr = dir.lengthSq();
 
-							if (distanceSqr == 0.0f)
-								continue;
-
-							const bool withinCohesion	= distanceSqr <= config.CohDistance;
-							const bool withinAlignment	= distanceSqr <= config.AliDistance;
+							const bool withinCohesion	= distanceSqr < config.CohDistance;
+							const bool withinAlignment	= distanceSqr < config.AliDistance;
 
 							if (withinCohesion || withinAlignment)
 							{
@@ -281,7 +278,7 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 								}
 							}
 
-							if (distanceSqr <= config.SepDistance)
+							if (distanceSqr < config.SepDistance && distanceSqr)
 							{
 								sep += -dir / distanceSqr;
 								++sepCount;
@@ -330,12 +327,15 @@ void BoidContainer::Update(const RectFloat& border, const std::vector<Impulse>& 
 		m_angles[i] = m_velocities[i].angle().asRadians();
 	}
 
-	for (std::size_t i = 0; i < m_size; ++i)
+	if ((Config::Inst().ColorFlag & CF_Cycle) == CF_Cycle)
 	{
-		if ((Config::Inst().ColorFlag & CF_Cycle) == CF_Cycle)
+		for (std::size_t i = 0; i < m_size; ++i)
 			m_cycleTimes[i] = std::fmodf(m_cycleTimes[i] + dt * Config::Inst().BoidCycleColorsSpeed, 1.0f);
+	}
 
-		if ((Config::Inst().ColorFlag & CF_Density) == CF_Density)
+	if ((Config::Inst().ColorFlag & CF_Density) == CF_Density)
+	{
+		for (std::size_t i = 0; i < m_size; ++i)
 			m_densityTimes[i] = (Config::Inst().BoidDensityCycleEnabled) ? std::fmodf(m_densityTimes[i] + dt * Config::Inst().BoidDensityCycleSpeed, 1.0f) : 0.0f;
 	}
 
@@ -413,9 +413,7 @@ void BoidContainer::UpdateColors(const RectFloat& border, const Fluid& fluid, co
 		for (std::size_t i = 0; i < m_size; ++i)
 		{
 			for (const Impulse& impulse : impulses)
-			{
 				ImpulseColor(i, m_colors[i], impulse);
-			}
 		}
 	}
 }
@@ -454,11 +452,11 @@ void BoidContainer::UpdateVertices(sf::VertexArray& vertices, Policy policy, flo
 					bc.z = std::clamp(bc.z, 0.0f, 1.0f);
 
 					const sf::Color c = sf::Color(
-						(sf::Uint8)(bc.x * 255.0f), 
-						(sf::Uint8)(bc.y * 255.0f), 
-						(sf::Uint8)(bc.z * 255.0f));
+						static_cast<sf::Uint8>(bc.x * 255.0f), 
+						static_cast<sf::Uint8>(bc.y * 255.0f),
+						static_cast<sf::Uint8>(bc.z * 255.0f));
 
-					const std::size_t v = std::size_t(i) * 3;
+					const std::size_t v = static_cast<std::size_t>(i) * 3;
 
 					vertices[v + 0].position = p0;
 					vertices[v + 1].position = p1;

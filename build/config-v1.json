@@ -1,0 +1,193 @@
+{
+    "Config" :
+    {
+        "Background" :
+        {
+            "BackgroundColor" : "0 0 0",
+            "BackgroundTexture" : "background.jpg",
+            "BackgroundPositionX" : 0,
+            "BackgroundPositionY" : 0,
+            "BackgroundFitScreen" : false,
+            "BackgroundOverrideSize" : false,
+            "BackgroundWidth" : 0,
+            "BackgroundHeight" : 0
+        },
+
+        "Boid" :
+        {
+            "BoidCount" : 7000,
+            "BoidWidth" : 22.0,
+            "BoidHeight" : 11.0,
+            "BoidSpeedMax" : 220.0,
+            "BoidSpeedMin" : 80.0,
+            "BoidSteerMax" : 4.0,
+            "BoidViewAngle" : 280.0
+        },
+        
+        "Rules" :
+        {
+            "SepDistance" : 12.0,
+            "AliDistance" : 20.0,
+            "CohDistance" : 20.0,
+
+            "SepWeight" : 4.00,
+            "AliWeight" : 1.75,
+            "CohWeight" : 1.50
+        },
+
+        "Color" : 
+        {
+            "ColorOptions" : [ 2, 3, 4, 5, 6, 7 ],
+
+            "ColorPositionalWeight" : 1.0,
+            "ColorCycleWeight" : 0.2,
+            "ColorDensityWeight" : 0.5,
+            "ColorVelocityWeight" : 0.6,
+            "ColorRotationWeight" : -1.2,
+            "ColorAudioWeight" : 0.6,
+            "ColorFluidWeight" : 1.0,
+
+            "BoidColorTopLeft" : "255 20 255",
+            "BoidColorTopRight" : "150 0 255",
+            "BoidColorBotLeft" : "216 191 216",
+            "BoidColorBotRight" : "90 0 90",
+            
+            "BoidCycleColorsRandom" : true,
+            "BoidCycleColorsSpeed" : 1.0,
+            "BoidCycleColors" : 
+            [
+                "90 0 90",
+                "255 20 255", 
+                "150 0 255", 
+                "90 0 90"
+            ],
+
+            "BoidDensity" : 70,
+            "BoidDensityCycleEnabled" : true,
+            "BoidDensityCycleSpeed" : 0.75,
+            "BoidDensityColors" : 
+            [
+                "90 0 90",
+                "90 0 90",
+                "90 0 90",
+                "90 0 90",
+                "90 0 90",
+                "255 20 255",
+                "150 0 255",
+                "90 0 90"
+            ],
+
+            "BoidVelocityColors" :
+            [
+                "0 0 0",
+                "0 0 0",
+                "0 0 0",
+                "0 0 0",
+                "0 0 0",
+                "0 0 0",
+                "0 0 0",
+                "0 0 0",
+                "90 0 90",
+                "90 0 90",
+                "150 0 255",
+                "150 0 255",
+                "255 20 255"
+            ],
+
+            "BoidRotationColors" :
+            [
+                "45 0 45",
+                "45 0 45",
+                "90 0 90",
+                "90 0 90",
+                "90 0 90",
+                "75 0 75",
+                "75 0 75"
+            ],
+
+            "AudioResponsiveApps" : [ "Spotify.exe" ],
+            "AudioResponsiveStrength" : 6.0,
+            "AudioResponsiveLimit" : 1.2,
+            "AudioResponsiveSpeed" : 50.0,
+            "AudioResponsiveDensity" : 20,
+            "AudioResponsiveColors" : 
+            [
+                "0 0 0",
+                "0 0 0",
+                "0 0 0",
+                "90 0 90",
+                "150 0 255",
+                "0 0 0",
+                "0 0 0",
+                "90 0 90",
+                "150 0 255",
+                "200 10 255",
+                "0 0 0"
+            ],
+
+            "ImpulseEnabled" : true,
+            "ImpulseSize" : 50.0,
+            "ImpulseSpeed" : 400.0,
+            "ImpulseFadeDistance" : 300.0,
+            "ImpulseForce" : 256.0,
+            "ImpulseColors" :
+            [
+                "255 20 255",
+                "255 20 255",
+                "255 20 255",
+                "150 0 255",
+                "150 0 255", 
+                "90 0 90"
+            ],
+
+            "FluidScale" : 25,
+            "FluidMouseStrength" : 0.8,
+            "FluidColorVel" : 0.3,
+            "FluidDiffusion" : 0.0,
+            "FluidViscosity" : 0.000005,
+            "FluidColors" :
+            [
+                "0 0 0",
+                "0 0 0",
+                "90 0 90",
+                "90 0 90",
+                "90 0 90",
+                "150 0 255",
+                "150 0 255",
+                "150 0 255",
+                "255 20 255"
+            ]
+        },
+
+        "Misc" : 
+        {
+            "BoidAddAmount" : 5,
+            "BoidAddMouseDiff" : 1.0,
+            "BoidRemoveAmount" : 50,
+
+            "SteerEnabled" : false,
+            "SteerTowardsFactor" : 0.9,
+            "SteerAwayFactor" : 0.9,
+
+            "PredatorEnabled" : false,
+            "PredatorDistance" : 250.0,
+            "PredatorFactor" : 0.6,
+
+            "TurnAtBorder" : false,
+            "TurnMarginFactor" : 0.5,
+            "TurnFactor" : 2000.0,
+
+            "GridExtraCells" : 16,
+            "CameraEnabled" : false,
+            "CameraZoom" : 1.0,
+            "VerticalSync" : true,
+            "MaxFramerate" : 144,
+            "PhysicsUpdateFreq" : 60,
+            "PolicyThreshold" : 1500,
+
+            "DebugEnabled" : false,
+            "DebugUpdateFreq" : 0.5,
+            "DebugToggleKey" : 85
+        }
+    }
+}
