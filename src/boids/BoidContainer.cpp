@@ -262,7 +262,7 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 
 							if (withinCohesion || withinAlignment)
 							{
-								const float angle = M_PI - std::abs(std::abs(dir.angle().asRadians() - thisAngle) - M_PI);
+								const float angle = vu::PI<> - std::abs(std::abs(vu::angle(dir.y, dir.x) - thisAngle) - vu::PI<>);
 								if (angle > -config.BoidViewAngle && angle < config.BoidViewAngle)
 								{
 									if (withinCohesion)

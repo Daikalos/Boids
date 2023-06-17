@@ -11,6 +11,12 @@ concept Arithmetic = std::is_arithmetic_v<T>;
 
 namespace vu
 {
+	template<std::floating_point T = float>
+	inline constexpr T PI = static_cast<T>(M_PI);
+
+	template<std::floating_point T = float>
+	inline constexpr T PI_2 = static_cast<T>(M_PI_2);
+
 	template<Arithmetic T>
 	static constexpr sf::Vector2<T> direction(const sf::Vector2<T>& from, const sf::Vector2<T>& to)
 	{
@@ -129,6 +135,34 @@ namespace vu
 			lerp(lhs.x, rhs.x, a),
 			lerp(lhs.y, rhs.y, a),
 			lerp(lhs.z, rhs.z, a));
+	}
+
+	inline float atan_approximation(float x)
+	{
+		const float a1 = 0.99997726f;
+		const float a3 = -0.33262347f;
+		const float a5 = 0.19354346f;
+		const float a7 = -0.11643287f;
+		const float a9 = 0.05265332f;
+		const float a11 = -0.01172120f;
+
+		const float x_sq = x * x;
+		return x * fmaf(x_sq, fmaf(x_sq, fmaf(x_sq, fmaf(x_sq, fmaf(x_sq, a11, a9), a7), a5), a3), a1);
+	}
+
+	static float angle(float y, float x)
+	{
+		const bool swap = std::fabs(x) < std::fabs(y);
+		const float atan_input = (swap ? x / y : y / x);
+
+		float res = atan_approximation(atan_input);
+
+		res = swap ? std::copysignf(PI_2<>, atan_input) - res : res;
+
+		if (x < 0.0f)
+			res = std::copysignf(PI<>, y) + res;
+
+		return res;
 	}
 }
 

@@ -15,7 +15,7 @@
 
         "Boid" :
         {
-            "BoidCount" : 14000,
+            "BoidCount" : 24000,
             "BoidWidth" : 22.0,
             "BoidHeight" : 11.0,
             "BoidSpeedMax" : 200.0,
@@ -125,21 +125,6 @@
                 "0 0 0"
             ],
 
-            "ImpulseEnabled" : true,
-            "ImpulseSize" : 50.0,
-            "ImpulseSpeed" : 400.0,
-            "ImpulseFadeDistance" : 300.0,
-            "ImpulseForce" : 256.0,
-            "ImpulseColors" :
-            [
-                "255 20 255",
-                "255 20 255",
-                "255 20 255",
-                "150 0 255",
-                "150 0 255", 
-                "90 0 90"
-            ],
-
             "FluidScale" : 25,
             "FluidMouseStrength" : 0.8,
             "FluidColorVel" : 0.3,
@@ -156,6 +141,21 @@
                 "150 0 255",
                 "150 0 255",
                 "255 20 255"
+            ],
+
+            "ImpulseEnabled" : true,
+            "ImpulseSize" : 50.0,
+            "ImpulseSpeed" : 400.0,
+            "ImpulseFadeDistance" : 300.0,
+            "ImpulseForce" : 256.0,
+            "ImpulseColors" :
+            [
+                "255 20 255",
+                "255 20 255",
+                "255 20 255",
+                "150 0 255",
+                "150 0 255", 
+                "90 0 90"
             ]
         },
 
@@ -181,7 +181,7 @@
             "CameraEnabled" : false,
             "CameraZoom" : 1.0,
             "VerticalSync" : false,
-            "MaxFramerate" : 500,
+            "MaxFramerate" : 0,
             "PhysicsUpdateFreq" : 60,
             "PolicyThreshold" : 1500,
 
