@@ -278,7 +278,7 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 
 							if (distanceSqr < config.SepDistance)
 							{
-								sep += -dir / distanceSqr;
+								sep += -dir / (distanceSqr ? distanceSqr : FLT_EPSILON);
 								++sepCount;
 							}
 						}
