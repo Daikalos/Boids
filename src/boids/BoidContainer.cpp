@@ -233,6 +233,9 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 
 					Config& config = Config::Inst();
 
+					const float negFOV = -config.BoidViewAngle;
+					const float posFOV =  config.BoidViewAngle;
+
 					for (std::uint8_t i = 0; i < neighbourCount; ++i)
 					{
 						const int gridCellIndex = neighIndices[i];
@@ -246,15 +249,10 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 
 						for (int j = start; j <= end; ++j) // do in one loop
 						{
-							const std::uint32_t& rhs = m_indices[j];
-
-							if (lhs == rhs)
+							if (lhs == m_indices[j])
 								continue;
 
-							const sf::Vector2f otherRelativePos =
-								neighbourCell + m_relativePositions[rhs]; // need to get relative to this Boid
-
-							const sf::Vector2f dir = otherRelativePos - thisRelative;
+							const sf::Vector2f dir = (neighbourCell + m_relativePositions[m_indices[j]]) - thisRelative;
 							const float distanceSqr = dir.lengthSq();
 
 							const bool withinCohesion	= distanceSqr < config.CohDistance;
@@ -262,23 +260,23 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 
 							if (withinCohesion || withinAlignment)
 							{
-								const float angle = vu::PI<> - std::abs(std::abs(vu::angle(dir.y, dir.x) - thisAngle) - vu::PI<>);
-								if (angle > -config.BoidViewAngle && angle < config.BoidViewAngle)
+								const float angle = vu::PI<> - std::copysignf(std::copysignf(vu::angle(dir.y, dir.x) - thisAngle, 1.0f) - vu::PI<>, 1.0f);
+								if (angle > negFOV && angle < posFOV)
 								{
 									if (withinCohesion)
 									{
-										coh += origin + dir; // Head towards center of boids
+										coh += dir; // Head towards center of boids
 										++cohCount;
 									}
 									if (withinAlignment)
 									{
-										ali += m_prevVelocities[rhs]; // Align with every boids velocity
+										ali += m_prevVelocities[m_indices[j]]; // Align with every boids velocity
 										++aliCount;
 									}
 								}
 							}
 
-							if (distanceSqr < config.SepDistance && distanceSqr)
+							if (distanceSqr < config.SepDistance)
 							{
 								sep += -dir / distanceSqr;
 								++sepCount;
@@ -286,11 +284,11 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 						}
 					}
 
-					if (cohCount) m_velocities[lhs] += SteerAt(lhs, vu::normalize(vu::direction(origin, coh / static_cast<float>(cohCount)), config.BoidSpeedMax)) * config.CohWeight;
+					if (cohCount) m_velocities[lhs] += SteerAt(lhs, vu::normalize(coh, config.BoidSpeedMax)) * config.CohWeight;
 					if (aliCount) m_velocities[lhs] += SteerAt(lhs, vu::normalize(ali / static_cast<float>(aliCount), config.BoidSpeedMax)) * config.AliWeight;
 					if (sepCount) m_velocities[lhs] += SteerAt(lhs, vu::normalize(sep / static_cast<float>(sepCount), config.BoidSpeedMax)) * config.SepWeight;
 
-					m_densities[lhs] = std::max(std::max(cohCount, aliCount), sepCount);
+					m_densities[lhs] = std::fmax(std::fmax(cohCount, aliCount), sepCount);
 				});
 		}, policy);
 }
@@ -324,7 +322,7 @@ void BoidContainer::Update(const RectFloat& border, const std::vector<Impulse>& 
 		if (OutsideBorder(i, border, dt))
 			m_prevPositions[i] = m_positions[i]; // prevent interpolation effect
 
-		m_angles[i] = m_velocities[i].angle().asRadians();
+		m_angles[i] = vu::angle(m_velocities[i].y, m_velocities[i].x);
 	}
 
 	if ((Config::Inst().ColorFlag & CF_Cycle) == CF_Cycle)

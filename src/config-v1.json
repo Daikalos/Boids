@@ -15,7 +15,7 @@
 
         "Boid" :
         {
-            "BoidCount" : 24000,
+            "BoidCount" : 20000,
             "BoidWidth" : 22.0,
             "BoidHeight" : 11.0,
             "BoidSpeedMax" : 200.0,
