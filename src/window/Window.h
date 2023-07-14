@@ -1,11 +1,10 @@
 #pragma once
 
-#include <SFML/Graphics.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Window/VideoMode.hpp>
+#include <SFML/Window/ContextSettings.hpp>
 
 #include "../utilities/Rectangle.hpp"
-#include "../utilities/HideTaskbarIcon.h"
-
-#include "Camera.h"
 
 enum class WindowBorder
 {
@@ -13,6 +12,8 @@ enum class WindowBorder
 	Fullscreen,
 	BorderlessWindowed
 };
+
+class Camera;
 
 // allow for toggle fullscreen, change resolution, and other settings
 //

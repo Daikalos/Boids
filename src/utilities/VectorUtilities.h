@@ -2,7 +2,8 @@
 
 #define _USE_MATH_DEFINES
 
-#include <SFML/Graphics.hpp>
+#include <SFML/System/Vector2.hpp>
+#include <SFML/System/Vector3.hpp>
 
 #include "Utilities.h"
 
@@ -12,19 +13,19 @@ concept Arithmetic = std::is_arithmetic_v<T>;
 namespace vu
 {
 	template<std::floating_point T = float>
-	inline constexpr T PI = static_cast<T>(M_PI);
+	constexpr T PI = static_cast<T>(M_PI);
 
 	template<std::floating_point T = float>
-	inline constexpr T PI_2 = static_cast<T>(M_PI_2);
+	constexpr T PI_2 = static_cast<T>(M_PI_2);
 
 	template<Arithmetic T>
-	static constexpr sf::Vector2<T> direction(const sf::Vector2<T>& from, const sf::Vector2<T>& to)
+	constexpr sf::Vector2<T> direction(const sf::Vector2<T>& from, const sf::Vector2<T>& to)
 	{
 		return (to - from);
 	}
 
 	template<Arithmetic T>
-	static constexpr float distance_opt(const sf::Vector2<T>& vector)
+	inline float distance_opt(const sf::Vector2<T>& vector)
 	{
 		T dx = std::fabsf(vector.x);
 		T dy = std::fabsf(vector.y);
@@ -36,28 +37,28 @@ namespace vu
 	}
 
 	template<Arithmetic T>
-	static constexpr float distance(const sf::Vector2<T>& from, const sf::Vector2<T>& to)
+	constexpr float distance(const sf::Vector2<T>& from, const sf::Vector2<T>& to)
 	{
 		return direction(from, to).length();
 	}
 	template<Arithmetic T>
-	static constexpr float distance_sq(const sf::Vector2<T>& from, const sf::Vector2<T>& to)
+	constexpr float distance_sq(const sf::Vector2<T>& from, const sf::Vector2<T>& to)
 	{
 		return direction(from, to).lengthSq();
 	}
 	template<Arithmetic T>
-	static constexpr float distance_opt(const sf::Vector2<T>& from, const sf::Vector2<T>& to)
+	inline float distance_opt(const sf::Vector2<T>& from, const sf::Vector2<T>& to)
 	{
 		return distance_opt(direction(from, to));
 	}
 
 	template<Arithmetic T>
-	static constexpr sf::Vector2<T> normalize(sf::Vector2<T> vector, float length, float radius)
+	inline sf::Vector2<T> normalize(sf::Vector2<T> vector, float length, float radius)
 	{
 		if (length < FLT_EPSILON || std::abs(length - radius) < FLT_EPSILON)
 			return vector;
 
-		float inv = (radius / length);
+		const float inv = (radius / length);
 
 		vector.x *= inv;
 		vector.y *= inv;
@@ -65,13 +66,13 @@ namespace vu
 		return vector;
 	}
 	template<Arithmetic T>
-	static constexpr sf::Vector2<T> normalize(const sf::Vector2<T>& vector, float radius = 1.0f)
+	inline sf::Vector2<T> normalize(const sf::Vector2<T>& vector, float radius = 1.0f)
 	{
 		return normalize(vector, vector.length(), radius);
 	}
 
 	template<Arithmetic T>
-	static constexpr sf::Vector2<T> limit(const sf::Vector2<T>& vector, float length, float max_length)
+	inline sf::Vector2<T> limit(const sf::Vector2<T>& vector, float length, float max_length)
 	{
 		if (length > max_length)
 			return normalize(vector, length, max_length);
@@ -79,13 +80,13 @@ namespace vu
 		return vector;
 	}
 	template<Arithmetic T>
-	static constexpr sf::Vector2<T> limit(const sf::Vector2<T>& vector, float max_length)
+	inline sf::Vector2<T> limit(const sf::Vector2<T>& vector, float max_length)
 	{
 		return limit(vector, vector.length(), max_length);
 	}
 
 	template<Arithmetic T>
-	static constexpr sf::Vector2<T> rotate_point(const sf::Vector2<T>& point, const sf::Vector2<T>& center, float angle)
+	inline sf::Vector2<T> rotate_point(const sf::Vector2<T>& point, const sf::Vector2<T>& center, float angle)
 	{
 		const sf::Vector2<T> dir = direction(center, point);
 
@@ -98,7 +99,7 @@ namespace vu
 	}
 
 	template<Arithmetic T>
-	static constexpr sf::Vector2<T> abs(sf::Vector2<T> vector)
+	inline sf::Vector2<T> abs(sf::Vector2<T> vector)
 	{
 		vector.x = std::abs(vector.x);
 		vector.y = std::abs(vector.y);
@@ -107,7 +108,7 @@ namespace vu
 	}
 
 	template<Arithmetic T>
-	static constexpr sf::Vector2<T> floor(sf::Vector2<T> vector)
+	inline sf::Vector2<T> floor(sf::Vector2<T> vector)
 	{
 		vector.x = std::floorf(vector.x);
 		vector.y = std::floorf(vector.y);
@@ -116,25 +117,19 @@ namespace vu
 	}
 
 	template<Arithmetic T>
-	static constexpr auto lerp(const T a, const T b, float f)
+	constexpr sf::Vector2<T> lerp(const sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs, float a)
 	{
-		return (a * (1.0f - f)) + (b * f);
-	}
-
-	template<Arithmetic T>
-	static constexpr sf::Vector2<T> lerp(const sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs, float a)
-	{
-		return sf::Vector3<T>(
-			lerp(lhs.x, rhs.x, a),
-			lerp(lhs.y, rhs.y, a));
+		return sf::Vector2<T>(
+			util::lerp(lhs.x, rhs.x, a),
+			util::lerp(lhs.y, rhs.y, a));
 	}
 	template<Arithmetic T>
-	static constexpr sf::Vector3<T> lerp(const sf::Vector3<T>& lhs, const sf::Vector3<T>& rhs, float a)
+	constexpr sf::Vector3<T> lerp(const sf::Vector3<T>& lhs, const sf::Vector3<T>& rhs, float a)
 	{
 		return sf::Vector3<T>(
-			lerp(lhs.x, rhs.x, a),
-			lerp(lhs.y, rhs.y, a),
-			lerp(lhs.z, rhs.z, a));
+			util::lerp(lhs.x, rhs.x, a),
+			util::lerp(lhs.y, rhs.y, a),
+			util::lerp(lhs.z, rhs.z, a));
 	}
 
 	inline float atan_approximation(float x)
@@ -150,7 +145,7 @@ namespace vu
 		return x * fmaf(x_sq, fmaf(x_sq, fmaf(x_sq, fmaf(x_sq, fmaf(x_sq, a11, a9), a7), a5), a3), a1);
 	}
 
-	static float angle(float y, float x)
+	inline float angle(float y, float x)
 	{
 		const bool swap = std::fabs(x) < std::fabs(y);
 		const float atan_input = (swap ? x / y : y / x);
@@ -169,14 +164,14 @@ namespace vu
 // operator overloads that SFML is missing
 
 template <Arithmetic T>
-static constexpr sf::Vector2<T>& operator /=(sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs)
+constexpr sf::Vector2<T>& operator /=(sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs)
 {
 	lhs.x /= rhs.x;
 	lhs.y /= rhs.y;
 	return lhs;
 }
 template <Arithmetic T>
-static constexpr sf::Vector2<T> operator/(float lhs, const sf::Vector2<T>& rhs)
+constexpr sf::Vector2<T> operator/(float lhs, const sf::Vector2<T>& rhs)
 {
 	sf::Vector2<T> result = { lhs, lhs };
 	result.x /= rhs.x;
@@ -184,7 +179,7 @@ static constexpr sf::Vector2<T> operator/(float lhs, const sf::Vector2<T>& rhs)
 	return result;
 }
 template <Arithmetic T>
-static constexpr sf::Vector2<T> operator/(sf::Vector2<T> lhs, const sf::Vector2<T>& rhs)
+constexpr sf::Vector2<T> operator/(sf::Vector2<T> lhs, const sf::Vector2<T>& rhs)
 {
 	lhs.x /= rhs.x;
 	lhs.y /= rhs.y;
@@ -192,7 +187,7 @@ static constexpr sf::Vector2<T> operator/(sf::Vector2<T> lhs, const sf::Vector2<
 }
 
 template <Arithmetic T>
-static constexpr sf::Vector2<T> operator*(sf::Vector2<T> lhs, const sf::Vector2<T>& rhs)
+constexpr sf::Vector2<T> operator*(sf::Vector2<T> lhs, const sf::Vector2<T>& rhs)
 {
 	lhs.x *= rhs.x;
 	lhs.y *= rhs.y;
@@ -200,7 +195,7 @@ static constexpr sf::Vector2<T> operator*(sf::Vector2<T> lhs, const sf::Vector2<
 }
 
 template <Arithmetic T>
-static constexpr sf::Vector3<T> operator*(sf::Vector3<T> lhs, const sf::Vector3<T>& rhs)
+constexpr sf::Vector3<T> operator*(sf::Vector3<T> lhs, const sf::Vector3<T>& rhs)
 {
 	lhs.x *= rhs.x;
 	lhs.y *= rhs.y;

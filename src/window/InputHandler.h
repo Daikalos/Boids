@@ -1,10 +1,10 @@
 #pragma once
 
-#include <SFML/Graphics.hpp>
+#include <SFML/Window/Keyboard.hpp>
+#include <SFML/Window/Mouse.hpp>
+#include <SFML/Window/Event.hpp>
 
-#include <unordered_map>
-#include <unordered_set>
-#include <string>
+#include <stdint.h>
 
 namespace Binding
 {

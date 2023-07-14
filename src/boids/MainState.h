@@ -1,14 +1,10 @@
 #pragma once
 
-#include "../window/Camera.h"
-#include "../window/Window.h"
-#include "../window/InputHandler.h"
+#include <SFML/Graphics/VertexArray.hpp>
+
 #include "../window/ResourceHolder.hpp"
 #include "../window/State.h"
 
-#include "../utilities/PolicySelect.h"
-
-#include "Config.h"
 #include "Debug.h"
 #include "AudioMeter.h"
 #include "Background.h"
@@ -16,6 +12,10 @@
 #include "Impulse.h"
 #include "BoidContainer.h"
 #include "Fluid.h"
+
+class Window;
+class Camera;
+class InputHandler;
 
 class MainState final : public State
 {

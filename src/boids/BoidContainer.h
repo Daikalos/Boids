@@ -1,22 +1,17 @@
 #pragma once
 
-#include <SFML/Graphics.hpp>
+#include <SFML/System/Vector2.hpp>
+#include <SFML/Graphics/VertexArray.hpp>
 
-#include <span>
-#include <ranges>
 #include <memory>
 
 #include "Grid.h"
-#include "Config.h"
 #include "AudioMeter.h"
 #include "Impulse.h"
 #include "Fluid.h"
 
-#include "../utilities/Rectangle.hpp"
-#include "../utilities/VectorUtilities.h"
-#include "../utilities/Utilities.h"
 #include "../utilities/PolicySelect.h"
-
+#include "../utilities/Rectangle.hpp"
 #include "../window/InputHandler.h"
 
 class BoidContainer

@@ -1,19 +1,20 @@
 #pragma once
 
-#include <SFML/Graphics.hpp>
-#include <nlohmann/json.hpp>
-#include <fstream>
+#include <vector>
+#include <string>
 
-#include "../utilities/Utilities.h"
+#include <SFML/System/Vector2.hpp>
+#include <SFML/System/Vector3.hpp>
 
 inline constexpr const char* FILE_NAME	= "config-v1.json";
 
-inline constexpr const char* CONFIG		= "Config";
-inline constexpr const char* BACKGROUND = "Background";
-inline constexpr const char* BOID		= "Boid";
-inline constexpr const char* RULES		= "Rules";
-inline constexpr const char* COLOR		= "Color";
-inline constexpr const char* MISC		= "Misc";
+inline constexpr const char* CONFIG			= "Config";
+inline constexpr const char* BACKGROUND		= "Background";
+inline constexpr const char* BOIDS			= "Boids";
+inline constexpr const char* RULES			= "Rules";
+inline constexpr const char* INTERACTION	= "Interaction";
+inline constexpr const char* COLOR			= "Color";
+inline constexpr const char* MISC			= "Misc";
 
 enum ColorFlags : std::uint32_t
 {
@@ -45,63 +46,95 @@ enum Rebuild : int
 using ColorCont = std::vector<sf::Vector3f>;
 using WStringCont = std::vector<std::wstring>;
 
-class Config
+struct BackgroundConfig
 {
-public:
-	sf::Vector3f	BackgroundColor				{0.0f, 0.0f, 0.0f};
-	std::string		BackgroundTexture			{""};
-	int				BackgroundPositionX			{0};
-	int				BackgroundPositionY			{0};
-	bool			BackgroundFitScreen			{true};
-	bool			BackgroundOverrideSize		{false};
-	int				BackgroundWidth				{0};
-	int				BackgroundHeight			{0};
+	std::string		Texture			{""};
+	sf::Vector3f	Color			{0.0f, 0.0f, 0.0f};
+	int				PositionX		{0};
+	int				PositionY		{0};
+	int				Width			{0};
+	int				Height			{0};
+	bool			FitScreen		{true};
+	bool			OverrideSize	{false};
+};
 
-	int				BoidCount					{2000};
-	float			BoidWidth					{22.0f};
-	float			BoidHeight					{11.0f};
-	float			BoidSpeedMax				{360.0f};
-	float			BoidSpeedMin				{160.0f};
-	float			BoidSteerMax				{4.0f};
-	float			BoidViewAngle				{240.0f};
+struct BoidsConfig
+{
+	int				Count						{2000};
+	float			Width						{22.0f};
+	float			Height						{11.0f};
+	float			SpeedMax					{360.0f};
+	float			SpeedMin					{160.0f};
+	float			SteerMax					{4.0f};
+	float			ViewAngle					{240.0f};
+};
 
+struct RulesConfig
+{
 	float			SepDistance					{30.0f};
 	float			AliDistance					{60.0f};
 	float			CohDistance					{60.0f};
-
 	float			SepWeight					{2.8f};
 	float			AliWeight					{1.5f};
 	float			CohWeight					{1.8f};
+};
 
-	uint32_t		ColorFlag					{CF_Cycle | CF_Density | CF_Velocity | CF_Rotation};
+struct InteractionConfig
+{
+	int				BoidAddAmount				{5};
+	float			BoidAddMouseDiff			{1.0f};
+	int				BoidRemoveAmount			{50};
 
-	float			ColorPositionalWeight		{1.0f};
-	float			ColorCycleWeight			{0.5f};
-	float			ColorDensityWeight			{0.9f};
-	float			ColorVelocityWeight			{0.5f};
-	float			ColorRotationWeight			{-1.7f};
-	float			ColorAudioWeight			{1.0f};
-	float			ColorFluidWeight			{1.0f};
+	float			SteerTowardsFactor			{0.9f};
+	float			SteerAwayFactor				{0.9f};
 
-	sf::Vector3f	BoidColorTopLeft			{0.73f, 0.33f, 0.82f};
-	sf::Vector3f	BoidColorTopRight			{1.0f, 0.0f, 1.0f};
-	sf::Vector3f	BoidColorBotLeft			{0.85f, 0.75f, 0.85f};
-	sf::Vector3f	BoidColorBotRight			{0.35f, 0.0f, 0.35f};
+	float			PredatorDistance			{250.0f};
+	float			PredatorFactor				{0.6f};
 
-	bool			BoidCycleColorsRandom		{true};
-	float			BoidCycleColorsSpeed		{1.0f};
-	ColorCont		BoidCycleColors
+	float			TurnMarginFactor			{0.85f};
+	float			TurnFactor					{275.0f};
+
+	bool			SteerEnabled				{true};
+	bool			PredatorEnabled				{true};
+	bool			TurnAtBorder				{false};
+};
+
+struct ColorConfig
+{
+	uint32_t		Flags				{CF_Cycle | CF_Density | CF_Velocity | CF_Rotation};
+	float			PositionalWeight	{1.0f};
+	float			CycleWeight			{0.5f};
+	float			DensityWeight		{0.9f};
+	float			VelocityWeight		{0.5f};
+	float			RotationWeight		{-1.7f};
+	float			AudioWeight			{1.0f};
+	float			FluidWeight			{1.0f};
+};
+
+struct ColorPosConfig
+{
+	sf::Vector3f	TopLeft				{0.73f, 0.33f, 0.82f};
+	sf::Vector3f	TopRight			{1.0f, 0.0f, 1.0f};
+	sf::Vector3f	BotLeft				{0.85f, 0.75f, 0.85f};
+	sf::Vector3f	BotRight			{0.35f, 0.0f, 0.35f};
+};
+
+struct ColorCycleConfig
+{
+	ColorCont		Colors
 	{
 		sf::Vector3f(0.35f, 0.0f, 0.35f),
 		sf::Vector3f(1.0f, 0.1f, 1.0f),
 		sf::Vector3f(0.6f, 0.0f, 1.0f),
 		sf::Vector3f(0.35f, 0.0f, 0.35f)
 	};
+	float			Speed				{1.0f};
+	bool			Random				{true};
+};
 
-	int				BoidDensity					{70};
-	bool			BoidDensityCycleEnabled		{true};
-	float			BoidDensityCycleSpeed		{0.75};
-	ColorCont		BoidDensityColors
+struct ColorDensityConfig
+{
+	ColorCont		Colors
 	{
 		sf::Vector3f(0.35f, 0.0f, 0.35f),
 		sf::Vector3f(0.35f, 0.0f, 0.35f),
@@ -113,7 +146,14 @@ public:
 		sf::Vector3f(0.35f, 0.0f, 0.35f)
 	};
 
-	ColorCont		BoidVelocityColors
+	int				Density				{70};
+	float			DensityCycleSpeed	{0.75};
+	bool			DensityCycleEnabled	{true};
+};
+
+struct ColorVelocityConfig
+{
+	ColorCont		Colors
 	{
 		sf::Vector3f(0.0f, 0.0f, 0.0f),
 		sf::Vector3f(0.0f, 0.0f, 0.0f),
@@ -129,8 +169,11 @@ public:
 		sf::Vector3f(0.6f, 0.0f, 1.0f),
 		sf::Vector3f(1.0f, 0.1f, 1.0f)
 	};
+};
 
-	ColorCont		BoidRotationColors
+struct ColorRotationConfig
+{
+	ColorCont		Colors
 	{
 		sf::Vector3f(0.18f, 0.0f, 0.18f),
 		sf::Vector3f(0.18f, 0.0f, 0.18f),
@@ -140,13 +183,12 @@ public:
 		sf::Vector3f(0.29f, 0.0f, 0.29f),
 		sf::Vector3f(0.29f, 0.0f, 0.29f)
 	};
+};
 
-	WStringCont		AudioResponsiveApps			{};
-	float			AudioResponsiveStrength		{4.75f};
-	float			AudioResponsiveLimit		{1.2f};
-	float			AudioResponsiveSpeed		{50.0f};
-	int				AudioResponsiveDensity		{25};
-	ColorCont		AudioResponsiveColors
+struct ColorAudioConfig
+{
+	WStringCont		Apps			{};
+	ColorCont		Colors
 	{
 		sf::Vector3f(0.35f, 0.0f, 0.35f),
 		sf::Vector3f(0.35f, 0.0f, 0.35f),
@@ -165,12 +207,15 @@ public:
 		sf::Vector3f(0.35f, 0.0f, 0.35f)
 	};
 
-	bool			ImpulseEnabled				{true};
-	float			ImpulseSize					{50.0f};
-	float			ImpulseSpeed				{500.0f};
-	float			ImpulseFadeDistance			{400.0f};
-	float			ImpulseForce				{256.0f};
-	ColorCont		ImpulseColors
+	float			Strength			{4.75f};
+	float			Limit				{1.2f};
+	float			Speed				{50.0f};
+	int				Density				{25};
+};
+
+struct ColorImpulseConfig
+{
+	ColorCont		Colors
 	{
 		sf::Vector3f(1.0f, 0.15f, 1.0f),
 		sf::Vector3f(1.0f, 0.15f, 1.0f),
@@ -180,12 +225,16 @@ public:
 		sf::Vector3f(0.35f, 0.0f, 0.35f)
 	};
 
-	int				FluidScale					{10};
-	float			FluidMouseStrength			{0.2f};
-	float			FluidColorVel				{0.1f};
-	float			FluidDiffusion				{0.0f};
-	float			FluidViscosity				{0.00001f};
-	ColorCont		FluidColors
+	float			Size				{50.0f};
+	float			Speed				{500.0f};
+	float			FadeDistance		{400.0f};
+	float			Force				{256.0f};
+	bool			Enabled				{true};
+};
+
+struct ColorFluidConfig
+{
+	ColorCont		Colors
 	{
 		sf::Vector3f(0.0f, 0.0f, 0.0f),
 		sf::Vector3f(0.0f, 0.0f, 0.0f),
@@ -198,33 +247,46 @@ public:
 		sf::Vector3f(1.0f, 0.1f, 1.0f)
 	};
 
-	int				BoidAddAmount				{5};
-	float			BoidAddMouseDiff			{1.0f};
-	int				BoidRemoveAmount			{50};
+	int				Scale				{10};
+	float			MouseStrength		{0.2f};
+	float			ColorVel			{0.1f};
+	float			Diffusion			{0.0f};
+	float			Viscosity			{0.00001f};
+};
 
-	bool			SteerEnabled				{true};
-	float			SteerTowardsFactor			{0.9f};
-	float			SteerAwayFactor				{0.9f};
-
-	bool			PredatorEnabled				{true};
-	float			PredatorDistance			{250.0f};
-	float			PredatorFactor				{0.6f};
-
-	bool			TurnAtBorder				{false};
-	float			TurnMarginFactor			{0.85f};
-	float			TurnFactor					{275.0f};
-
+struct MiscConfig
+{
 	int				GridExtraCells				{16};
-	bool			CameraEnabled				{false};
 	float			CameraZoom					{1.0f};
-	bool			VerticalSync				{true};
 	int				MaxFramerate				{200};
 	float			PhysicsUpdateFreq			{60.0f};
 	int				PolicyThreshold				{1500};
 
-	bool			DebugEnabled				{false};
 	float			DebugUpdateFreq				{0.5f};
 	int				DebugToggleKey				{85};
+
+	bool			CameraEnabled				{false};
+	bool			VerticalSync				{true};
+	bool			DebugEnabled				{false};
+};
+
+class Config
+{
+public:
+	BackgroundConfig	Background;
+	BoidsConfig			Boids;
+	RulesConfig			Rules;
+	InteractionConfig	Interaction;
+	ColorConfig			Color;
+	ColorPosConfig		Positional;
+	ColorCycleConfig	Cycle;
+	ColorDensityConfig	Density;
+	ColorVelocityConfig Velocity;
+	ColorRotationConfig Rotation;
+	ColorAudioConfig	Audio;
+	ColorImpulseConfig	Impulse;
+	ColorFluidConfig	Fluid;
+	MiscConfig			Misc;
 
 	// Misc
 
@@ -247,12 +309,12 @@ public:
 public:
 	Config();
 
-	void load();
-	std::vector<Rebuild> refresh(Config& prev);
+	void Load();
+
+	std::vector<Rebuild> Refresh(Config& prev);
 
 private:
-	void load_var(nlohmann::json& json);
-
-	sf::Vector3f str_to_color(std::string str) const;
-	void convert_to_color(std::vector<sf::Vector3f>& dest, const std::vector<std::string>& src);
+	void UpdateMisc();
 };
+
+

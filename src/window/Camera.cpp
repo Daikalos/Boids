@@ -1,5 +1,7 @@
 #include "Camera.h"
 
+#include "../utilities/VectorUtilities.h"
+
 Camera::Camera() : m_position(0, 0), m_scale(1.0f, 1.0f), m_size(0, 0), m_dragPos(0, 0) {}
 
 const sf::Vector2f& Camera::GetPosition() const { return m_position; }

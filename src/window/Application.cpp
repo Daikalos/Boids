@@ -1,17 +1,31 @@
 #include "Application.h"
 
-Application::Application(const std::string& name) :
-	m_window(name, sf::VideoMode().getDesktopMode(), WindowBorder::Fullscreen, sf::ContextSettings(), Config::Inst().VerticalSync, Config::Inst().MaxFramerate, m_camera),
+#include <SFML/Window/ContextSettings.hpp>
+#include <SFML/Graphics/Color.hpp>
+#include <SFML/System/Clock.hpp>
+
+#include "../boids/Config.h"
+
+Application::Application(std::string name) :
+
+	m_window(std::move(name), 
+		sf::VideoMode().getDesktopMode(), 
+		WindowBorder::Fullscreen, 
+		sf::ContextSettings{}, 
+		Config::Inst().Misc.VerticalSync, 
+		Config::Inst().Misc.MaxFramerate, 
+		m_camera),
+
 	m_inputHandler(), 
 	m_textureHolder(), 
 	m_mainState(State::Context(m_window, m_camera, m_inputHandler, m_textureHolder, m_fontHolder))
 {
-	m_camera.SetScale({ Config::Inst().CameraZoom, Config::Inst().CameraZoom });
+	m_camera.SetScale({ Config::Inst().Misc.CameraZoom, Config::Inst().Misc.CameraZoom });
 
 	m_window.SetClearColor(sf::Color(
-		(sf::Uint8)(Config::Inst().BackgroundColor.x * 255.0f),
-		(sf::Uint8)(Config::Inst().BackgroundColor.y * 255.0f),
-		(sf::Uint8)(Config::Inst().BackgroundColor.z * 255.0f)));
+		static_cast<sf::Uint8>(Config::Inst().Background.Color.x * 255.0f),
+		static_cast<sf::Uint8>(Config::Inst().Background.Color.y * 255.0f),
+		static_cast<sf::Uint8>(Config::Inst().Background.Color.z * 255.0f)));
 }
 
 void Application::Run()
@@ -33,7 +47,7 @@ void Application::Run()
 		dt = std::fminf(clock.restart().asSeconds(), 0.075f);
 		accumulator += dt;
 
-		fixedDT = 1.0f / std::fmaxf(Config::Inst().PhysicsUpdateFreq, 1.0f);
+		fixedDT = 1.0f / std::fmaxf(Config::Inst().Misc.PhysicsUpdateFreq, 1.0f);
 
 		m_inputHandler.Update(dt);
 
@@ -71,7 +85,7 @@ void Application::ProcessInput()
 
 void Application::PreUpdate(float dt)
 {
-	if (Config::Inst().CameraEnabled)
+	if (Config::Inst().Misc.CameraEnabled)
 		m_camera.Update(m_inputHandler, m_window);
 
 	m_mainState.PreUpdate(dt);

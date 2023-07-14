@@ -1,9 +1,13 @@
 #include "Grid.h"
 
+#include "../utilities/VectorUtilities.h"
+
+#include "Config.h"
+
 Grid::Grid(const RectFloat& rect, const sf::Vector2f& cont_dims)
 	: rootRect(rect), contDims(cont_dims)
 {
-	float sizeMax = std::max(Config::Inst().BoidWidth, Config::Inst().BoidHeight);
+	float sizeMax = std::max(Config::Inst().Boids.Width, Config::Inst().Boids.Height);
 
 	rootRect.top_left -= sf::Vector2f(sizeMax, sizeMax) / 2.0f;
 	rootRect.bot_right += sf::Vector2f(sizeMax, sizeMax) / 2.0f;

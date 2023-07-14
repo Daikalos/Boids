@@ -1,5 +1,9 @@
 #include "AudioMeter.h"
 
+#include "../utilities/Utilities.h"
+
+#include "Config.h"
+
 #if defined(_WIN32)
 
 AudioMeterWin::AudioMeterWin(float refresh_freq) 
@@ -10,9 +14,9 @@ AudioMeterWin::~AudioMeterWin()
 	SAFE_RELEASE(m_meterInfo);
 	SAFE_RELEASE(m_sessionManager);
 
-	for (int i = 0; i < Config::Inst().AudioResponsiveApps.size(); ++i)
+	for (int i = 0; i < Config::Inst().Audio.Apps.size(); ++i)
 	{
-		std::wstring& process_name = Config::Inst().AudioResponsiveApps[i];
+		std::wstring& process_name = Config::Inst().Audio.Apps[i];
 
 		SAFE_RELEASE(m_psc[process_name].first);
 		SAFE_RELEASE(m_psc[process_name].second);
@@ -49,7 +53,7 @@ void AudioMeterWin::Initialize()
 		return;
 	}
 
-	if (Config::Inst().AudioResponsiveApps.empty())
+	if (Config::Inst().Audio.Apps.empty())
 	{
 		if (FAILED(m_device->Activate(__uuidof(IAudioMeterInformation), CLSCTX_ALL, NULL, (void**)&m_meterInfo)))
 			return;
@@ -66,20 +70,20 @@ void AudioMeterWin::Update(float dt)
 {
 	m_volume = 0.0f;
 
-	if ((Config::Inst().ColorFlag & CF_Audio) == 0)
+	if ((Config::Inst().Color.Flags & CF_Audio) == 0)
 	{
 		m_lerpVolume = 0.0f;
 		return;
 	}
 
-	if (Config::Inst().AudioResponsiveApps.empty() && m_meterInfo)
+	if (Config::Inst().Audio.Apps.empty() && m_meterInfo)
 	{
 		if (SUCCEEDED(m_meterInfo->GetPeakValue(&m_volume)))
 			m_volume = -20.0f * std::log10f(1.0f - m_volume);
 	}
 	else
 	{
-		for (const std::wstring& processName : Config::Inst().AudioResponsiveApps)
+		for (const std::wstring& processName : Config::Inst().Audio.Apps)
 		{
 			const auto it = m_psc.find(processName);
 			if (it != m_psc.end())
@@ -114,7 +118,7 @@ void AudioMeterWin::Update(float dt)
 		}
 	}
 
-	m_lerpVolume = util::Lerp(m_lerpVolume, m_volume, std::clamp(Config::Inst().AudioResponsiveSpeed * dt, 0.0f, 1.0f));
+	m_lerpVolume = util::lerp(m_lerpVolume, m_volume, std::clamp(Config::Inst().Audio.Speed * dt, 0.0f, 1.0f));
 }
 
 void AudioMeterWin::Clear()
@@ -157,7 +161,7 @@ void AudioMeterWin::RefreshAll()
 					LPWSTR sessionID;
 					if (SUCCEEDED(sessionControl2->GetSessionInstanceIdentifier(&sessionID)))
 					{
-						for (const std::wstring& processName : Config::Inst().AudioResponsiveApps)
+						for (const std::wstring& processName : Config::Inst().Audio.Apps)
 						{
 							if (processName.empty())
 								continue;

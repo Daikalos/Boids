@@ -53,8 +53,8 @@ void InputHandler::Update(float dt)
 		bool& currState = m_currKeyState[i];
 		float& heldTime = m_heldKeyTime[i];
 
-		m_prevKeyState[i] = m_currKeyState[i];
-		m_currKeyState[i] = sf::Keyboard::isKeyPressed(static_cast<sf::Keyboard::Key>(i));
+		prevState = currState;
+		currState = sf::Keyboard::isKeyPressed(static_cast<sf::Keyboard::Key>(i));
 
 		heldTime = currState ? (heldTime + dt) : 0.0f;
 	}

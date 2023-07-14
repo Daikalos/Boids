@@ -1,7 +1,13 @@
 #include "Window.h"
 
+#include <SFML/OpenGL.hpp>
+
+#include "../utilities/HideTaskbarIcon.h"
+
+#include "Camera.h"
+
 Window::Window(std::string name, sf::VideoMode mode, WindowBorder windowBorder, sf::ContextSettings settings, bool verticalSync, int framerate, Camera& _camera)
-	: m_name(name), m_mode(mode), m_border(windowBorder), m_settings(settings), m_verticalSync(verticalSync), m_framerate(framerate), m_camera(&_camera) {}
+	: m_name(std::move(name)), m_mode(mode), m_border(windowBorder), m_settings(settings), m_verticalSync(verticalSync), m_framerate(framerate), m_camera(&_camera) {}
 
 void Window::Initialize()
 {

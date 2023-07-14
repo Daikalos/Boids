@@ -1,11 +1,14 @@
 #pragma once
 
+#include <SFML/Window/Event.hpp>
+
 #include <memory>
 
-#include "Camera.h"
-#include "Window.h"
-#include "InputHandler.h"
 #include "ResourceHolder.hpp"
+
+class Window;
+class Camera;
+class InputHandler;
 
 class State
 {

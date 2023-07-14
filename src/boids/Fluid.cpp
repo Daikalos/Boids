@@ -1,9 +1,15 @@
 #include "Fluid.h"
 
-Fluid::Fluid() = default;
+#include <future>
+#include <algorithm>
+
+#include "../utilities/Utilities.h"
+#include "../utilities/VectorUtilities.h"
+
+#include "Config.h"
 
 Fluid::Fluid(const sf::Vector2u& size)
-	: W(size.x / Config::Inst().FluidScale), H(size.y / Config::Inst().FluidScale), N(W * H)
+	: W(size.x / Config::Inst().Fluid.Scale), H(size.y / Config::Inst().Fluid.Scale), N(W * H)
 {
 	vx = std::make_unique<float[]>(N);
 	vy = std::make_unique<float[]>(N);
@@ -17,31 +23,31 @@ Fluid::Fluid(const sf::Vector2u& size)
 
 sf::Vector3f Fluid::GetColor(const sf::Vector2f& origin) const
 {
-	if (Config::Inst().FluidColors.empty())
+	if (Config::Inst().Fluid.Colors.empty())
 		return sf::Vector3f();
 
-	const int x = (int)(origin.x / Config::Inst().FluidScale);
-	const int y = (int)(origin.y / Config::Inst().FluidScale);
+	const int x = (int)(origin.x / Config::Inst().Fluid.Scale);
+	const int y = (int)(origin.y / Config::Inst().Fluid.Scale);
 
 	const float vel_x = util::map_to_range(vx[SafeIX(x, y)],
-		-Config::Inst().FluidColorVel, Config::Inst().FluidColorVel, -1.0f, 1.0f);
+		-Config::Inst().Fluid.ColorVel, Config::Inst().Fluid.ColorVel, -1.0f, 1.0f);
 	const float vel_y = util::map_to_range(vy[SafeIX(x, y)],
-		-Config::Inst().FluidColorVel, Config::Inst().FluidColorVel, -1.0f, 1.0f);
+		-Config::Inst().Fluid.ColorVel, Config::Inst().Fluid.ColorVel, -1.0f, 1.0f);
 
-	const float bnd = (float)Config::Inst().FluidColors.size() - 1.0f;
+	const float bnd = (float)Config::Inst().Fluid.Colors.size() - 1.0f;
 
 	float scaled_speed = sf::Vector2f(vel_x, vel_y).length() * bnd;
 	scaled_speed = std::clamp(scaled_speed, 0.0f, bnd);
 
 	const int i1 = (int)scaled_speed;
-	const int i2 = (i1 == Config::Inst().FluidColors.size() - 1) ? 0 : i1 + 1;
+	const int i2 = (i1 == Config::Inst().Fluid.Colors.size() - 1) ? 0 : i1 + 1;
 
-	const sf::Vector3f color1 = Config::Inst().FluidColors[i1];
-	const sf::Vector3f color2 = Config::Inst().FluidColors[i2];
+	const sf::Vector3f color1 = Config::Inst().Fluid.Colors[i1];
+	const sf::Vector3f color2 = Config::Inst().Fluid.Colors[i2];
 
 	const float newT = scaled_speed - std::floorf(scaled_speed);
 
-	return vu::lerp(color1, color2, newT) * Config::Inst().ColorFluidWeight;
+	return vu::lerp(color1, color2, newT) * Config::Inst().Color.FluidWeight;
 }
 
 void Fluid::AddDensity(int x, int y, float amount)
@@ -59,7 +65,10 @@ void Fluid::AddVelocity(int x, int y, float vx, float vy)
 
 void Fluid::LinSolve(float* x, const float* x0, float a, int b, float c)
 {
-	c = 1.0f / c;
+	if (c == 0.0f)
+		return;
+
+	c = (1.0f / c);
 
 	for (int k = 0; k < 2; ++k)
 	{
@@ -234,55 +243,41 @@ void Fluid::StepLine(int x0, int y0, int x1, int y1, int dx, int dy, float a)
 
 void Fluid::Update(float dt)
 {
-	const auto diffuseFunc = std::bind(&Fluid::Diffuse, this,
-		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, dt);
-
-	const auto advectFunc = std::bind(&Fluid::Advect, this,
-		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, dt);
-
-	const auto projectFunc = std::bind(&Fluid::Project, this,
-		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-
-	std::future<void> thread1;
-	std::future<void> thread2;
-	std::future<void> thread3;
+	static std::future<void> thread1;
+	static std::future<void> thread2;
+	static std::future<void> thread3;
 
 	{
-		thread1 = std::async(std::launch::deferred, diffuseFunc, vx_prev.get(), vx.get(), Config::Inst().FluidViscosity, 1);
-		thread2 = std::async(std::launch::deferred, diffuseFunc, vy_prev.get(), vy.get(), Config::Inst().FluidViscosity, 2);
+		thread1 = std::async(std::launch::async, &Fluid::Diffuse, this, vx_prev.get(), vx.get(), Config::Inst().Fluid.Viscosity, 1, dt);
+		thread2 = std::async(std::launch::async, &Fluid::Diffuse, this, vy_prev.get(), vy.get(), Config::Inst().Fluid.Viscosity, 2, dt);
 
 		thread1.wait();
 		thread2.wait();
 	}
 	
 	{
-		thread1 = std::async(std::launch::deferred, projectFunc, vx_prev.get(), vy_prev.get(), vx.get(), vy.get());
+		thread1 = std::async(std::launch::async, &Fluid::Project, this, vx_prev.get(), vy_prev.get(), vx.get(), vy.get());
 
 		thread1.wait();
 
-		thread2 = std::async(std::launch::deferred, advectFunc, vx.get(), vx_prev.get(), vx_prev.get(), vy_prev.get(), 1);
-		thread3 = std::async(std::launch::deferred, advectFunc, vy.get(), vy_prev.get(), vx_prev.get(), vy_prev.get(), 2);
+		thread2 = std::async(std::launch::async, &Fluid::Advect, this, vx.get(), vx_prev.get(), vx_prev.get(), vy_prev.get(), 1, dt);
+		thread3 = std::async(std::launch::async, &Fluid::Advect, this, vy.get(), vy_prev.get(), vx_prev.get(), vy_prev.get(), 2, dt);
 
 		thread2.wait();
 		thread3.wait();
 	}
 
 	{
-		thread1 = std::async(std::launch::deferred, projectFunc, vx.get(), vy.get(), vx_prev.get(), vy_prev.get());
-		thread2 = std::async(std::launch::deferred, diffuseFunc, density_prev.get(), density.get(), Config::Inst().FluidDiffusion, 0);
+		thread1 = std::async(std::launch::async, &Fluid::Project, this, vx.get(), vy.get(), vx_prev.get(), vy_prev.get());
+		thread2 = std::async(std::launch::async, &Fluid::Diffuse, this, density_prev.get(), density.get(), Config::Inst().Fluid.Diffusion, 0, dt);
 
 		thread1.wait();
 
-		thread3 = std::async(std::launch::deferred, advectFunc, density.get(), density_prev.get(), vx.get(), vy.get(), 0);
+		thread3 = std::async(std::launch::async, &Fluid::Advect, this, density.get(), density_prev.get(), vx.get(), vy.get(), 0, dt);
 
 		thread2.wait();
 		thread3.wait();
 	}
-}
-
-int Fluid::IX(int x, int y) const noexcept	
-{ 
-	return x + y * W; 
 }
 
 int Fluid::SafeIX(int x, int y) const noexcept

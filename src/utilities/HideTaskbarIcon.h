@@ -1,12 +1,12 @@
 #pragma once
 
-#include <SFML/Graphics.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
 
 #ifdef _WIN32
 
 #include <ShObjIdl.h>
 
-static void HideTaskbarIcon(const sf::RenderWindow& window)
+inline void HideTaskbarIcon(const sf::RenderWindow& window)
 {
 	ITaskbarList* pTaskList = NULL;
 	

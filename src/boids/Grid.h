@@ -1,11 +1,10 @@
 #pragma once
 
-#include <SFML/Graphics.hpp>
+#include <memory>
+
+#include <SFML/System/Vector2.hpp>
 
 #include "../utilities/Rectangle.hpp"
-#include "../utilities/VectorUtilities.h"
-
-#include "Config.h"
 
 class Grid
 {

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <SFML/Graphics.hpp>
-
 #include "../boids/MainState.h"
 
 #include "Camera.h"
@@ -11,7 +9,7 @@
 class Application
 {
 public:
-	Application(const std::string& name);
+	Application(std::string name);
 
 public:
 	void Run();

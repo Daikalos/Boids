@@ -1,6 +1,10 @@
 #include "Debug.h"
 
-Debug::Debug() : m_updateFreqMax(Config::Inst().DebugUpdateFreq) {}
+#include "../utilities/Utilities.h"
+
+#include "Config.h"
+
+Debug::Debug() : m_updateFreqMax(Config::Inst().Misc.DebugUpdateFreq) {}
 
 bool Debug::GetRefresh() const noexcept			{ return m_refresh; }
 const char* Debug::GetState() const noexcept	{ return m_enabled ? "DEBUG ENABLED" : "DEBUG DISABLED"; }
@@ -34,10 +38,10 @@ void Debug::Update(const InputHandler& inputHandler, std::uint32_t boidCount, st
 {
 	m_refresh = false;
 
-	if (!Config::Inst().DebugEnabled)
+	if (!Config::Inst().Misc.DebugEnabled)
 		return;
 
-	if (inputHandler.GetKeyPressed(static_cast<sf::Keyboard::Key>(Config::Inst().DebugToggleKey)))
+	if (inputHandler.GetKeyPressed(static_cast<sf::Keyboard::Key>(Config::Inst().Misc.DebugToggleKey)))
 		Toggle();
 
 	if (!m_enabled)
@@ -55,7 +59,7 @@ void Debug::Update(const InputHandler& inputHandler, std::uint32_t boidCount, st
 			"\nFPS: " + std::to_string((int)std::floorf(m_fpsCounter.GetFPS()));
 
 		m_refresh = true;
-		m_updateFreq = Config::Inst().DebugUpdateFreq;
+		m_updateFreq = Config::Inst().Misc.DebugUpdateFreq;
 	}
 
 	m_textInfo.setString("\nCONFIG REFRESH: " + 
@@ -64,7 +68,7 @@ void Debug::Update(const InputHandler& inputHandler, std::uint32_t boidCount, st
 
 void Debug::Draw(sf::RenderWindow& window) const
 {
-	if (!Config::Inst().DebugEnabled)
+	if (!Config::Inst().Misc.DebugEnabled)
 		return;
 
 	window.draw(m_textState);

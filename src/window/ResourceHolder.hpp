@@ -1,12 +1,11 @@
 #pragma once
 
-#include <SFML/Graphics.hpp>
+#include <SFML/Graphics/Texture.hpp>
+#include <SFML/Graphics/Font.hpp>
 
 #include <memory>
 #include <unordered_map>
-
-#include <iostream>
-#include <filesystem>
+#include <string>
 
 enum class TextureID
 {
@@ -18,7 +17,7 @@ enum class FontID
 	F8Bit
 };
 
-static const std::string RESOURCE_FOLDER = "content/";
+static constexpr const char* RESOURCE_FOLDER = "content/";
 
 template <class Resource, class Identifier>
 class ResourceHolder
@@ -42,16 +41,12 @@ private:
 template<typename Resource, typename Identifier>
 void ResourceHolder<Resource, Identifier>::Load(const Identifier& id, const std::string& path)
 {
-	Ptr resource(new Resource());
+	Ptr resource = std::make_unique<Resource>();
 
 	if (!resource->loadFromFile(RESOURCE_FOLDER + path))
-	{
-		Remove(id);
 		return;
-	}
 
-	auto inserted = m_resources.insert(std::make_pair(id, std::move(resource)));
-	assert(inserted.second);
+	m_resources.try_emplace(id, std::move(resource));
 }
 
 template<class Resource, class Identifier>

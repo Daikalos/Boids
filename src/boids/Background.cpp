@@ -1,5 +1,7 @@
 #include "Background.h"
 
+#include "Config.h"
+
 void Background::LoadTexture(const TextureHolder& textureHolder)
 {
 	if (textureHolder.Exists(TextureID::Background))
@@ -12,34 +14,34 @@ void Background::LoadProperties(const sf::Vector2i& size)
 {
 	sf::Vector2f desiredScale = sf::Vector2f(1.0f, 1.0f);
 
-	if (Config::Inst().BackgroundFitScreen)
+	if (Config::Inst().Background.FitScreen)
 	{
 		desiredScale = sf::Vector2f(
 			size.x / m_background.getLocalBounds().width,
 			size.y / m_background.getLocalBounds().height);
 	}
-	else if (Config::Inst().BackgroundOverrideSize)
+	else if (Config::Inst().Background.OverrideSize)
 	{
 		desiredScale = sf::Vector2f(
-			Config::Inst().BackgroundWidth / m_background.getLocalBounds().width,
-			Config::Inst().BackgroundHeight / m_background.getLocalBounds().height);
+			Config::Inst().Background.Width / m_background.getLocalBounds().width,
+			Config::Inst().Background.Height / m_background.getLocalBounds().height);
 	}
 
 	bool setColor = 
-		Config::Inst().BackgroundColor.x > FLT_EPSILON || 
-		Config::Inst().BackgroundColor.y > FLT_EPSILON || 
-		Config::Inst().BackgroundColor.z > FLT_EPSILON;
+		Config::Inst().Background.Color.x > FLT_EPSILON || 
+		Config::Inst().Background.Color.y > FLT_EPSILON || 
+		Config::Inst().Background.Color.z > FLT_EPSILON;
 
 	m_background.setPosition(sf::Vector2f(
-		(float)Config::Inst().BackgroundPositionX,
-		(float)Config::Inst().BackgroundPositionY));
+		(float)Config::Inst().Background.PositionX,
+		(float)Config::Inst().Background.PositionY));
 
 	m_background.setScale(desiredScale);
 
 	m_background.setColor(setColor ? sf::Color(
-		(sf::Uint8)(Config::Inst().BackgroundColor.x * 255.0f),
-		(sf::Uint8)(Config::Inst().BackgroundColor.y * 255.0f),
-		(sf::Uint8)(Config::Inst().BackgroundColor.z * 255.0f)) : sf::Color::White);
+		static_cast<sf::Uint8>(Config::Inst().Background.Color.x * 255.0f),
+		static_cast<sf::Uint8>(Config::Inst().Background.Color.y * 255.0f),
+		static_cast<sf::Uint8>(Config::Inst().Background.Color.z * 255.0f)) : sf::Color::White);
 }
 
 void Background::Draw(sf::RenderWindow& window) const

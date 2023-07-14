@@ -2,10 +2,6 @@
 
 #include <memory>
 
-#include "Config.h"
-
-#include "../utilities/Utilities.h"
-
 class IAudioMeterInfo
 {
 public:
@@ -28,7 +24,7 @@ public:
 	void Update(float dt) override {}
 	void Clear() override {}
 
-	float GetVolume() const noexcept { return 0.0f; }
+	float GetVolume() const noexcept override { return 0.0f; }
 };
 
 #if defined(_WIN32)

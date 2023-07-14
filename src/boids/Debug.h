@@ -1,12 +1,13 @@
 #pragma once
 
-#include <SFML/Graphics.hpp>
+#include <string>
+
+#include <SFML/Graphics/Text.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
 
 #include "../window/ResourceHolder.hpp"
 #include "../window/InputHandler.h"
 #include "../utilities/FPSCounter.h"
-
-#include "Config.h"
 
 class Debug
 {
