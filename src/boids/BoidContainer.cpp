@@ -24,7 +24,7 @@ BoidContainer::BoidContainer(std::size_t capacity) : m_capacity(capacity)
 	m_cycleTimes		= std::make_unique<float[]>(m_capacity);
 	m_densityTimes		= std::make_unique<float[]>(m_capacity);
 
-	m_densities			= std::make_unique<std::uint16_t[]>(m_capacity);
+	m_densities			= std::make_unique<std::uint32_t[]>(m_capacity);
 	m_cellIndices		= std::make_unique<std::uint16_t[]>(m_capacity);
 }
 
@@ -79,7 +79,7 @@ void BoidContainer::Pop(std::size_t count)
 void BoidContainer::Reallocate(std::size_t capacity)
 {
 	const auto realloc = 
-		[this, &capacity]<typename T>(std::unique_ptr<T[]>& ptr)
+		[this, capacity]<typename T>(std::unique_ptr<T[]>& ptr)
 		{
 			auto newPtr = std::make_unique<T[]>(capacity);
 			std::move(ptr.get(), ptr.get() + m_size, newPtr.get());
@@ -125,7 +125,7 @@ void BoidContainer::PreUpdate(const Grid& grid)
 		const sf::Vector2i gridCell			= sf::Vector2i(gridCellRaw);
 		const sf::Vector2f gridCellOverflow = gridCellRaw - sf::Vector2f(gridCell);
 
-		m_relativePositions[i]	= gridCellOverflow * grid.contDims;
+		m_relativePositions[i]	= gridCellOverflow * grid.GetContDims();
 		m_cellIndices[i]		= grid.AtPos(gridCell);
 	}
 }
@@ -144,7 +144,7 @@ void BoidContainer::UpdateCells(Grid& grid)
 	if (m_size == 0)
 		return;
 
-	grid.startIndices[m_cellIndices[m_indices[0]]] = 0;
+	grid.SetStartIndex(m_cellIndices[m_indices[0]], 0);
 
 	for (std::size_t i = 1; i < m_size; ++i)
 	{
@@ -153,12 +153,12 @@ void BoidContainer::UpdateCells(Grid& grid)
 
 		if (otherIndex != cellIndex)
 		{
-			grid.startIndices[cellIndex] = i;
-			grid.endIndices[otherIndex] = i - 1;
+			grid.SetStartIndex(cellIndex, i);
+			grid.SetEndIndex(otherIndex, i - 1);
 		}
 	}
 
-	grid.endIndices[m_cellIndices[m_indices[m_size - 1]]] = m_size - 1;
+	grid.SetEndIndex(m_cellIndices[m_indices[m_size - 1]], m_size - 1);
 }
 
 void BoidContainer::Interaction(const InputHandler& inputHandler, const sf::Vector2f& mousePos, float dt)
@@ -166,9 +166,9 @@ void BoidContainer::Interaction(const InputHandler& inputHandler, const sf::Vect
 	const bool holdLeft		= inputHandler.GetButtonHeld(sf::Mouse::Button::Left);
 	const bool holdRight	= inputHandler.GetButtonHeld(sf::Mouse::Button::Right);
 
-	for (std::size_t i = 0; i < m_size; ++i)
+	if (Config::Inst().Interaction.SteerEnabled && (holdLeft || holdRight))
 	{
-		if (Config::Inst().Interaction.SteerEnabled && (holdLeft || holdRight))
+		for (std::size_t i = 0; i < m_size; ++i)
 		{
 			sf::Vector2f dir = vu::direction(m_positions[i], mousePos);
 
@@ -180,7 +180,10 @@ void BoidContainer::Interaction(const InputHandler& inputHandler, const sf::Vect
 
 			SteerTowards(i, dir, lengthOpt, Config::Inst().Interaction.SteerTowardsFactor * weight * factor * dt);
 		}
-		else if (Config::Inst().Interaction.PredatorEnabled)
+	}
+	else if (Config::Inst().Interaction.PredatorEnabled)
+	{
+		for (std::size_t i = 0; i < m_size; ++i)
 		{
 			sf::Vector2f dir = vu::direction(m_positions[i], mousePos);
 
@@ -205,9 +208,9 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 					sf::Vector2f ali;
 					sf::Vector2f coh;
 
-					std::uint16_t sepCount = 0;
-					std::uint16_t aliCount = 0;
-					std::uint16_t cohCount = 0;
+					std::uint32_t sepCount = 0;
+					std::uint32_t aliCount = 0;
+					std::uint32_t cohCount = 0;
 
 					const sf::Vector2f origin = GetOrigin(m_positions[lhs]);
 					const sf::Vector2f thisRelative = m_relativePositions[lhs];
@@ -228,10 +231,10 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 					const int neighbour_x = gridCell.x + x;
 					const int neighbour_y = gridCell.y + y;
 
-					neighbours[0] = grid.contDims * sf::Vector2f(0,			0);
-					neighbours[1] = grid.contDims * sf::Vector2f((float)x,	0);
-					neighbours[2] = grid.contDims * sf::Vector2f(0,			(float)y);
-					neighbours[3] = grid.contDims * sf::Vector2f((float)x,	(float)y);
+					neighbours[0] = grid.GetContDims() * sf::Vector2f(0,		0);
+					neighbours[1] = grid.GetContDims() * sf::Vector2f((float)x,	0);
+					neighbours[2] = grid.GetContDims() * sf::Vector2f(0,		(float)y);
+					neighbours[3] = grid.GetContDims() * sf::Vector2f((float)x,	(float)y);
 
 					neighIndices[0] = grid.AtPos(gridCell.x,	gridCell.y);	// current
 					neighIndices[1] = grid.AtPos(neighbour_x,	gridCell.y);	// left or right of current
@@ -250,12 +253,12 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 					for (std::uint8_t i = 0; i < neighbourCount; ++i)
 					{
 						const int gridCellIndex = neighIndices[i];
-						const int start = grid.startIndices[gridCellIndex];
+						const int start = grid.GetStartIndices()[gridCellIndex];
 
 						if (start == -1)
 							continue;
 
-						const int end = grid.endIndices[gridCellIndex];
+						const int end = grid.GetEndIndices()[gridCellIndex];
 						const sf::Vector2f neighbourCell = neighbours[i];
 
 						for (int j = start; j <= end; ++j) // do in one loop
@@ -271,7 +274,7 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 
 							if (withinCohesion || withinAlignment)
 							{
-								const float angle = vu::PI<> - std::copysignf(std::copysignf(vu::angle(dir.y, dir.x) - thisAngle, 1.0f) - vu::PI<>, 1.0f);
+								const float angle = vu::PI<> - std::abs(std::abs(vu::angle(dir.y, dir.x) - thisAngle) - vu::PI<>);
 								if (angle > negFOV && angle < posFOV)
 								{
 									if (withinCohesion) [[likely]]

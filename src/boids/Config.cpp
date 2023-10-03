@@ -14,7 +14,9 @@ sf::Vector3f StrToColor(std::string str)
 	std::vector<std::string> values;
 
 	while (std::getline(stream, segment, ' '))
-		values.push_back(segment);
+	{
+		values.emplace_back(segment);
+	}
 
 	sf::Vector3f result(1.0f, 1.0f, 1.0f);
 
@@ -225,30 +227,30 @@ std::vector<Rebuild> Config::Refresh(Config& prev)
 		|| prev.Boids.Height != Boids.Height
 		|| prev.Interaction.TurnAtBorder != Interaction.TurnAtBorder)
 	{
-		result.push_back(RB_Grid);
+		result.emplace_back(RB_Grid);
 	}
 
 	if (prev.Boids.Count != Boids.Count)
-		result.push_back(RB_Boids);
+		result.emplace_back(RB_Boids);
 
 	if (prev.Cycle.Random != Cycle.Random)
-		result.push_back(RB_BoidsCycle);
+		result.emplace_back(RB_BoidsCycle);
 
 	if (prev.Background.Texture != Background.Texture)
-		result.push_back(RB_BackgroundTex);
+		result.emplace_back(RB_BackgroundTex);
 
 	if (prev.Misc.VerticalSync != Misc.VerticalSync ||
 		prev.Misc.MaxFramerate != Misc.MaxFramerate)
-		result.push_back(RB_Window);
+		result.emplace_back(RB_Window);
 
 	if (!std::ranges::equal(prev.Audio.Apps, Audio.Apps))
-		result.push_back(RB_Audio);
+		result.emplace_back(RB_Audio);
 
 	if (prev.Misc.CameraZoom != Misc.CameraZoom)
-		result.push_back(RB_Camera);
+		result.emplace_back(RB_Camera);
 
 	if (prev.Fluid.Scale != Fluid.Scale)
-		result.push_back(RB_Fluid);
+		result.emplace_back(RB_Fluid);
 
 	if (prev.Background.Color != Background.Color ||
 		prev.Background.PositionX != Background.PositionX ||
@@ -258,7 +260,7 @@ std::vector<Rebuild> Config::Refresh(Config& prev)
 		prev.Background.Width != Background.Width ||
 		prev.Background.Height != Background.Height)
 	{
-		result.push_back(RB_BackgroundProp);
+		result.emplace_back(RB_BackgroundProp);
 	}
 
 	return result;

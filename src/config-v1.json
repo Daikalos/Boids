@@ -15,7 +15,7 @@
 
         "Boids" :
         {
-            "Count" : 12000,
+            "Count" : 20000,
             "Width" : 22.0,
             "Height" : 11.0,
             "SpeedMax" : 240.0,
@@ -184,7 +184,7 @@
             "CameraEnabled" : false,
             "CameraZoom" : 1.0,
             "VerticalSync" : false,
-            "MaxFramerate" : 200,
+            "MaxFramerate" : 0,
             "PhysicsUpdateFreq" : 60,
             "PolicyThreshold" : 1500,
 

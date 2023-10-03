@@ -96,7 +96,7 @@ private:
 	std::unique_ptr<float[]>			m_cycleTimes;
 	std::unique_ptr<float[]>			m_densityTimes;
 
-	std::unique_ptr<std::uint16_t[]>	m_densities;
+	std::unique_ptr<std::uint32_t[]>	m_densities;
 	std::unique_ptr<std::uint16_t[]>	m_cellIndices;
 
 	std::size_t	m_size		{0};

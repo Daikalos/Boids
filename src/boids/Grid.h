@@ -10,10 +10,17 @@ class Grid
 {
 public:
 	Grid() = default;
-	Grid(const RectFloat& rect, const sf::Vector2f& cont_dims);
+	Grid(const RectFloat& rect, const sf::Vector2f& contDims);
 
 public:
-	int GetCount() const noexcept;
+	[[nodiscard]] const RectFloat& GetRootRect() const noexcept;
+	[[nodiscard]] const sf::Vector2f& GetContDims() const noexcept;
+	[[nodiscard]] const int* GetStartIndices() const noexcept;
+	[[nodiscard]] const int* GetEndIndices() const noexcept;
+	[[nodiscard]] int GetCount() const noexcept;
+
+	void SetStartIndex(int index, int value);
+	void SetEndIndex(int index, int value);
 
 public:
 	[[nodiscard]] sf::Vector2f RelativePos(const sf::Vector2f& position) const;
@@ -24,14 +31,13 @@ public:
 public:
 	void ResetBuffers();
 
-public:
-	RectFloat		rootRect;
-	sf::Vector2f	contDims;
-
-	std::unique_ptr<int[]> startIndices;
-	std::unique_ptr<int[]> endIndices;
-
 private:
+	RectFloat		m_rootRect;
+	sf::Vector2f	m_contDims;
+
+	std::unique_ptr<int[]> m_startIndices;
+	std::unique_ptr<int[]> m_endIndices;
+
 	int m_width{0}, m_height{0}, m_count{0};
 };
 

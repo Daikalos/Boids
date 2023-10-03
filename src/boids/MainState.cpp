@@ -1,5 +1,7 @@
 #include "MainState.h"
 
+#include <future>
+
 #include "../window/Camera.h"
 #include "../window/Window.h"
 #include "../window/InputHandler.h"
@@ -48,21 +50,27 @@ void MainState::Initialize()
 
 	m_grid = Grid(gridBorder, sf::Vector2f(m_minDistance, m_minDistance) * 2.0f);
 
-	m_boids.Reserve(Config::Inst().Boids.Count);
+	const auto createBoids = std::async(std::launch::async,
+		[this]()
+		{
+			m_boids.Reserve(Config::Inst().Boids.Count);
 
-	for (int i = 0; i < Config::Inst().Boids.Count; ++i)
-	{
-		sf::Vector2f pos = sf::Vector2f(
-			util::random(0.0f, m_border.width()) - m_border.left,
-			util::random(0.0f, m_border.height()) - m_border.top);
+			for (int i = 0; i < Config::Inst().Boids.Count; ++i)
+			{
+				sf::Vector2f pos = sf::Vector2f(
+					util::random(0.0f, m_border.width()) - m_border.left,
+					util::random(0.0f, m_border.height()) - m_border.top);
 
-		m_boids.Push(pos);
-	}
+				m_boids.Push(pos);
+			}
+		});
+
+	createBoids.wait(); // have to do this, otherwise it wont start correctly?
 
 	m_vertices.resize(m_boids.GetSize() * 3);
 	m_vertices.setPrimitiveType(sf::Triangles);
 
-	m_policy = Config::Inst().Boids.Count <= Config::Inst().Misc.PolicyThreshold ? Policy::unseq : Policy::par_unseq;
+	m_policy = m_boids.GetSize() <= Config::Inst().Misc.PolicyThreshold ? Policy::unseq : Policy::par_unseq;
 }
 
 bool MainState::HandleEvent(const sf::Event& event)
@@ -222,7 +230,9 @@ bool MainState::Update(float dt)
 	}
 
 	if (Config::Inst().Impulse.Enabled && m_inputHandler->GetButtonPressed(sf::Mouse::Button::Left))
-		m_impulses.push_back(Impulse(m_mousePos, Config::Inst().Impulse.Speed, Config::Inst().Impulse.Size, -Config::Inst().Impulse.Size));
+	{
+		m_impulses.emplace_back(m_mousePos, Config::Inst().Impulse.Speed, Config::Inst().Impulse.Size, -Config::Inst().Impulse.Size);
+	}
 
 	for (auto i = std::ssize(m_impulses) - 1; i >= 0; --i)
 	{
