@@ -1,5 +1,7 @@
 #pragma once
 
+#include <future>
+
 #include <SFML/Graphics/VertexArray.hpp>
 
 #include "../window/ResourceHolder.hpp"

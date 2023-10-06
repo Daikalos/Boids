@@ -1,10 +1,12 @@
 #include "MainState.h"
 
-#include <future>
+#include <SFML/Graphics/Texture.hpp>
+#include <SFML/Graphics/Font.hpp>
 
 #include "../window/Camera.h"
 #include "../window/Window.h"
 #include "../window/InputHandler.h"
+#include "../window/SFMLLoaders.hpp"
 
 #include "../utilities/PolicySelect.h"
 #include "../utilities/Utilities.h"
@@ -12,18 +14,21 @@
 
 #include "Config.h"
 
+#include "../utilities/WallpaperPath.h"
+
 MainState::MainState(Context context) 
 	: State(context), m_window(context.window), m_camera(context.camera), m_inputHandler(context.inputHandler), m_boids(Config::Inst().Boids.Count) {}
 
 void MainState::Initialize()
 {
-	GetContext().textureHolder->Load(TextureID::Background, Config::Inst().Background.Texture);
-	GetContext().fontHolder->Load(FontID::F8Bit, "font_8bit.ttf");
+	m_background.Load(*GetContext().textureHolder, sf::Vector2i(m_window->getSize()));
 
-	m_debug.Load(*GetContext().fontHolder);
+	auto loadFont = GetContext().fontHolder->AcquireAsync(FontID::F8Bit, 
+		FromFile<sf::Font>(RESOURCE_FOLDER + std::string("font_8bit.ttf")));
 
-	m_background.LoadTexture(*GetContext().textureHolder);
-	m_background.LoadProperties(sf::Vector2i(m_window->getSize()));
+	m_border = m_window->GetBorder();
+
+	m_minDistance = std::sqrtf(std::fmaxf(std::fmaxf(Config::Inst().Rules.SepDistance, Config::Inst().Rules.AliDistance), Config::Inst().Rules.CohDistance));
 
 #if defined(_WIN32)
 	m_audioMeter = std::make_unique<AudioMeterWin>(1.0f);
@@ -33,26 +38,22 @@ void MainState::Initialize()
 
 	m_audioMeter->Initialize();
 
-	m_fluid = Fluid(m_window->getSize());
-	m_fluidMousePosPrev = m_fluidMousePos = sf::Vector2i(m_camera->
-		GetMouseWorldPosition(*m_window)) / Config::Inst().Fluid.Scale;
-
-	m_minDistance = std::sqrtf(std::fmaxf(std::fmaxf(Config::Inst().Rules.SepDistance, Config::Inst().Rules.AliDistance), Config::Inst().Rules.CohDistance));
-
-	m_border = m_window->GetBorder();
-
-	RectFloat gridBorder = m_border + (Config::Inst().Interaction.TurnAtBorder ?
-		RectFloat(
-			-m_minDistance * Config::Inst().Misc.GridExtraCells,
-			-m_minDistance * Config::Inst().Misc.GridExtraCells,
-			+m_minDistance * Config::Inst().Misc.GridExtraCells,
-			+m_minDistance * Config::Inst().Misc.GridExtraCells) : RectFloat());
-
-	m_grid = Grid(gridBorder, sf::Vector2f(m_minDistance, m_minDistance) * 2.0f);
-
 	const auto createBoids = std::async(std::launch::async,
 		[this]()
 		{
+			m_fluid = Fluid(m_window->getSize());
+			m_fluidMousePosPrev = m_fluidMousePos = sf::Vector2i(m_camera->
+				GetMouseWorldPosition(*m_window)) / Config::Inst().Fluid.Scale;
+
+			RectFloat gridBorder = m_border + (Config::Inst().Interaction.TurnAtBorder ?
+				RectFloat(
+					-m_minDistance * Config::Inst().Misc.GridExtraCells,
+					-m_minDistance * Config::Inst().Misc.GridExtraCells,
+					+m_minDistance * Config::Inst().Misc.GridExtraCells,
+					+m_minDistance * Config::Inst().Misc.GridExtraCells) : RectFloat());
+
+			m_grid = Grid(gridBorder, sf::Vector2f(m_minDistance, m_minDistance) * 2.0f);
+
 			m_boids.Reserve(Config::Inst().Boids.Count);
 
 			for (int i = 0; i < Config::Inst().Boids.Count; ++i)
@@ -63,12 +64,15 @@ void MainState::Initialize()
 
 				m_boids.Push(pos);
 			}
+
+			m_vertices.resize(m_boids.GetSize() * 3);
+			m_vertices.setPrimitiveType(sf::Triangles);
 		});
 
 	createBoids.wait(); // have to do this, otherwise it wont start correctly?
+	loadFont.wait();
 
-	m_vertices.resize(m_boids.GetSize() * 3);
-	m_vertices.setPrimitiveType(sf::Triangles);
+	m_debug.Load(*GetContext().fontHolder);
 
 	m_policy = m_boids.GetSize() <= Config::Inst().Misc.PolicyThreshold ? Policy::unseq : Policy::par_unseq;
 }
@@ -80,6 +84,7 @@ bool MainState::HandleEvent(const sf::Event& event)
     case sf::Event::Resized:
         {
 			m_background.LoadProperties(sf::Vector2i(m_window->getSize()));
+
 			m_fluid = Fluid(m_window->getSize());
 			m_border = m_window->GetBorder();
 
@@ -108,7 +113,7 @@ bool MainState::PreUpdate(float dt)
 		{
 			switch (rebuild)
 			{
-			case RB_Grid:
+				case RB_Grid:
 				{
 					m_minDistance = std::sqrtf(std::fmaxf(std::fmaxf(Config::Inst().Rules.SepDistance, Config::Inst().Rules.AliDistance), Config::Inst().Rules.CohDistance));
 
@@ -120,15 +125,16 @@ bool MainState::PreUpdate(float dt)
 							+m_minDistance * Config::Inst().Misc.GridExtraCells) : RectFloat());
 
 					m_grid = Grid(gridBorder, sf::Vector2f(m_minDistance, m_minDistance) * 2.0f);
+
+					break;
 				}
-				break;
-			case RB_Boids:
+				case RB_Boids:
 				{
 					if (Config::Inst().Boids.Count > prev.Boids.Count) // new is larger
 					{
 						m_boids.Reserve(Config::Inst().Boids.Count);
 
-						for (int i = prev.Boids.Count; i < Config::Inst().Boids.Count; ++i)
+						for (std::size_t i = prev.Boids.Count; i < Config::Inst().Boids.Count; ++i)
 						{
 							sf::Vector2f pos = sf::Vector2f(
 								util::random(0.0f, m_border.width()) - m_border.left,
@@ -144,23 +150,20 @@ bool MainState::PreUpdate(float dt)
 
 					m_vertices.resize(m_boids.GetSize() * 3);
 					m_policy = m_boids.GetSize() <= Config::Inst().Misc.PolicyThreshold ? Policy::unseq : Policy::par_unseq;
+
+					break;
 				}
-				break;
-			case RB_BoidsCycle:
+				case RB_BoidsCycle:
 				{
 					m_boids.ResetCycleTimes();
+					break;
 				}
-				break;
-			case RB_BackgroundTex:
+				case RB_BackgroundTex:
 				{
-					GetContext().textureHolder->Remove(TextureID::Background);
-					GetContext().textureHolder->Load(TextureID::Background, Config::Inst().Background.Texture);
-
-					m_background.LoadTexture(*GetContext().textureHolder);
-					m_background.LoadProperties(sf::Vector2i(m_window->getSize()));
+					m_background.Load(*GetContext().textureHolder, sf::Vector2i(m_window->getSize()));
+					break;
 				}
-				break;
-			case RB_BackgroundProp:
+				case RB_BackgroundProp:
 				{
 					m_background.LoadProperties(sf::Vector2i(m_window->getSize()));
 
@@ -168,21 +171,30 @@ bool MainState::PreUpdate(float dt)
 						(sf::Uint8)(Config::Inst().Background.Color.x * 255.0f),
 						(sf::Uint8)(Config::Inst().Background.Color.y * 255.0f),
 						(sf::Uint8)(Config::Inst().Background.Color.z * 255.0f)));
+
+					break;
 				}
-				break;
-			case RB_Audio:
-				m_audioMeter->Clear();
-				break;
-			case RB_Window:
-				m_window->SetFramerate(Config::Inst().Misc.MaxFramerate);
-				m_window->SetVerticalSync(Config::Inst().Misc.VerticalSync);
-				break;
-			case RB_Camera:
-				m_camera->SetScale(sf::Vector2f(Config::Inst().Misc.CameraZoom, Config::Inst().Misc.CameraZoom));
-				break;
-			case RB_Fluid:
-				m_fluid = Fluid(m_window->getSize());
-				break;
+				case RB_Audio:
+				{
+					m_audioMeter->Clear();
+					break;
+				}
+				case RB_Window:
+				{
+					m_window->SetFramerate(Config::Inst().Misc.MaxFramerate);
+					m_window->SetVerticalSync(Config::Inst().Misc.VerticalSync);
+					break;
+				}
+				case RB_Camera:
+				{
+					m_camera->SetScale(sf::Vector2f(Config::Inst().Misc.CameraZoom, Config::Inst().Misc.CameraZoom));
+					break;
+				}
+				case RB_Fluid:
+				{
+					m_fluid = Fluid(m_window->getSize());
+					break;
+				}
 			}
 		}
 	}

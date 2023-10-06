@@ -49,6 +49,7 @@
     <ClInclude Include="utilities\PolicySelect.h" />
     <ClInclude Include="utilities\Rectangle.hpp" />
     <ClInclude Include="utilities\VectorUtilities.h" />
+    <ClInclude Include="utilities\WallpaperPath.h" />
     <ClInclude Include="window\ResourceHolder.hpp" />
     <ClInclude Include="utilities\Utilities.h" />
     <ClInclude Include="window\Application.h" />
@@ -56,6 +57,8 @@
     <ClInclude Include="utilities\HideTaskbarIcon.h" />
     <ClInclude Include="window\InputHandler.h" />
     <ClInclude Include="boids\MainState.h" />
+    <ClInclude Include="window\ResourceLoader.hpp" />
+    <ClInclude Include="window\SFMLLoaders.hpp" />
     <ClInclude Include="window\State.h" />
     <ClInclude Include="window\Window.h" />
   </ItemGroup>
@@ -133,7 +136,7 @@
     <IntDir>$(SolutionDir)bin\$(Configuration)\$(PlatformTarget)\Intermediates\</IntDir>
     <IncludePath>$(SolutionDir)\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)\lib;$(LibraryPath)</LibraryPath>
-    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
+    <EnableClangTidyCodeAnalysis>false</EnableClangTidyCodeAnalysis>
     <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -142,7 +145,7 @@
     <IntDir>$(SolutionDir)bin\$(Configuration)\$(PlatformTarget)\Intermediates\</IntDir>
     <IncludePath>$(SolutionDir)\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)\lib;$(LibraryPath)</LibraryPath>
-    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
+    <EnableClangTidyCodeAnalysis>false</EnableClangTidyCodeAnalysis>
     <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -180,7 +183,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>

@@ -11,14 +11,14 @@
 Fluid::Fluid(const sf::Vector2u& size)
 	: W(size.x / Config::Inst().Fluid.Scale), H(size.y / Config::Inst().Fluid.Scale), N(W * H)
 {
-	vx = std::make_unique<float[]>(N);
-	vy = std::make_unique<float[]>(N);
+	m_vx = std::make_unique<float[]>(N);
+	m_vy = std::make_unique<float[]>(N);
 
-	vx_prev = std::make_unique<float[]>(N);
-	vy_prev = std::make_unique<float[]>(N);
+	m_vxPrev = std::make_unique<float[]>(N);
+	m_vyPrev = std::make_unique<float[]>(N);
 
-	density = std::make_unique<float[]>(N);
-	density_prev = std::make_unique<float[]>(N);
+	m_density = std::make_unique<float[]>(N);
+	m_densityPrev = std::make_unique<float[]>(N);
 }
 
 sf::Vector3f Fluid::GetColor(const sf::Vector2f& origin) const
@@ -29,9 +29,9 @@ sf::Vector3f Fluid::GetColor(const sf::Vector2f& origin) const
 	const int x = (int)(origin.x / Config::Inst().Fluid.Scale);
 	const int y = (int)(origin.y / Config::Inst().Fluid.Scale);
 
-	const float vel_x = util::map_to_range(vx[SafeIX(x, y)],
+	const float vel_x = util::map_to_range(m_vx[SafeIX(x, y)],
 		-Config::Inst().Fluid.ColorVel, Config::Inst().Fluid.ColorVel, -1.0f, 1.0f);
-	const float vel_y = util::map_to_range(vy[SafeIX(x, y)],
+	const float vel_y = util::map_to_range(m_vy[SafeIX(x, y)],
 		-Config::Inst().Fluid.ColorVel, Config::Inst().Fluid.ColorVel, -1.0f, 1.0f);
 
 	const float bnd = (float)Config::Inst().Fluid.Colors.size() - 1.0f;
@@ -52,15 +52,15 @@ sf::Vector3f Fluid::GetColor(const sf::Vector2f& origin) const
 
 void Fluid::AddDensity(int x, int y, float amount)
 {
-	density[SafeIX(x, y)] += amount;
+	m_density[SafeIX(x, y)] += amount;
 }
 
 void Fluid::AddVelocity(int x, int y, float vx, float vy)
 {
 	int index = SafeIX(x, y);
 
-	this->vx[index] += vx;
-	this->vy[index] += vy;
+	m_vx[index] += vx;
+	m_vy[index] += vy;
 }
 
 void Fluid::LinSolve(float* x, const float* x0, float a, int b, float c)
@@ -248,32 +248,32 @@ void Fluid::Update(float dt)
 	static std::future<void> thread3;
 
 	{
-		thread1 = std::async(std::launch::async, &Fluid::Diffuse, this, vx_prev.get(), vx.get(), Config::Inst().Fluid.Viscosity, 1, dt);
-		thread2 = std::async(std::launch::async, &Fluid::Diffuse, this, vy_prev.get(), vy.get(), Config::Inst().Fluid.Viscosity, 2, dt);
+		thread1 = std::async(std::launch::async, &Fluid::Diffuse, this, m_vxPrev.get(), m_vx.get(), Config::Inst().Fluid.Viscosity, 1, dt);
+		thread2 = std::async(std::launch::async, &Fluid::Diffuse, this, m_vyPrev.get(), m_vy.get(), Config::Inst().Fluid.Viscosity, 2, dt);
 
 		thread1.wait();
 		thread2.wait();
 	}
 	
 	{
-		thread1 = std::async(std::launch::async, &Fluid::Project, this, vx_prev.get(), vy_prev.get(), vx.get(), vy.get());
+		thread1 = std::async(std::launch::async, &Fluid::Project, this, m_vxPrev.get(), m_vyPrev.get(), m_vx.get(), m_vy.get());
 
 		thread1.wait();
 
-		thread2 = std::async(std::launch::async, &Fluid::Advect, this, vx.get(), vx_prev.get(), vx_prev.get(), vy_prev.get(), 1, dt);
-		thread3 = std::async(std::launch::async, &Fluid::Advect, this, vy.get(), vy_prev.get(), vx_prev.get(), vy_prev.get(), 2, dt);
+		thread2 = std::async(std::launch::async, &Fluid::Advect, this, m_vx.get(), m_vxPrev.get(), m_vxPrev.get(), m_vyPrev.get(), 1, dt);
+		thread3 = std::async(std::launch::async, &Fluid::Advect, this, m_vy.get(), m_vyPrev.get(), m_vxPrev.get(), m_vyPrev.get(), 2, dt);
 
 		thread2.wait();
 		thread3.wait();
 	}
 
 	{
-		thread1 = std::async(std::launch::async, &Fluid::Project, this, vx.get(), vy.get(), vx_prev.get(), vy_prev.get());
-		thread2 = std::async(std::launch::async, &Fluid::Diffuse, this, density_prev.get(), density.get(), Config::Inst().Fluid.Diffusion, 0, dt);
+		thread1 = std::async(std::launch::async, &Fluid::Project, this, m_vx.get(), m_vy.get(), m_vxPrev.get(), m_vyPrev.get());
+		thread2 = std::async(std::launch::async, &Fluid::Diffuse, this, m_densityPrev.get(), m_density.get(), Config::Inst().Fluid.Diffusion, 0, dt);
 
 		thread1.wait();
 
-		thread3 = std::async(std::launch::async, &Fluid::Advect, this, density.get(), density_prev.get(), vx.get(), vy.get(), 0, dt);
+		thread3 = std::async(std::launch::async, &Fluid::Advect, this, m_density.get(), m_densityPrev.get(), m_vx.get(), m_vy.get(), 0, dt);
 
 		thread2.wait();
 		thread3.wait();

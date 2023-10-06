@@ -56,6 +56,7 @@ void ReadJSON(Config& oc, nlohmann::json& json)
 	oc.Background.PositionY			= background["PositionY"];
 	oc.Background.FitScreen			= background["FitScreen"];
 	oc.Background.OverrideSize		= background["OverrideSize"];
+	oc.Background.UseWallpaper		= background["UseWallpaper"];
 	oc.Background.Width				= background["Width"];
 	oc.Background.Height			= background["Height"];
 
@@ -220,12 +221,12 @@ std::vector<Rebuild> Config::Refresh(Config& prev)
 
 	Load();
 
-	if (prev.Rules.SepDistance != Rules.SepDistance
-		|| prev.Rules.AliDistance != Rules.AliDistance
-		|| prev.Rules.CohDistance != Rules.CohDistance
-		|| prev.Boids.Width != Boids.Width
-		|| prev.Boids.Height != Boids.Height
-		|| prev.Interaction.TurnAtBorder != Interaction.TurnAtBorder)
+	if (prev.Rules.SepDistance != Rules.SepDistance || 
+		prev.Rules.AliDistance != Rules.AliDistance || 
+		prev.Rules.CohDistance != Rules.CohDistance || 
+		prev.Boids.Width != Boids.Width || 
+		prev.Boids.Height != Boids.Height || 
+		prev.Interaction.TurnAtBorder != Interaction.TurnAtBorder)
 	{
 		result.emplace_back(RB_Grid);
 	}
@@ -236,7 +237,8 @@ std::vector<Rebuild> Config::Refresh(Config& prev)
 	if (prev.Cycle.Random != Cycle.Random)
 		result.emplace_back(RB_BoidsCycle);
 
-	if (prev.Background.Texture != Background.Texture)
+	if (prev.Background.Texture != Background.Texture ||
+		prev.Background.UseWallpaper != Background.UseWallpaper)
 		result.emplace_back(RB_BackgroundTex);
 
 	if (prev.Misc.VerticalSync != Misc.VerticalSync ||

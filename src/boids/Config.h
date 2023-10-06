@@ -56,11 +56,12 @@ struct BackgroundConfig
 	int				Height			{0};
 	bool			FitScreen		{true};
 	bool			OverrideSize	{false};
+	bool			UseWallpaper	{false};
 };
 
 struct BoidsConfig
 {
-	int				Count						{2000};
+	std::size_t		Count						{2000};
 	float			Width						{22.0f};
 	float			Height						{11.0f};
 	float			SpeedMax					{360.0f};
@@ -260,7 +261,7 @@ struct MiscConfig
 	float			CameraZoom					{1.0f};
 	int				MaxFramerate				{200};
 	float			PhysicsUpdateFreq			{60.0f};
-	int				PolicyThreshold				{1500};
+	std::size_t		PolicyThreshold				{1500};
 
 	float			DebugUpdateFreq				{0.5f};
 	int				DebugToggleKey				{85};

@@ -38,13 +38,13 @@ private:
 private:
 	int W{0}, H{0}, N{0};
 
-	std::unique_ptr<float[]> vx;
-	std::unique_ptr<float[]> vy;
-	std::unique_ptr<float[]> vx_prev;
-	std::unique_ptr<float[]> vy_prev;
+	std::unique_ptr<float[]> m_vx;
+	std::unique_ptr<float[]> m_vy;
+	std::unique_ptr<float[]> m_vxPrev;
+	std::unique_ptr<float[]> m_vyPrev;
 
-	std::unique_ptr<float[]> density;
-	std::unique_ptr<float[]> density_prev;
+	std::unique_ptr<float[]> m_density;
+	std::unique_ptr<float[]> m_densityPrev;
 };
 
 constexpr int Fluid::IX(int x, int y) const noexcept

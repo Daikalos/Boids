@@ -16,7 +16,7 @@ void Debug::SetUpdateFreq(float value)
 
 void Debug::Load(const FontHolder& fontHolder)
 {
-	if (fontHolder.Exists(FontID::F8Bit))
+	if (fontHolder.Contains(FontID::F8Bit))
 	{
 		const sf::Font& font = fontHolder.Get(FontID::F8Bit);
 

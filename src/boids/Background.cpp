@@ -1,10 +1,46 @@
 #include "Background.h"
 
+#include "../utilities/WallpaperPath.h"
+#include "../window/SFMLLoaders.hpp"
+
 #include "Config.h"
 
-void Background::LoadTexture(const TextureHolder& textureHolder)
+void Background::Load(TextureHolder& textureHolder, const sf::Vector2i& size)
 {
-	if (textureHolder.Exists(TextureID::Background))
+	if (m_loadAsync.valid())
+		m_loadAsync.wait();
+
+	m_loadAsync = std::async(std::launch::async,
+		[this, &textureHolder, &size]()
+		{
+			try
+			{
+				if (Config::Inst().Background.UseWallpaper)
+				{
+					std::wstring wallpaperPath = GetWallpaperPath();
+
+					textureHolder.Acquire(TextureID::Background,
+						FromFile<sf::Texture>(wallpaperPath), res::LoadStrategy::Reload);
+				}
+				else
+				{
+					textureHolder.Acquire(TextureID::Background,
+						FromFile<sf::Texture>(RESOURCE_FOLDER + Config::Inst().Background.Texture), res::LoadStrategy::Reload);
+				}
+			}
+			catch (std::runtime_error e)
+			{
+
+			}
+
+			LoadTexture(textureHolder);
+			LoadProperties(size);
+		});
+}
+
+void Background::LoadTexture(TextureHolder& textureHolder)
+{
+	if (textureHolder.Contains(TextureID::Background))
 		m_background.setTexture(textureHolder.Get(TextureID::Background), true);
 	else
 		m_background.setTexture(sf::Texture(), true);
@@ -27,16 +63,16 @@ void Background::LoadProperties(const sf::Vector2i& size)
 			Config::Inst().Background.Height / m_background.getLocalBounds().height);
 	}
 
-	bool setColor = 
-		Config::Inst().Background.Color.x > FLT_EPSILON || 
-		Config::Inst().Background.Color.y > FLT_EPSILON || 
-		Config::Inst().Background.Color.z > FLT_EPSILON;
-
 	m_background.setPosition(sf::Vector2f(
 		(float)Config::Inst().Background.PositionX,
 		(float)Config::Inst().Background.PositionY));
 
 	m_background.setScale(desiredScale);
+
+	bool setColor =
+		Config::Inst().Background.Color.x > FLT_EPSILON ||
+		Config::Inst().Background.Color.y > FLT_EPSILON ||
+		Config::Inst().Background.Color.z > FLT_EPSILON;
 
 	m_background.setColor(setColor ? sf::Color(
 		static_cast<sf::Uint8>(Config::Inst().Background.Color.x * 255.0f),
@@ -46,7 +82,8 @@ void Background::LoadProperties(const sf::Vector2i& size)
 
 void Background::Draw(sf::RenderWindow& window) const
 {
-	if (m_background.getTexture()->getSize().x == 0U ||
+	if (m_background.getTexture() == nullptr ||
+		m_background.getTexture()->getSize().x == 0U ||
 		m_background.getTexture()->getSize().y == 0U)
 		return;
 

@@ -9,13 +9,14 @@
             "PositionY" : 0,
             "FitScreen" : false,
             "OverrideSize" : false,
+            "UseWallpaper" : true,
             "Width" : 0,
             "Height" : 0
         },
 
         "Boids" :
         {
-            "Count" : 20000,
+            "Count" : 2000,
             "Width" : 22.0,
             "Height" : 11.0,
             "SpeedMax" : 240.0,
