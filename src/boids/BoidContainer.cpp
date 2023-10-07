@@ -380,7 +380,7 @@ void BoidContainer::Update(const RectFloat& border, const std::vector<Impulse>& 
 		auto& velocity = m_velocities[i];
 		auto& angle = m_angles[i];
 
-		angle = (velocity.x && velocity.y) ?
+		angle = (velocity.x || velocity.y) ?
 			vu::angle(velocity.y, velocity.x) : 0.0f;
 	}
 
