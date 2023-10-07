@@ -37,6 +37,10 @@ public:
 	void Draw() override;
 
 private:
+	RectFloat GetGridBorder() const;
+	float GetMinDistance() const;
+
+private:
 	Window*						m_window		{nullptr};
 	Camera*						m_camera		{nullptr};
 	InputHandler*				m_inputHandler	{nullptr};

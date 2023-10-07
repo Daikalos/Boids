@@ -10,9 +10,10 @@
 BoidContainer::BoidContainer(std::size_t capacity) : m_capacity(capacity)
 {
 	m_indices			= std::make_unique<std::uint32_t[]>(m_capacity);
+	m_triangles			= std::make_unique<Triangle[]>(m_capacity);
+	m_prevTriangles		= std::make_unique<Triangle[]>(m_capacity);
 
 	m_positions			= std::make_unique<sf::Vector2f[]>(m_capacity);
-	m_prevPositions		= std::make_unique<sf::Vector2f[]>(m_capacity);
 	m_velocities		= std::make_unique<sf::Vector2f[]>(m_capacity);
 	m_prevVelocities	= std::make_unique<sf::Vector2f[]>(m_capacity);
 	m_relativePositions = std::make_unique<sf::Vector2f[]>(m_capacity);
@@ -20,12 +21,15 @@ BoidContainer::BoidContainer(std::size_t capacity) : m_capacity(capacity)
 
 	m_speeds			= std::make_unique<float[]>(m_capacity);
 	m_angles			= std::make_unique<float[]>(m_capacity);
-	m_prevAngles		= std::make_unique<float[]>(m_capacity);
 	m_cycleTimes		= std::make_unique<float[]>(m_capacity);
 	m_densityTimes		= std::make_unique<float[]>(m_capacity);
 
 	m_densities			= std::make_unique<std::uint32_t[]>(m_capacity);
 	m_cellIndices		= std::make_unique<std::uint16_t[]>(m_capacity);
+
+	m_interpState		= std::make_unique<bool[]>(m_capacity);
+
+	SetInterpState(true);
 }
 
 std::size_t BoidContainer::GetSize() const noexcept
@@ -48,13 +52,24 @@ void BoidContainer::Push(const sf::Vector2f& pos)
 void BoidContainer::Push(const sf::Vector2f& pos, const sf::Vector2f& velocity)
 {
 	if (m_size == m_capacity)
-		Reallocate(1.5 * m_capacity + 1);
+		Reallocate(static_cast<std::size_t>(1.5 * m_capacity + 1));
 
-	m_indices[m_size] = m_size;
+	m_indices[m_size] = static_cast<std::uint32_t>(m_size);
 
-	m_prevPositions[m_size]		= m_positions[m_size]	= pos;
-	m_prevVelocities[m_size]	= m_velocities[m_size]	= velocity;
-	m_prevAngles[m_size]		= m_angles[m_size]		= velocity.angle().asRadians();
+	m_prevVelocities[m_size] = m_velocities[m_size]	= velocity;
+
+	m_positions[m_size] = pos;
+	m_angles[m_size] = velocity.angle().asRadians();
+
+	sf::Vector2f ori = GetOrigin(m_positions[m_size]);
+	const float angle = m_angles[m_size];
+
+	m_prevTriangles[m_size] = m_triangles[m_size] =
+	{ 
+		vu::rotate_point({ ori.x + Config::Inst().BoidHalfSize.x, ori.y									}, ori, angle),
+		vu::rotate_point({ ori.x - Config::Inst().BoidHalfSize.x, ori.y - Config::Inst().BoidHalfSize.y }, ori, angle),
+		vu::rotate_point({ ori.x - Config::Inst().BoidHalfSize.x, ori.y + Config::Inst().BoidHalfSize.y }, ori, angle)
+	};
 
 	if (Config::Inst().Cycle.Random)
 		m_cycleTimes[m_size] = util::random(0.0f, 1.0f);
@@ -87,9 +102,10 @@ void BoidContainer::Reallocate(std::size_t capacity)
 		};
 
 	realloc(m_indices);
+	realloc(m_triangles);
+	realloc(m_prevTriangles);
 
 	realloc(m_positions);
-	realloc(m_prevPositions);
 	realloc(m_velocities);
 	realloc(m_prevVelocities);
 	realloc(m_relativePositions);
@@ -97,12 +113,13 @@ void BoidContainer::Reallocate(std::size_t capacity)
 
 	realloc(m_speeds);
 	realloc(m_angles);
-	realloc(m_prevAngles);
 	realloc(m_cycleTimes);
 	realloc(m_densityTimes);
 
 	realloc(m_densities);
 	realloc(m_cellIndices);
+
+	realloc(m_interpState);
 
 	m_capacity = capacity;
 }
@@ -117,16 +134,22 @@ void BoidContainer::PreUpdate(const Grid& grid)
 {
 	for (std::size_t i = 0; i < m_size; ++i)
 	{
-		m_prevPositions[i]	= m_positions[i];
 		m_prevVelocities[i]	= m_velocities[i];
-		m_prevAngles[i]		= m_angles[i];
+	}
 
+	for (std::size_t i = 0; i < m_size; ++i)
+	{
+		m_prevTriangles[i] = m_triangles[i];
+	}
+
+	for (std::size_t i = 0; i < m_size; ++i)
+	{
 		const sf::Vector2f gridCellRaw		= grid.RelativePos(GetOrigin(m_positions[i]));
 		const sf::Vector2i gridCell			= sf::Vector2i(gridCellRaw);
 		const sf::Vector2f gridCellOverflow = gridCellRaw - sf::Vector2f(gridCell);
 
 		m_relativePositions[i]	= gridCellOverflow * grid.GetContDims();
-		m_cellIndices[i]		= grid.AtPos(gridCell);
+		m_cellIndices[i]		= static_cast<std::uint16_t>(grid.AtPos(gridCell));
 	}
 }
 
@@ -153,12 +176,12 @@ void BoidContainer::UpdateCells(Grid& grid)
 
 		if (otherIndex != cellIndex)
 		{
-			grid.SetStartIndex(cellIndex, i);
-			grid.SetEndIndex(otherIndex, i - 1);
+			grid.SetStartIndex(cellIndex, static_cast<int>(i));
+			grid.SetEndIndex(otherIndex, static_cast<int>(i) - 1);
 		}
 	}
 
-	grid.SetEndIndex(m_cellIndices[m_indices[m_size - 1]], m_size - 1);
+	grid.SetEndIndex(m_cellIndices[m_indices[m_size - 1]], static_cast<int>(m_size) - 1);
 }
 
 void BoidContainer::Interaction(const InputHandler& inputHandler, const sf::Vector2f& mousePos, float dt)
@@ -214,7 +237,7 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 
 					const sf::Vector2f origin = GetOrigin(m_positions[lhs]);
 					const sf::Vector2f thisRelative = m_relativePositions[lhs];
-					const float thisAngle = m_prevAngles[lhs];
+					const float thisAngle = m_angles[lhs];
 
 					static constexpr auto neighbourCount = 4; // max 4 neighbours at a time
 
@@ -334,18 +357,43 @@ void BoidContainer::Update(const RectFloat& border, const std::vector<Impulse>& 
 
 	for (std::size_t i = 0; i < m_size; ++i)
 	{
-		auto& position		= m_positions[i];
-		auto& prevPosition	= m_prevPositions[i];
-		auto& velocity		= m_velocities[i];
-		auto& angle			= m_angles[i];
-		
-		position += velocity * dt;
+		m_positions[i] += m_velocities[i] * dt;
+	}
+	
+	if (Config::Inst().Interaction.TurnAtBorder)
+	{
+		for (std::size_t i = 0; i < m_size; ++i)
+		{
+			TurnAtBorder(m_positions[i], m_velocities[i], m_densities[i], border, dt);
+		}
+	}
+	else
+	{
+		for (std::size_t i = 0; i < m_size; ++i)
+		{
+			m_interpState[i] = !TeleportAtBorder(m_positions[i], border);
+		}
+	}
 
-		if (OutsideBorder(i, border, dt))
-			prevPosition = position; // prevent interpolation effect
+	for (std::size_t i = 0; i < m_size; ++i)
+	{
+		auto& velocity = m_velocities[i];
+		auto& angle = m_angles[i];
 
-		angle = (velocity.x && velocity.y) ? 
-			vu::angle(m_velocities[i].y, m_velocities[i].x) : 0.0f;
+		angle = (velocity.x && velocity.y) ?
+			vu::angle(velocity.y, velocity.x) : 0.0f;
+	}
+
+	for (std::size_t i = 0; i < m_size; ++i)
+	{
+		const auto ori = GetOrigin(m_positions[i]);
+		const auto angle = m_angles[i];
+
+		Triangle& tri = m_triangles[i];
+
+		tri.v0 = vu::rotate_point({ ori.x + Config::Inst().BoidHalfSize.x, ori.y								 }, ori, angle); // middle right tip
+		tri.v1 = vu::rotate_point({ ori.x - Config::Inst().BoidHalfSize.x, ori.y - Config::Inst().BoidHalfSize.y }, ori, angle); // top left corner
+		tri.v2 = vu::rotate_point({ ori.x - Config::Inst().BoidHalfSize.x, ori.y + Config::Inst().BoidHalfSize.y }, ori, angle); // bot left corner
 	}
 
 	if ((Config::Inst().Color.Flags & CF_Cycle) == CF_Cycle)
@@ -360,11 +408,11 @@ void BoidContainer::Update(const RectFloat& border, const std::vector<Impulse>& 
 			m_densityTimes[i] = (Config::Inst().Density.DensityCycleEnabled) ? std::fmodf(m_densityTimes[i] + dt * Config::Inst().Density.DensityCycleSpeed, 1.0f) : 0.0f;
 	}
 
-	if (!impulses.empty() && Config::Inst().Impulse.Force != 0.0f)
+	if (Config::Inst().Impulse.Force != 0.0f)
 	{
-		for (std::size_t i = 0; i < m_size; ++i)
+		for (const Impulse& impulse : impulses)
 		{
-			for (const Impulse& impulse : impulses)
+			for (std::size_t i = 0; i < m_size; ++i)
 			{
 				const sf::Vector2f impulsePos = impulse.GetPosition();
 				const float impulseLength = impulse.GetLength();
@@ -392,34 +440,34 @@ void BoidContainer::UpdateColors(const RectFloat& border, const Fluid& fluid, co
 	if ((flag & CF_Positional) == CF_Positional)
 	{
 		for (std::size_t i = 0; i < m_size; ++i)
-			m_colors[i] += PositionColor(i, border) * config.Color.PositionalWeight;
+			m_colors[i] += PositionColor(m_positions[i], border) * config.Color.PositionalWeight;
 	}
 	if ((flag & CF_Cycle) == CF_Cycle && !config.Cycle.Colors.empty())
 	{
 		for (std::size_t i = 0; i < m_size; ++i)
-			m_colors[i] += CycleColor(i) * config.Color.CycleWeight;
+			m_colors[i] += CycleColor(m_cycleTimes[i]) * config.Color.CycleWeight;
 	}
 	if ((flag & CF_Density) == CF_Density && !config.Density.Colors.empty() && config.Density.Density > 0)
 	{
 		for (std::size_t i = 0; i < m_size; ++i)
-			m_colors[i] += DensityColor(i) * config.Color.DensityWeight;
+			m_colors[i] += DensityColor(m_densities[i], m_densityTimes[i]) * config.Color.DensityWeight;
 	}
 	if ((flag & CF_Velocity) == CF_Velocity && !config.Velocity.Colors.empty())
 	{
 		for (std::size_t i = 0; i < m_size; ++i)
-			m_colors[i] += VelocityColor(i) * config.Color.VelocityWeight;
+			m_colors[i] += VelocityColor(m_speeds[i]) * config.Color.VelocityWeight;
 	}
 	if ((flag & CF_Rotation) == CF_Rotation && !config.Rotation.Colors.empty())
 	{
 		for (std::size_t i = 0; i < m_size; ++i)
-			m_colors[i] += RotationColor(i) * config.Color.RotationWeight;
+			m_colors[i] += RotationColor(m_angles[i]) * config.Color.RotationWeight;
 	}
 	if ((flag & CF_Audio) == CF_Audio && !config.Audio.Colors.empty() && audioMeter != nullptr)
 	{
 		float volume = std::fminf(audioMeter->GetVolume() * Config::Inst().Audio.Strength, Config::Inst().Audio.Limit);
 
 		for (std::size_t i = 0; i < m_size; ++i)
-			m_colors[i] += AudioColor(i, volume) * config.Color.AudioWeight;
+			m_colors[i] += AudioColor(m_densities[i], volume) * config.Color.AudioWeight;
 	}
 	if ((flag & CF_Fluid) == CF_Fluid && !config.Fluid.Colors.empty())
 	{
@@ -432,54 +480,52 @@ void BoidContainer::UpdateColors(const RectFloat& border, const Fluid& fluid, co
 		for (std::size_t i = 0; i < m_size; ++i)
 		{
 			for (const Impulse& impulse : impulses)
-				ImpulseColor(i, m_colors[i], impulse);
+				ImpulseColor(m_positions[i], m_colors[i], impulse);
 		}
+	}
+
+	for (std::size_t i = 0; i < m_size; ++i)
+	{
+		m_colors[i] =
+		{
+			std::clamp(m_colors[i].x, 0.0f, 1.0f),
+			std::clamp(m_colors[i].y, 0.0f, 1.0f),
+			std::clamp(m_colors[i].z, 0.0f, 1.0f)
+		};
 	}
 }
 
-void BoidContainer::UpdateVertices(sf::VertexArray& vertices, Policy policy, float interp)
+void BoidContainer::UpdateVertices(sf::VertexArray& vertices, float interp, Policy policy)
 {
-	PolicySelect([this, &vertices, &interp](auto& pol)
+	PolicySelect(
+		[this, &vertices, interp](auto& pol)
 		{
 			std::for_each(pol, m_indices.get(), m_indices.get() + m_size,
-				[this, &vertices, &interp](std::uint32_t i)
+				[this, &vertices, interp](std::uint32_t i)
 				{
-					Config& config = Config::Inst();
+					const Triangle& tri		= m_triangles[i];
+					const Triangle& prevTri = m_prevTriangles[i];
+					const bool interpState	= m_interpState[i];
 
-					const sf::Vector2f ori		= GetOrigin(m_positions[i]);
-					const sf::Vector2f prevOri	= GetOrigin(m_prevPositions[i]);
+					const Triangle& drawTri = (!interpState) ? tri : Triangle
+					{
+						(tri.v0 * interp + prevTri.v0 * (1.0f - interp)),
+						(tri.v1 * interp + prevTri.v1 * (1.0f - interp)),
+						(tri.v2 * interp + prevTri.v2 * (1.0f - interp))
+					};
 
-					const float& rot		= m_angles[i];
-					const float& prevRot	= m_prevAngles[i];
-
-					const sf::Vector2f pointA = vu::rotate_point({ ori.x + config.BoidHalfSize.x, ori.y							}, ori, rot); // middle right tip
-					const sf::Vector2f pointB = vu::rotate_point({ ori.x - config.BoidHalfSize.x, ori.y - config.BoidHalfSize.y }, ori, rot); // top left corner
-					const sf::Vector2f pointC = vu::rotate_point({ ori.x - config.BoidHalfSize.x, ori.y + config.BoidHalfSize.y }, ori, rot); // bot left corner
-
-					const sf::Vector2f prevPointA = vu::rotate_point({ prevOri.x + config.BoidHalfSize.x, prevOri.y							}, prevOri, prevRot); // middle right tip
-					const sf::Vector2f prevPointB = vu::rotate_point({ prevOri.x - config.BoidHalfSize.x, prevOri.y - config.BoidHalfSize.y }, prevOri, prevRot); // top left corner
-					const sf::Vector2f prevPointC = vu::rotate_point({ prevOri.x - config.BoidHalfSize.x, prevOri.y + config.BoidHalfSize.y }, prevOri, prevRot); // bot left corner
-
-					const sf::Vector2f p0 = pointA * interp + prevPointA * (1.0f - interp);
-					const sf::Vector2f p1 = pointB * interp + prevPointB * (1.0f - interp);
-					const sf::Vector2f p2 = pointC * interp + prevPointC * (1.0f - interp);
-
-					sf::Vector3f bc = m_colors[i];
-
-					bc.x = std::clamp(bc.x, 0.0f, 1.0f);
-					bc.y = std::clamp(bc.y, 0.0f, 1.0f);
-					bc.z = std::clamp(bc.z, 0.0f, 1.0f);
+					const sf::Vector3f& color = m_colors[i];
 
 					const sf::Color c = sf::Color(
-						static_cast<sf::Uint8>(bc.x * 255.0f), 
-						static_cast<sf::Uint8>(bc.y * 255.0f),
-						static_cast<sf::Uint8>(bc.z * 255.0f));
+						static_cast<sf::Uint8>(color.x * 255.0f),
+						static_cast<sf::Uint8>(color.y * 255.0f),
+						static_cast<sf::Uint8>(color.z * 255.0f));
 
 					const std::size_t v = static_cast<std::size_t>(i) * 3;
 
-					vertices[v + 0].position = p0;
-					vertices[v + 1].position = p1;
-					vertices[v + 2].position = p2;
+					vertices[v + 0].position = drawTri.v0;
+					vertices[v + 1].position = drawTri.v1;
+					vertices[v + 2].position = drawTri.v2;
 
 					vertices[v + 0].color = c;
 					vertices[v + 1].color = c;
@@ -488,59 +534,55 @@ void BoidContainer::UpdateVertices(sf::VertexArray& vertices, Policy policy, flo
 		}, policy);
 }
 
-bool BoidContainer::OutsideBorder(std::uint32_t i, const RectFloat& border, float dt)
-{
-	return Config::Inst().Interaction.TurnAtBorder ? TurnAtBorder(i, border, dt) : TeleportAtBorder(i, border);
-}
-
-bool BoidContainer::TurnAtBorder(std::uint32_t i, const RectFloat& border, float dt)
+void BoidContainer::TurnAtBorder(const sf::Vector2f& pos, sf::Vector2f& vel, std::uint32_t den, const RectFloat& border, float dt)
 {
 	const float maxSize = std::max(Config::Inst().Boids.Width, Config::Inst().Boids.Height);
 
-	float widthMargin = border.width() - border.width() * Config::Inst().Interaction.TurnMarginFactor;
-	float heightMargin = border.height() - border.height() * Config::Inst().Interaction.TurnMarginFactor;
+	float widthMargin	= border.Width() - (border.Width() * Config::Inst().Interaction.TurnMarginFactor);
+	float heightMargin	= border.Height() - (border.Height() * Config::Inst().Interaction.TurnMarginFactor);
 
-	const float leftMargin = border.left + widthMargin;
-	const float topMargin = border.top + heightMargin;
+	const float leftMargin	= border.left + widthMargin;
+	const float topMargin	= border.top + heightMargin;
 	const float rightMargin = border.right - widthMargin;
-	const float botMargin = border.bot - heightMargin;
+	const float botMargin	= border.bot - heightMargin;
 
-	if (widthMargin == 0.0f)	widthMargin = 1.0f;
-	if (heightMargin == 0.0f)	heightMargin = 1.0f;
+	widthMargin		= std::max(widthMargin, 1.0f);
+	heightMargin	= std::max(heightMargin, 1.0f);
 
-	if (m_positions[i].x + maxSize < leftMargin)
-		m_velocities[i].x += Config::Inst().Interaction.TurnFactor * std::powf(std::abs(m_positions[i].x - leftMargin) / widthMargin, 2.0f) * (1.0f / (m_densities[i] + 1.0f)) * dt;
+	if (pos.x + maxSize < leftMargin)
+		vel.x += Config::Inst().Interaction.TurnFactor * std::powf(std::abs(pos.x - leftMargin) / widthMargin, 2.0f) * (1.0f / (den + 1.0f)) * dt;
 
-	if (m_positions[i].x > rightMargin)
-		m_velocities[i].x -= Config::Inst().Interaction.TurnFactor * std::powf(std::abs(m_positions[i].x - rightMargin) / widthMargin, 2.0f) * (1.0f / (m_densities[i] + 1.0f)) * dt;
+	if (pos.x > rightMargin)
+		vel.x -= Config::Inst().Interaction.TurnFactor * std::powf(std::abs(pos.x - rightMargin) / widthMargin, 2.0f) * (1.0f / (den + 1.0f)) * dt;
 
-	if (m_positions[i].y + maxSize < topMargin)
-		m_velocities[i].y += Config::Inst().Interaction.TurnFactor * std::powf(std::abs(m_positions[i].y - topMargin) / heightMargin, 2.0f) * (1.0f / (m_densities[i] + 1.0f)) * dt;
+	if (pos.y + maxSize < topMargin)
+		vel.y += Config::Inst().Interaction.TurnFactor * std::powf(std::abs(pos.y - topMargin) / heightMargin, 2.0f) * (1.0f / (den + 1.0f)) * dt;
 
-	if (m_positions[i].y > botMargin)
-		m_velocities[i].y -= Config::Inst().Interaction.TurnFactor * std::powf(std::abs(m_positions[i].y - botMargin) / heightMargin, 2.0f) * (1.0f / (m_densities[i] + 1.0f)) * dt;
-
-	return false;
+	if (pos.y > botMargin)
+		vel.y -= Config::Inst().Interaction.TurnFactor * std::powf(std::abs(pos.y - botMargin) / heightMargin, 2.0f) * (1.0f / (den + 1.0f)) * dt;
 }
 
-bool BoidContainer::TeleportAtBorder(std::uint32_t i, const RectFloat& border)
+bool BoidContainer::TeleportAtBorder(sf::Vector2f& pos, const RectFloat& border)
 {
-	const float maxSize = std::max(Config::Inst().Boids.Width, Config::Inst().Boids.Height);
-	const sf::Vector2f previous = m_positions[i];
+	const float maxSize = std::max(
+		Config::Inst().Boids.Width, 
+		Config::Inst().Boids.Height);
 
-	if (m_positions[i].x + maxSize < border.left)
-		m_positions[i].x = (float)border.right;
+	const sf::Vector2f previous = pos;
 
-	if (m_positions[i].x > border.right)
-		m_positions[i].x = border.left - maxSize;
+	if (pos.x + maxSize < border.left)
+		pos.x = (float)border.right;
 
-	if (m_positions[i].y + maxSize < border.top)
-		m_positions[i].y = (float)border.bot;
+	if (pos.x > border.right)
+		pos.x = border.left - maxSize;
 
-	if (m_positions[i].y > border.bot)
-		m_positions[i].y = border.top - maxSize;
+	if (pos.y + maxSize < border.top)
+		pos.y = (float)border.bot;
 
-	return (previous != m_positions[i]);
+	if (pos.y > border.bot)
+		pos.y = border.top - maxSize;
+
+	return (previous != pos);
 }
 
 sf::Vector2f BoidContainer::SteerAt(std::uint32_t i, const sf::Vector2f& steerDir) const
@@ -577,10 +619,18 @@ sf::Vector2f BoidContainer::GetOrigin(const sf::Vector2f& pos) const
 	return pos + Config::Inst().BoidHalfSize;
 }
 
-sf::Vector3f BoidContainer::PositionColor(std::uint32_t i, const RectFloat& border) const
+void BoidContainer::SetInterpState(bool value)
 {
-	const float t = m_positions[i].x / border.width();
-	const float s = m_positions[i].y / border.height();
+	for (std::size_t i = 0; i < m_size; ++i)
+	{
+		m_interpState[i] = value;
+	}
+}
+
+sf::Vector3f BoidContainer::PositionColor(const sf::Vector2f& pos, const RectFloat& border) const
+{
+	const float t = pos.x / border.Width();
+	const float s = pos.y / border.Height();
 
 	return sf::Vector3f(
 		util::interpolate(Config::Inst().Positional.TopLeft.x * 255.0f, Config::Inst().Positional.TopRight.x * 255.0f, Config::Inst().Positional.BotLeft.x * 255.0f, Config::Inst().Positional.BotRight.x * 255.0f, t, s) / 255.0f,
@@ -588,9 +638,9 @@ sf::Vector3f BoidContainer::PositionColor(std::uint32_t i, const RectFloat& bord
 		util::interpolate(Config::Inst().Positional.TopLeft.z * 255.0f, Config::Inst().Positional.TopRight.z * 255.0f, Config::Inst().Positional.BotLeft.z * 255.0f, Config::Inst().Positional.BotRight.z * 255.0f, t, s) / 255.0f);
 }
 
-sf::Vector3f BoidContainer::CycleColor(std::uint32_t i) const
+sf::Vector3f BoidContainer::CycleColor(float cycleTime) const
 {
-	float scaledTime = m_cycleTimes[i] * (float)(Config::Inst().Cycle.Colors.size() - 1);
+	float scaledTime = cycleTime * (float)(Config::Inst().Cycle.Colors.size() - 1);
 
 	const auto i1 = (int)scaledTime;
 	const auto i2 = (i1 == Config::Inst().Cycle.Colors.size() - 1) ? 0 : i1 + 1;
@@ -603,11 +653,11 @@ sf::Vector3f BoidContainer::CycleColor(std::uint32_t i) const
 	return vu::lerp(color1, color2, newT);
 }
 
-sf::Vector3f BoidContainer::DensityColor(std::uint32_t i) const
+sf::Vector3f BoidContainer::DensityColor(std::uint32_t density, float densityTime) const
 {
-	const float densityPercentage = (m_densities[i] / (float)Config::Inst().Density.Density);
+	const float densityPercentage = (density / (float)Config::Inst().Density.Density);
 
-	const float scaledDensity = std::fmodf(densityPercentage + m_densityTimes[i], 1.0f) * (float)(Config::Inst().Density.Colors.size() - 1);
+	const float scaledDensity = std::fmodf(densityPercentage + densityTime, 1.0f) * (float)(Config::Inst().Density.Colors.size() - 1);
 
 	const auto i1 = (int)scaledDensity;
 	const auto i2 = (i1 == Config::Inst().Density.Colors.size() - 1) ? 0 : i1 + 1;
@@ -620,9 +670,9 @@ sf::Vector3f BoidContainer::DensityColor(std::uint32_t i) const
 	return vu::lerp(color1, color2, newT);
 }
 
-sf::Vector3f BoidContainer::VelocityColor(std::uint32_t i) const
+sf::Vector3f BoidContainer::VelocityColor(float speed) const
 {
-	const float velocity_percentage = std::clamp((m_speeds[i] - Config::Inst().Boids.SpeedMin) * Config::Inst().BoidSpeedInv, 0.0f, 1.0f);
+	const float velocity_percentage = std::clamp((speed - Config::Inst().Boids.SpeedMin) * Config::Inst().BoidSpeedInv, 0.0f, 1.0f);
 
 	const float scaled_velocity = velocity_percentage * (float)(Config::Inst().Velocity.Colors.size() - 1);
 
@@ -637,9 +687,9 @@ sf::Vector3f BoidContainer::VelocityColor(std::uint32_t i) const
 	return vu::lerp(color1, color2, newT);
 }
 
-sf::Vector3f BoidContainer::RotationColor(std::uint32_t i) const
+sf::Vector3f BoidContainer::RotationColor(float angle) const
 {
-	const float rotationPercentage = (m_angles[i] + float(M_PI)) / (2.0f * float(M_PI));
+	const float rotationPercentage = (angle + float(M_PI)) / (2.0f * float(M_PI));
 
 	const float scaledRotation = rotationPercentage * (float)(Config::Inst().Rotation.Colors.size() - 1);
 
@@ -654,9 +704,9 @@ sf::Vector3f BoidContainer::RotationColor(std::uint32_t i) const
 	return vu::lerp(color1, color2, newT);
 }
 
-sf::Vector3f BoidContainer::AudioColor(std::uint32_t i, float volume) const
+sf::Vector3f BoidContainer::AudioColor(std::uint32_t density, float volume) const
 {
-	const float densityPercentage = (m_densities[i] / (float)Config::Inst().Audio.Density);
+	const float densityPercentage = (density / (float)Config::Inst().Audio.Density);
 
 	const float scaledVolume = std::fminf(volume * densityPercentage, 1.0f) * (float)(Config::Inst().Audio.Colors.size() - 1);
 
@@ -671,12 +721,12 @@ sf::Vector3f BoidContainer::AudioColor(std::uint32_t i, float volume) const
 	return vu::lerp(color1, color2, newT);
 }
 
-void BoidContainer::ImpulseColor(std::uint32_t i, sf::Vector3f& color, const Impulse& impulse) const
+void BoidContainer::ImpulseColor(const sf::Vector2f& pos, sf::Vector3f& color, const Impulse& impulse) const
 {
 	const sf::Vector2f impulsePos = impulse.GetPosition();
 	const float impulseLength = impulse.GetLength();
 
-	const float length = vu::distance(m_positions[i], impulsePos);
+	const float length = vu::distance(pos, impulsePos);
 	const float diff = std::abs(length - impulseLength);
 
 	const float percentage = (impulseLength / Config::Inst().Impulse.FadeDistance);

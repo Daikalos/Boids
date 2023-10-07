@@ -11,14 +11,14 @@ Grid::Grid(const RectFloat& rect, const sf::Vector2f& contDims)
 {
 	float sizeMax = std::max(Config::Inst().Boids.Width, Config::Inst().Boids.Height);
 
-	m_rootRect.top_left -= sf::Vector2f(sizeMax, sizeMax) / 2.0f;
-	m_rootRect.bot_right += sf::Vector2f(sizeMax, sizeMax) / 2.0f;
+	m_rootRect.topLeft -= sf::Vector2f(sizeMax, sizeMax) / 2.0f;
+	m_rootRect.botRight += sf::Vector2f(sizeMax, sizeMax) / 2.0f;
 
-	float a = m_rootRect.width() / m_contDims.x;
-	float b = m_rootRect.height() / m_contDims.y;
+	float a = m_rootRect.Width() / m_contDims.x;
+	float b = m_rootRect.Height() / m_contDims.y;
 
-	m_contDims.x = m_rootRect.width() / std::floorf(a);
-	m_contDims.y = m_rootRect.height() / std::floorf(b);
+	m_contDims.x = m_rootRect.Width() / std::floorf(a);
+	m_contDims.y = m_rootRect.Height() / std::floorf(b);
 
 	m_width = (int)a;
 	m_height = (int)b;
@@ -61,7 +61,7 @@ void Grid::SetEndIndex(int index, int value)
 
 sf::Vector2f Grid::RelativePos(const sf::Vector2f& position) const
 {
-	return (position - m_rootRect.top_left) / m_contDims;
+	return (position - m_rootRect.topLeft) / m_contDims;
 }
 int Grid::AtPos(const sf::Vector2f& position) const
 {

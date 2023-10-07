@@ -29,23 +29,26 @@ sf::Vector3f Fluid::GetColor(const sf::Vector2f& origin) const
 	const int x = (int)(origin.x / Config::Inst().Fluid.Scale);
 	const int y = (int)(origin.y / Config::Inst().Fluid.Scale);
 
-	const float vel_x = util::map_to_range(m_vx[SafeIX(x, y)],
+	if (!IsWithin(x, y))
+		return sf::Vector3f();
+
+	const float vx = util::map_to_range(m_vx[IX(x, y)],
 		-Config::Inst().Fluid.ColorVel, Config::Inst().Fluid.ColorVel, -1.0f, 1.0f);
-	const float vel_y = util::map_to_range(m_vy[SafeIX(x, y)],
+	const float vy = util::map_to_range(m_vy[IX(x, y)],
 		-Config::Inst().Fluid.ColorVel, Config::Inst().Fluid.ColorVel, -1.0f, 1.0f);
 
 	const float bnd = (float)Config::Inst().Fluid.Colors.size() - 1.0f;
 
-	float scaled_speed = sf::Vector2f(vel_x, vel_y).length() * bnd;
-	scaled_speed = std::clamp(scaled_speed, 0.0f, bnd);
+	float scaledSpeed = sf::Vector2f(vx, vy).length() * bnd;
+	scaledSpeed = std::clamp(scaledSpeed, 0.0f, bnd);
 
-	const int i1 = (int)scaled_speed;
+	const int i1 = (int)scaledSpeed;
 	const int i2 = (i1 == Config::Inst().Fluid.Colors.size() - 1) ? 0 : i1 + 1;
 
 	const sf::Vector3f color1 = Config::Inst().Fluid.Colors[i1];
 	const sf::Vector3f color2 = Config::Inst().Fluid.Colors[i2];
 
-	const float newT = scaled_speed - std::floorf(scaled_speed);
+	const float newT = scaledSpeed - std::floorf(scaledSpeed);
 
 	return vu::lerp(color1, color2, newT) * Config::Inst().Color.FluidWeight;
 }
@@ -286,4 +289,14 @@ int Fluid::SafeIX(int x, int y) const noexcept
 	y = std::clamp<int>(y, 0, H - 1);
 
 	return IX(x, y);
+}
+
+bool Fluid::IsWithin(int x, int y) const
+{
+	if (x < 0 || y < 0)
+		return false;
+	if (x >= W || y >= H)
+		return false;
+
+	return true;
 }

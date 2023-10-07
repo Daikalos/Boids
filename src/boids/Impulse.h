@@ -16,7 +16,7 @@ public:
 	void Update(float dt);
 
 private:
-	sf::Vector2f	m_position	{0.0f, 0.0f};
+	sf::Vector2f	m_position;
 	float			m_speed		{0.0f};
 	float			m_size		{0.0f};
 	float			m_length	{0.0f};

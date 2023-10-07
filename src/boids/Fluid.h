@@ -9,7 +9,13 @@ class Fluid final
 {
 public:
 	Fluid() = default;
+	Fluid(const Fluid&) = delete;
+	Fluid(Fluid&&) = default;
+
 	Fluid(const sf::Vector2u& size);
+
+	Fluid& operator=(const Fluid&) = delete;
+	Fluid& operator=(Fluid&&) = default;
 
 public:
 	[[nodiscard]] sf::Vector3f GetColor(const sf::Vector2f& origin) const;
@@ -34,6 +40,8 @@ private:
 private:
 	[[nodiscard]] constexpr int IX(int x, int y) const noexcept;
 	[[nodiscard]] int SafeIX(int x, int y) const noexcept;
+
+	[[nodiscard]] bool IsWithin(int x, int y) const;
 
 private:
 	int W{0}, H{0}, N{0};

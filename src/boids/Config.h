@@ -28,19 +28,20 @@ enum ColorFlags : std::uint32_t
 	CF_Fluid		= 1 << 6,
 };
 
-enum Rebuild : int
+enum class Rebuild
 {
-	RB_Grid,
-	RB_Boids,
-	RB_BoidsCycle,
-	RB_BackgroundTex,
-	RB_BackgroundProp,
-	RB_Audio,
-	RB_Window,
-	RB_Camera,
-	RB_Fluid,
-	
-	RB_Count
+	None = -1,
+	Grid,
+	Boids,
+	BoidsCycle,
+	Interp,
+	BackgroundTex,
+	BackgroundProp,
+	Audio,
+	Window,
+	Camera,
+	Fluid,
+	Count
 };
 
 using ColorCont = std::vector<sf::Vector3f>;

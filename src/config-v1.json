@@ -3,20 +3,20 @@
     {
         "Background" :
         {
-            "Color" : "0 0 0",
-            "Texture" : "background.jpg",
+            "Color" : "0 255 0",
+            "Texture" : "backgrond.jpg",
             "PositionX" : 0,
             "PositionY" : 0,
             "FitScreen" : false,
             "OverrideSize" : false,
-            "UseWallpaper" : true,
+            "UseWallpaper" : false,
             "Width" : 0,
             "Height" : 0
         },
 
         "Boids" :
         {
-            "Count" : 2000,
+            "Count" : 20000,
             "Width" : 22.0,
             "Height" : 11.0,
             "SpeedMax" : 240.0,

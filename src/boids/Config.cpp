@@ -217,7 +217,7 @@ void Config::Load()
 std::vector<Rebuild> Config::Refresh(Config& prev)
 {
 	std::vector<Rebuild> result;
-	result.reserve((int)RB_Count);
+	result.reserve(static_cast<int>(Rebuild::Count));
 
 	Load();
 
@@ -228,31 +228,34 @@ std::vector<Rebuild> Config::Refresh(Config& prev)
 		prev.Boids.Height != Boids.Height || 
 		prev.Interaction.TurnAtBorder != Interaction.TurnAtBorder)
 	{
-		result.emplace_back(RB_Grid);
+		result.emplace_back(Rebuild::Grid);
 	}
 
 	if (prev.Boids.Count != Boids.Count)
-		result.emplace_back(RB_Boids);
+		result.emplace_back(Rebuild::Boids);
 
 	if (prev.Cycle.Random != Cycle.Random)
-		result.emplace_back(RB_BoidsCycle);
+		result.emplace_back(Rebuild::BoidsCycle);
+
+	if (Interaction.TurnAtBorder)
+		result.emplace_back(Rebuild::Interp);
 
 	if (prev.Background.Texture != Background.Texture ||
 		prev.Background.UseWallpaper != Background.UseWallpaper)
-		result.emplace_back(RB_BackgroundTex);
+		result.emplace_back(Rebuild::BackgroundTex);
 
 	if (prev.Misc.VerticalSync != Misc.VerticalSync ||
 		prev.Misc.MaxFramerate != Misc.MaxFramerate)
-		result.emplace_back(RB_Window);
+		result.emplace_back(Rebuild::Window);
 
 	if (!std::ranges::equal(prev.Audio.Apps, Audio.Apps))
-		result.emplace_back(RB_Audio);
+		result.emplace_back(Rebuild::Audio);
 
 	if (prev.Misc.CameraZoom != Misc.CameraZoom)
-		result.emplace_back(RB_Camera);
+		result.emplace_back(Rebuild::Camera);
 
 	if (prev.Fluid.Scale != Fluid.Scale)
-		result.emplace_back(RB_Fluid);
+		result.emplace_back(Rebuild::Fluid);
 
 	if (prev.Background.Color != Background.Color ||
 		prev.Background.PositionX != Background.PositionX ||
@@ -262,7 +265,7 @@ std::vector<Rebuild> Config::Refresh(Config& prev)
 		prev.Background.Width != Background.Width ||
 		prev.Background.Height != Background.Height)
 	{
-		result.emplace_back(RB_BackgroundProp);
+		result.emplace_back(Rebuild::BackgroundProp);
 	}
 
 	return result;

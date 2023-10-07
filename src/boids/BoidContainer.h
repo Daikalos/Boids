@@ -16,6 +16,14 @@
 
 class BoidContainer
 {
+private:
+	struct Triangle
+	{
+		sf::Vector2f v0;
+		sf::Vector2f v1;
+		sf::Vector2f v2;
+	};
+
 public:
 	BoidContainer(std::size_t capacity);
 
@@ -54,12 +62,11 @@ public:
 
 	void UpdateVertices(
 		sf::VertexArray& vertices,
-		Policy policy, float interp);
+		float interp, Policy policy);
 
 public:
-	bool OutsideBorder(		std::uint32_t i, const RectFloat& border, float dt);
-	bool TurnAtBorder(		std::uint32_t i, const RectFloat& border, float dt);
-	bool TeleportAtBorder(	std::uint32_t i, const RectFloat& border);
+	void TurnAtBorder(const sf::Vector2f& pos, sf::Vector2f& vel, std::uint32_t den, const RectFloat& border, float dt);
+	bool TeleportAtBorder(sf::Vector2f& pos, const RectFloat& border);
 
 public:
 	sf::Vector2f SteerAt(std::uint32_t i, const sf::Vector2f& steerDir) const;
@@ -69,22 +76,25 @@ public:
 
 	void ResetCycleTimes();
 
+	void SetInterpState(bool value);
+
 private:
 	sf::Vector2f GetOrigin(const sf::Vector2f& pos) const;
 
-	sf::Vector3f PositionColor(	std::uint32_t i, const RectFloat& border) const;
-	sf::Vector3f CycleColor(	std::uint32_t i) const;
-	sf::Vector3f DensityColor(	std::uint32_t i) const;
-	sf::Vector3f VelocityColor(	std::uint32_t i) const;
-	sf::Vector3f RotationColor(	std::uint32_t i) const;
-	sf::Vector3f AudioColor(	std::uint32_t i, float volume) const;
-	void ImpulseColor(			std::uint32_t i, sf::Vector3f& color, const Impulse& impulse) const;
+	sf::Vector3f PositionColor(const sf::Vector2f& pos, const RectFloat& border) const;
+	sf::Vector3f CycleColor(float cycleTime) const;
+	sf::Vector3f DensityColor(std::uint32_t density, float densityTime) const;
+	sf::Vector3f VelocityColor(float speed) const;
+	sf::Vector3f RotationColor(float angle) const;
+	sf::Vector3f AudioColor(std::uint32_t density, float volume) const;
+	void ImpulseColor(const sf::Vector2f& pos, sf::Vector3f& color, const Impulse& impulse) const;
 
 private:
 	std::unique_ptr<std::uint32_t[]>	m_indices;
+	std::unique_ptr<Triangle[]>			m_triangles;
+	std::unique_ptr<Triangle[]>			m_prevTriangles;
 
 	std::unique_ptr<sf::Vector2f[]>		m_positions;
-	std::unique_ptr<sf::Vector2f[]>		m_prevPositions;
 	std::unique_ptr<sf::Vector2f[]>		m_velocities;
 	std::unique_ptr<sf::Vector2f[]>		m_prevVelocities;
 	std::unique_ptr<sf::Vector2f[]>		m_relativePositions;
@@ -92,12 +102,13 @@ private:
 
 	std::unique_ptr<float[]>			m_speeds;
 	std::unique_ptr<float[]>			m_angles;
-	std::unique_ptr<float[]>			m_prevAngles;
 	std::unique_ptr<float[]>			m_cycleTimes;
 	std::unique_ptr<float[]>			m_densityTimes;
 
 	std::unique_ptr<std::uint32_t[]>	m_densities;
 	std::unique_ptr<std::uint16_t[]>	m_cellIndices;
+
+	std::unique_ptr<bool[]>				m_interpState;
 
 	std::size_t	m_size		{0};
 	std::size_t	m_capacity	{0};

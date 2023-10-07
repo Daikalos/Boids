@@ -2,30 +2,7 @@
 
 #include <memory>
 
-class IAudioMeterInfo
-{
-public:
-	using Ptr = std::unique_ptr<IAudioMeterInfo>;
-
-public:
-	virtual ~IAudioMeterInfo() {};
-
-	virtual void Initialize() = 0;
-	virtual void Update(float dt) = 0;
-	virtual void Clear() = 0;
-
-	virtual float GetVolume() const noexcept = 0;
-};
-
-class AudioMeterEmpty final : public IAudioMeterInfo
-{
-public:
-	void Initialize() override {}
-	void Update(float dt) override {}
-	void Clear() override {}
-
-	float GetVolume() const noexcept override { return 0.0f; }
-};
+#include "IAudioMeterInfo.h"
 
 #if defined(_WIN32)
 

@@ -34,7 +34,7 @@ void Debug::Load(const FontHolder& fontHolder)
 	m_textInfo.setString("");
 }
 
-void Debug::Update(const InputHandler& inputHandler, std::uint32_t boidCount, std::uint32_t cellCount, float dt)
+void Debug::Update(const InputHandler& inputHandler, std::size_t boidCount, std::uint32_t cellCount, float dt)
 {
 	m_refresh = false;
 

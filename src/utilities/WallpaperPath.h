@@ -10,7 +10,7 @@ inline std::wstring GetWallpaperPath()
 {
 	std::wstring result;
 
-	WCHAR backgroundPath[MAX_PATH];
+	WCHAR backgroundPath[MAX_PATH] = {0};
 	if (SystemParametersInfoW(SPI_GETDESKWALLPAPER, MAX_PATH, backgroundPath, 0))
 	{
 		result = std::wstring(backgroundPath);

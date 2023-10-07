@@ -22,23 +22,23 @@ public:
 
 public:
 	void Load(const FontHolder& fontHolder);
-	void Update(const InputHandler& inputHandler, std::uint32_t boidCount, std::uint32_t cellCount, float dt);
+	void Update(const InputHandler& inputHandler, std::size_t boidCount, std::uint32_t cellCount, float dt);
 	void Draw(sf::RenderWindow& window) const;
 
 private:
 	void Toggle();
 
 private:
-	float			m_updateFreqMax		{0.0f};
-	float			m_updateFreq		{0.0f};
+	float		m_updateFreqMax	{0.0f};
+	float		m_updateFreq	{0.0f};
 
-	bool			m_enabled			{false};
-	bool			m_refresh			{false};
+	bool		m_enabled		{false};
+	bool		m_refresh		{false};
 
-	sf::Text		m_textState;
-	sf::Text		m_textInfo;
-	std::string		m_info;
+	sf::Text	m_textState;
+	sf::Text	m_textInfo;
+	std::string	m_info;
 
-	FPSCounter		m_fpsCounter;
+	FPSCounter	m_fpsCounter;
 };
 
