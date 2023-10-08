@@ -519,7 +519,7 @@ void BoidContainer::UpdateVertices(sf::VertexArray& vertices, float interp, Poli
 					const auto& tri			= m_triangles[i];
 					const auto& prevTri		= m_prevTriangles[i];
 
-					const Triangle& drawTri =
+					const Triangle drawTri =
 					{
 						(tri.v0 * interp + prevTri.v0 * (1.0f - interp)),
 						(tri.v1 * interp + prevTri.v1 * (1.0f - interp)),
