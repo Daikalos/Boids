@@ -11,6 +11,7 @@ BoidContainer::BoidContainer(std::size_t capacity) : m_capacity(capacity)
 {
 	m_indices			= std::make_unique<std::uint32_t[]>(m_capacity);
 	m_triangles			= std::make_unique<Triangle[]>(m_capacity);
+	m_prevTriangles		= std::make_unique<Triangle[]>(m_capacity);
 
 	m_positions			= std::make_unique<sf::Vector2f[]>(m_capacity);
 	m_velocities		= std::make_unique<sf::Vector2f[]>(m_capacity);
@@ -63,7 +64,7 @@ void BoidContainer::Push(const sf::Vector2f& pos, const sf::Vector2f& velocity)
 	sf::Vector2f ori = GetOrigin(m_positions[m_size]);
 	const float angle = m_angles[m_size];
 
-	m_triangles[m_size] =
+	m_prevTriangles[m_size] = m_triangles[m_size] =
 	{ 
 		vu::rotate_point({ ori.x + Config::Inst().BoidHalfSize.x, ori.y									}, ori, angle),
 		vu::rotate_point({ ori.x - Config::Inst().BoidHalfSize.x, ori.y - Config::Inst().BoidHalfSize.y }, ori, angle),
@@ -102,6 +103,7 @@ void BoidContainer::Reallocate(std::size_t capacity)
 
 	realloc(m_indices);
 	realloc(m_triangles);
+	realloc(m_prevTriangles);
 
 	realloc(m_positions);
 	realloc(m_velocities);
@@ -133,6 +135,11 @@ void BoidContainer::PreUpdate(const Grid& grid)
 	for (std::size_t i = 0; i < m_size; ++i)
 	{
 		m_prevVelocities[i]	= m_velocities[i];
+	}
+
+	for (std::size_t i = 0; i < m_size; ++i)
+	{
+		m_prevTriangles[i] = m_triangles[i];
 	}
 
 	for (std::size_t i = 0; i < m_size; ++i)
@@ -487,13 +494,12 @@ void BoidContainer::UpdateVertices(sf::VertexArray& vertices, float interp, Poli
 			std::for_each(pol, m_indices.get(), m_indices.get() + m_size,
 				[this, &vertices, interp](std::uint32_t i)
 				{
+					const auto& prevTri		= m_prevTriangles[i];
 					auto& tri				= m_triangles[i];
 					const auto interpState	= m_interpState[i];
 
 					const auto ori			= GetOrigin(m_positions[i]);
 					const auto angle		= m_angles[i];
-
-					Triangle prevTri = tri;
 
 					tri =
 					{

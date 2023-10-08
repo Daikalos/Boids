@@ -91,6 +91,7 @@ private:
 private:
 	std::unique_ptr<std::uint32_t[]>	m_indices;
 	std::unique_ptr<Triangle[]>			m_triangles;
+	std::unique_ptr<Triangle[]>			m_prevTriangles;
 
 	std::unique_ptr<sf::Vector2f[]>		m_positions;
 	std::unique_ptr<sf::Vector2f[]>		m_velocities;
