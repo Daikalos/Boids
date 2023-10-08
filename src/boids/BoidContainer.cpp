@@ -11,7 +11,6 @@ BoidContainer::BoidContainer(std::size_t capacity) : m_capacity(capacity)
 {
 	m_indices			= std::make_unique<std::uint32_t[]>(m_capacity);
 	m_triangles			= std::make_unique<Triangle[]>(m_capacity);
-	m_prevTriangles		= std::make_unique<Triangle[]>(m_capacity);
 
 	m_positions			= std::make_unique<sf::Vector2f[]>(m_capacity);
 	m_velocities		= std::make_unique<sf::Vector2f[]>(m_capacity);
@@ -64,7 +63,7 @@ void BoidContainer::Push(const sf::Vector2f& pos, const sf::Vector2f& velocity)
 	sf::Vector2f ori = GetOrigin(m_positions[m_size]);
 	const float angle = m_angles[m_size];
 
-	m_prevTriangles[m_size] = m_triangles[m_size] =
+	m_triangles[m_size] =
 	{ 
 		vu::rotate_point({ ori.x + Config::Inst().BoidHalfSize.x, ori.y									}, ori, angle),
 		vu::rotate_point({ ori.x - Config::Inst().BoidHalfSize.x, ori.y - Config::Inst().BoidHalfSize.y }, ori, angle),
@@ -103,7 +102,6 @@ void BoidContainer::Reallocate(std::size_t capacity)
 
 	realloc(m_indices);
 	realloc(m_triangles);
-	realloc(m_prevTriangles);
 
 	realloc(m_positions);
 	realloc(m_velocities);
@@ -135,11 +133,6 @@ void BoidContainer::PreUpdate(const Grid& grid)
 	for (std::size_t i = 0; i < m_size; ++i)
 	{
 		m_prevVelocities[i]	= m_velocities[i];
-	}
-
-	for (std::size_t i = 0; i < m_size; ++i)
-	{
-		m_prevTriangles[i] = m_triangles[i];
 	}
 
 	for (std::size_t i = 0; i < m_size; ++i)
@@ -201,7 +194,7 @@ void BoidContainer::Interaction(const InputHandler& inputHandler, const sf::Vect
 			const float lengthOpt = vu::distance_opt(dir);
 			const float weight = 1.0f / (std::sqrtf(lengthOpt) + FLT_EPSILON);
 
-			SteerTowards(i, dir, lengthOpt, Config::Inst().Interaction.SteerTowardsFactor * weight * factor * dt);
+			SteerTowards(m_velocities[i], m_prevVelocities[i], dir, lengthOpt, Config::Inst().Interaction.SteerTowardsFactor * weight * factor * dt);
 		}
 	}
 	else if (Config::Inst().Interaction.PredatorEnabled)
@@ -214,7 +207,7 @@ void BoidContainer::Interaction(const InputHandler& inputHandler, const sf::Vect
 			if (lengthSqr <= Config::Inst().Interaction.PredatorDistance)
 			{
 				float weight = 1.0f / (std::sqrtf(lengthSqr / (Config::Inst().Interaction.PredatorDistance + FLT_EPSILON)) + FLT_EPSILON);
-				SteerTowards(i, dir, -Config::Inst().Interaction.PredatorFactor * weight * dt);
+				SteerTowards(m_velocities[i], m_prevVelocities[i], dir, -Config::Inst().Interaction.PredatorFactor * weight * dt);
 			}
 		}
 	}
@@ -321,9 +314,9 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 						}
 					}
 
-					if (cohCount) m_velocities[lhs] += SteerAt(lhs, vu::normalize(coh, config.Boids.SpeedMax)) * config.Rules.CohWeight;
-					if (aliCount) m_velocities[lhs] += SteerAt(lhs, vu::normalize(ali / static_cast<float>(aliCount), config.Boids.SpeedMax)) * config.Rules.AliWeight;
-					if (sepCount) m_velocities[lhs] += SteerAt(lhs, vu::normalize(sep / static_cast<float>(sepCount), config.Boids.SpeedMax)) * config.Rules.SepWeight;
+					if (cohCount) m_velocities[lhs] += SteerAt(m_prevVelocities[lhs], vu::normalize(coh, config.Boids.SpeedMax)) * config.Rules.CohWeight;
+					if (aliCount) m_velocities[lhs] += SteerAt(m_prevVelocities[lhs], vu::normalize(ali / static_cast<float>(aliCount), config.Boids.SpeedMax)) * config.Rules.AliWeight;
+					if (sepCount) m_velocities[lhs] += SteerAt(m_prevVelocities[lhs], vu::normalize(sep / static_cast<float>(sepCount), config.Boids.SpeedMax)) * config.Rules.SepWeight;
 
 					m_densities[lhs] = std::max(std::max(cohCount, aliCount), sepCount);
 				});
@@ -384,18 +377,6 @@ void BoidContainer::Update(const RectFloat& border, const std::vector<Impulse>& 
 			vu::angle(velocity.y, velocity.x) : 0.0f;
 	}
 
-	for (std::size_t i = 0; i < m_size; ++i)
-	{
-		const auto ori = GetOrigin(m_positions[i]);
-		const auto angle = m_angles[i];
-
-		Triangle& tri = m_triangles[i];
-
-		tri.v0 = vu::rotate_point({ ori.x + Config::Inst().BoidHalfSize.x, ori.y								 }, ori, angle); // middle right tip
-		tri.v1 = vu::rotate_point({ ori.x - Config::Inst().BoidHalfSize.x, ori.y - Config::Inst().BoidHalfSize.y }, ori, angle); // top left corner
-		tri.v2 = vu::rotate_point({ ori.x - Config::Inst().BoidHalfSize.x, ori.y + Config::Inst().BoidHalfSize.y }, ori, angle); // bot left corner
-	}
-
 	if ((Config::Inst().Color.Flags & CF_Cycle) == CF_Cycle)
 	{
 		for (std::size_t i = 0; i < m_size; ++i)
@@ -424,7 +405,10 @@ void BoidContainer::Update(const RectFloat& border, const std::vector<Impulse>& 
 				const float size = impulse.GetSize() * (1.0f - percentage);
 
 				if (diff <= size)
-					SteerTowards(i, vu::direction(impulsePos, m_positions[i]), Config::Inst().Impulse.Force * (1.0f - percentage) * dt);
+				{
+					SteerTowards(m_velocities[i], m_prevVelocities[i],
+						vu::direction(impulsePos, m_positions[i]), Config::Inst().Impulse.Force * (1.0f - percentage) * dt);
+				}
 			}
 		}
 	}
@@ -503,9 +487,20 @@ void BoidContainer::UpdateVertices(sf::VertexArray& vertices, float interp, Poli
 			std::for_each(pol, m_indices.get(), m_indices.get() + m_size,
 				[this, &vertices, interp](std::uint32_t i)
 				{
-					const Triangle& tri		= m_triangles[i];
-					const Triangle& prevTri = m_prevTriangles[i];
-					const bool interpState	= m_interpState[i];
+					auto& tri				= m_triangles[i];
+					const auto interpState	= m_interpState[i];
+
+					const auto ori			= GetOrigin(m_positions[i]);
+					const auto angle		= m_angles[i];
+
+					Triangle prevTri = tri;
+
+					tri =
+					{
+						vu::rotate_point({ ori.x + Config::Inst().BoidHalfSize.x, ori.y								    }, ori, angle), // middle right tip
+						vu::rotate_point({ ori.x - Config::Inst().BoidHalfSize.x, ori.y - Config::Inst().BoidHalfSize.y }, ori, angle), // top left corner
+						vu::rotate_point({ ori.x - Config::Inst().BoidHalfSize.x, ori.y + Config::Inst().BoidHalfSize.y }, ori, angle)	// bot left corner
+					};
 
 					const Triangle& drawTri = (!interpState) ? tri : Triangle
 					{
@@ -585,24 +580,24 @@ bool BoidContainer::TeleportAtBorder(sf::Vector2f& pos, const RectFloat& border)
 	return (previous != pos);
 }
 
-sf::Vector2f BoidContainer::SteerAt(std::uint32_t i, const sf::Vector2f& steerDir) const
+sf::Vector2f BoidContainer::SteerAt(const sf::Vector2f& prevVel, const sf::Vector2f& steerDir)
 {
-	return vu::limit(vu::direction(m_prevVelocities[i], steerDir), Config::Inst().Boids.SteerMax);
+	return vu::limit(vu::direction(prevVel, steerDir), Config::Inst().Boids.SteerMax);
 }
 
-void BoidContainer::SteerTowards(std::uint32_t i, const sf::Vector2f& direction, float length, float weight)
+void BoidContainer::SteerTowards(sf::Vector2f& vel, const sf::Vector2f& prevVel, const sf::Vector2f& direction, float length, float weight)
 {
 	if (std::abs(weight) < FLT_EPSILON)
 		return;
 
 	const sf::Vector2f steer = vu::normalize(direction, length, Config::Inst().Boids.SpeedMax);
 
-	m_velocities[i] += SteerAt(i, steer) * weight;
+	vel += SteerAt(prevVel, steer) * weight;
 }
 
-void BoidContainer::SteerTowards(std::uint32_t i, const sf::Vector2f& point, float weight)
+void BoidContainer::SteerTowards(sf::Vector2f& vel, const sf::Vector2f& prevVel, const sf::Vector2f& point, float weight)
 {
-	SteerTowards(i, point, point.length(), weight);
+	SteerTowards(vel, prevVel, point, point.length(), weight);
 }
 
 void BoidContainer::ResetCycleTimes()
@@ -614,7 +609,7 @@ void BoidContainer::ResetCycleTimes()
 	}
 }
 
-sf::Vector2f BoidContainer::GetOrigin(const sf::Vector2f& pos) const
+sf::Vector2f BoidContainer::GetOrigin(const sf::Vector2f& pos)
 {
 	return pos + Config::Inst().BoidHalfSize;
 }
@@ -627,7 +622,7 @@ void BoidContainer::SetInterpState(bool value)
 	}
 }
 
-sf::Vector3f BoidContainer::PositionColor(const sf::Vector2f& pos, const RectFloat& border) const
+sf::Vector3f BoidContainer::PositionColor(const sf::Vector2f& pos, const RectFloat& border)
 {
 	const float t = pos.x / border.Width();
 	const float s = pos.y / border.Height();
@@ -638,7 +633,7 @@ sf::Vector3f BoidContainer::PositionColor(const sf::Vector2f& pos, const RectFlo
 		util::interpolate(Config::Inst().Positional.TopLeft.z * 255.0f, Config::Inst().Positional.TopRight.z * 255.0f, Config::Inst().Positional.BotLeft.z * 255.0f, Config::Inst().Positional.BotRight.z * 255.0f, t, s) / 255.0f);
 }
 
-sf::Vector3f BoidContainer::CycleColor(float cycleTime) const
+sf::Vector3f BoidContainer::CycleColor(float cycleTime)
 {
 	float scaledTime = cycleTime * (float)(Config::Inst().Cycle.Colors.size() - 1);
 
@@ -653,7 +648,7 @@ sf::Vector3f BoidContainer::CycleColor(float cycleTime) const
 	return vu::lerp(color1, color2, newT);
 }
 
-sf::Vector3f BoidContainer::DensityColor(std::uint32_t density, float densityTime) const
+sf::Vector3f BoidContainer::DensityColor(std::uint32_t density, float densityTime)
 {
 	const float densityPercentage = (density / (float)Config::Inst().Density.Density);
 
@@ -670,7 +665,7 @@ sf::Vector3f BoidContainer::DensityColor(std::uint32_t density, float densityTim
 	return vu::lerp(color1, color2, newT);
 }
 
-sf::Vector3f BoidContainer::VelocityColor(float speed) const
+sf::Vector3f BoidContainer::VelocityColor(float speed)
 {
 	const float velocity_percentage = std::clamp((speed - Config::Inst().Boids.SpeedMin) * Config::Inst().BoidSpeedInv, 0.0f, 1.0f);
 
@@ -687,7 +682,7 @@ sf::Vector3f BoidContainer::VelocityColor(float speed) const
 	return vu::lerp(color1, color2, newT);
 }
 
-sf::Vector3f BoidContainer::RotationColor(float angle) const
+sf::Vector3f BoidContainer::RotationColor(float angle)
 {
 	const float rotationPercentage = (angle + float(M_PI)) / (2.0f * float(M_PI));
 
@@ -704,7 +699,7 @@ sf::Vector3f BoidContainer::RotationColor(float angle) const
 	return vu::lerp(color1, color2, newT);
 }
 
-sf::Vector3f BoidContainer::AudioColor(std::uint32_t density, float volume) const
+sf::Vector3f BoidContainer::AudioColor(std::uint32_t density, float volume)
 {
 	const float densityPercentage = (density / (float)Config::Inst().Audio.Density);
 
@@ -721,7 +716,7 @@ sf::Vector3f BoidContainer::AudioColor(std::uint32_t density, float volume) cons
 	return vu::lerp(color1, color2, newT);
 }
 
-void BoidContainer::ImpulseColor(const sf::Vector2f& pos, sf::Vector3f& color, const Impulse& impulse) const
+void BoidContainer::ImpulseColor(const sf::Vector2f& pos, sf::Vector3f& color, const Impulse& impulse)
 {
 	const sf::Vector2f impulsePos = impulse.GetPosition();
 	const float impulseLength = impulse.GetLength();

@@ -65,34 +65,32 @@ public:
 		float interp, Policy policy);
 
 public:
-	void TurnAtBorder(const sf::Vector2f& pos, sf::Vector2f& vel, std::uint32_t den, const RectFloat& border, float dt);
-	bool TeleportAtBorder(sf::Vector2f& pos, const RectFloat& border);
+	static void TurnAtBorder(const sf::Vector2f& pos, sf::Vector2f& vel, std::uint32_t den, const RectFloat& border, float dt);
+	static bool TeleportAtBorder(sf::Vector2f& pos, const RectFloat& border);
 
 public:
-	sf::Vector2f SteerAt(std::uint32_t i, const sf::Vector2f& steerDir) const;
+	static sf::Vector2f SteerAt(const sf::Vector2f& prevVel, const sf::Vector2f& steerDir);
 
-	void SteerTowards(std::uint32_t i, const sf::Vector2f& direction, float length, float weight);
-	void SteerTowards(std::uint32_t i, const sf::Vector2f& point, float weight);
+	static void SteerTowards(sf::Vector2f& vel, const sf::Vector2f& prevVel, const sf::Vector2f& direction, float length, float weight);
+	static void SteerTowards(sf::Vector2f& vel, const sf::Vector2f& prevVel, const sf::Vector2f& point, float weight);
 
 	void ResetCycleTimes();
-
 	void SetInterpState(bool value);
 
 private:
-	sf::Vector2f GetOrigin(const sf::Vector2f& pos) const;
+	static sf::Vector2f GetOrigin(const sf::Vector2f& pos);
 
-	sf::Vector3f PositionColor(const sf::Vector2f& pos, const RectFloat& border) const;
-	sf::Vector3f CycleColor(float cycleTime) const;
-	sf::Vector3f DensityColor(std::uint32_t density, float densityTime) const;
-	sf::Vector3f VelocityColor(float speed) const;
-	sf::Vector3f RotationColor(float angle) const;
-	sf::Vector3f AudioColor(std::uint32_t density, float volume) const;
-	void ImpulseColor(const sf::Vector2f& pos, sf::Vector3f& color, const Impulse& impulse) const;
+	static sf::Vector3f PositionColor(const sf::Vector2f& pos, const RectFloat& border);
+	static sf::Vector3f CycleColor(float cycleTime);
+	static sf::Vector3f DensityColor(std::uint32_t density, float densityTime);
+	static sf::Vector3f VelocityColor(float speed);
+	static sf::Vector3f RotationColor(float angle);
+	static sf::Vector3f AudioColor(std::uint32_t density, float volume);
+	static void ImpulseColor(const sf::Vector2f& pos, sf::Vector3f& color, const Impulse& impulse);
 
 private:
 	std::unique_ptr<std::uint32_t[]>	m_indices;
 	std::unique_ptr<Triangle[]>			m_triangles;
-	std::unique_ptr<Triangle[]>			m_prevTriangles;
 
 	std::unique_ptr<sf::Vector2f[]>		m_positions;
 	std::unique_ptr<sf::Vector2f[]>		m_velocities;
