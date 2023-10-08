@@ -237,9 +237,6 @@ std::vector<Rebuild> Config::Refresh(Config& prev)
 	if (prev.Cycle.Random != Cycle.Random)
 		result.emplace_back(Rebuild::BoidsCycle);
 
-	if (Interaction.TurnAtBorder)
-		result.emplace_back(Rebuild::Interp);
-
 	if (prev.Background.Texture != Background.Texture ||
 		prev.Background.UseWallpaper != Background.UseWallpaper)
 		result.emplace_back(Rebuild::BackgroundTex);

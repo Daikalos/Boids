@@ -142,11 +142,6 @@ bool MainState::PreUpdate(float dt)
 					m_boids.ResetCycleTimes();
 					break;
 				}
-				case Rebuild::Interp:
-				{
-					m_boids.SetInterpState(true);
-					break;
-				}
 				case Rebuild::BackgroundTex:
 				{
 					m_background.Load(*GetContext().textureHolder, sf::Vector2i(m_window->getSize()));

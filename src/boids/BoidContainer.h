@@ -75,7 +75,6 @@ public:
 	static void SteerTowards(sf::Vector2f& vel, const sf::Vector2f& prevVel, const sf::Vector2f& point, float weight);
 
 	void ResetCycleTimes();
-	void SetInterpState(bool value);
 
 private:
 	static sf::Vector2f GetOrigin(const sf::Vector2f& pos);
@@ -107,7 +106,7 @@ private:
 	std::unique_ptr<std::uint32_t[]>	m_densities;
 	std::unique_ptr<std::uint16_t[]>	m_cellIndices;
 
-	std::unique_ptr<bool[]>				m_interpState;
+	std::unique_ptr<bool[]>				m_teleported;
 
 	std::size_t	m_size		{0};
 	std::size_t	m_capacity	{0};

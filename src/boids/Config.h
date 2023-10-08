@@ -34,7 +34,6 @@ enum class Rebuild
 	Grid,
 	Boids,
 	BoidsCycle,
-	Interp,
 	BackgroundTex,
 	BackgroundProp,
 	Audio,

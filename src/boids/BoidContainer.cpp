@@ -27,9 +27,7 @@ BoidContainer::BoidContainer(std::size_t capacity) : m_capacity(capacity)
 	m_densities			= std::make_unique<std::uint32_t[]>(m_capacity);
 	m_cellIndices		= std::make_unique<std::uint16_t[]>(m_capacity);
 
-	m_interpState		= std::make_unique<bool[]>(m_capacity);
-
-	SetInterpState(true);
+	m_teleported		= std::make_unique<bool[]>(m_capacity);
 }
 
 std::size_t BoidContainer::GetSize() const noexcept
@@ -93,10 +91,12 @@ void BoidContainer::Pop(std::size_t count)
 
 void BoidContainer::Reallocate(std::size_t capacity)
 {
+	m_capacity = capacity;
+
 	const auto realloc = 
-		[this, capacity]<typename T>(std::unique_ptr<T[]>& ptr)
+		[this]<typename T>(std::unique_ptr<T[]>& ptr)
 		{
-			auto newPtr = std::make_unique<T[]>(capacity);
+			auto newPtr = std::make_unique<T[]>(m_capacity);
 			std::move(ptr.get(), ptr.get() + m_size, newPtr.get());
 			ptr = std::move(newPtr);
 		};
@@ -119,9 +119,7 @@ void BoidContainer::Reallocate(std::size_t capacity)
 	realloc(m_densities);
 	realloc(m_cellIndices);
 
-	realloc(m_interpState);
-
-	m_capacity = capacity;
+	realloc(m_teleported);
 }
 
 void BoidContainer::Reserve(std::size_t capacity)
@@ -371,7 +369,7 @@ void BoidContainer::Update(const RectFloat& border, const std::vector<Impulse>& 
 	{
 		for (std::size_t i = 0; i < m_size; ++i)
 		{
-			m_interpState[i] = !TeleportAtBorder(m_positions[i], border);
+			m_teleported[i] = TeleportAtBorder(m_positions[i], border);
 		}
 	}
 
@@ -382,6 +380,30 @@ void BoidContainer::Update(const RectFloat& border, const std::vector<Impulse>& 
 
 		angle = (velocity.x || velocity.y) ?
 			vu::angle(velocity.y, velocity.x) : 0.0f;
+	}
+
+	for (std::size_t i = 0; i < m_size; ++i)
+	{
+		auto& tri = m_triangles[i];
+
+		const auto ori = GetOrigin(m_positions[i]);
+		const auto angle = m_angles[i];
+
+		tri =
+		{
+			vu::rotate_point({ ori.x + Config::Inst().BoidHalfSize.x, ori.y								    }, ori, angle), // middle right tip
+			vu::rotate_point({ ori.x - Config::Inst().BoidHalfSize.x, ori.y - Config::Inst().BoidHalfSize.y }, ori, angle), // top left corner
+			vu::rotate_point({ ori.x - Config::Inst().BoidHalfSize.x, ori.y + Config::Inst().BoidHalfSize.y }, ori, angle)	// bot left corner
+		};
+	}
+
+	if (!Config::Inst().Interaction.TurnAtBorder)
+	{
+		for (std::size_t i = 0; i < m_size; ++i)
+		{
+			if (m_teleported[i])
+				m_prevTriangles[i] = m_triangles[i];
+		}
 	}
 
 	if ((Config::Inst().Color.Flags & CF_Cycle) == CF_Cycle)
@@ -494,21 +516,10 @@ void BoidContainer::UpdateVertices(sf::VertexArray& vertices, float interp, Poli
 			std::for_each(pol, m_indices.get(), m_indices.get() + m_size,
 				[this, &vertices, interp](std::uint32_t i)
 				{
+					const auto& tri			= m_triangles[i];
 					const auto& prevTri		= m_prevTriangles[i];
-					auto& tri				= m_triangles[i];
-					const auto interpState	= m_interpState[i];
 
-					const auto ori			= GetOrigin(m_positions[i]);
-					const auto angle		= m_angles[i];
-
-					tri =
-					{
-						vu::rotate_point({ ori.x + Config::Inst().BoidHalfSize.x, ori.y								    }, ori, angle), // middle right tip
-						vu::rotate_point({ ori.x - Config::Inst().BoidHalfSize.x, ori.y - Config::Inst().BoidHalfSize.y }, ori, angle), // top left corner
-						vu::rotate_point({ ori.x - Config::Inst().BoidHalfSize.x, ori.y + Config::Inst().BoidHalfSize.y }, ori, angle)	// bot left corner
-					};
-
-					const Triangle& drawTri = (!interpState) ? tri : Triangle
+					const Triangle& drawTri =
 					{
 						(tri.v0 * interp + prevTri.v0 * (1.0f - interp)),
 						(tri.v1 * interp + prevTri.v1 * (1.0f - interp)),
@@ -618,14 +629,6 @@ void BoidContainer::ResetCycleTimes()
 sf::Vector2f BoidContainer::GetOrigin(const sf::Vector2f& pos)
 {
 	return pos + Config::Inst().BoidHalfSize;
-}
-
-void BoidContainer::SetInterpState(bool value)
-{
-	for (std::size_t i = 0; i < m_size; ++i)
-	{
-		m_interpState[i] = value;
-	}
 }
 
 sf::Vector3f BoidContainer::PositionColor(const sf::Vector2f& pos, const RectFloat& border)
