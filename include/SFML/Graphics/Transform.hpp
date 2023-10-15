@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,8 +22,7 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_TRANSFORM_HPP
-#define SFML_TRANSFORM_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -31,6 +30,7 @@
 #include <SFML/Graphics/Export.hpp>
 
 #include <SFML/Graphics/Rect.hpp>
+
 #include <SFML/System/Vector2.hpp>
 
 
@@ -259,13 +259,19 @@ public:
     ////////////////////////////////////////////////////////////
     // Static member data
     ////////////////////////////////////////////////////////////
+    // NOLINTNEXTLINE(readability-identifier-naming)
     static const Transform Identity; //!< The identity transform (does nothing)
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    float m_matrix[16]; //!< 4x4 matrix defining the transformation
+    // clang-format off
+    float m_matrix[16]{1.f, 0.f, 0.f, 0.f,
+                       0.f, 1.f, 0.f, 0.f,
+                       0.f, 0.f, 1.f, 0.f,
+                       0.f, 0.f, 0.f, 1.f}; //!< 4x4 matrix defining the transformation
+    // clang-format off
 };
 
 ////////////////////////////////////////////////////////////
@@ -344,9 +350,6 @@ constexpr Vector2f operator*(const Transform& left, const Vector2f& right);
 } // namespace sf
 
 
-#endif // SFML_TRANSFORM_HPP
-
-
 ////////////////////////////////////////////////////////////
 /// \class sf::Transform
 /// \ingroup graphics
@@ -380,7 +383,7 @@ constexpr Vector2f operator*(const Transform& left, const Vector2f& right);
 ///
 /// // use the result to transform stuff...
 /// sf::Vector2f point = transform.transformPoint(10, 20);
-/// sf::FloatRect rect = transform.transformRect(sf::FloatRect(0, 0, 10, 100));
+/// sf::FloatRect rect = transform.transformRect(sf::FloatRect({0, 0}, {10, 100}));
 /// \endcode
 ///
 /// \see sf::Transformable, sf::RenderStates

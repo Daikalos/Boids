@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,8 +22,7 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_EVENT_HPP
-#define SFML_EVENT_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -42,9 +41,8 @@ namespace sf
 /// \brief Defines a system event and its parameters
 ///
 ////////////////////////////////////////////////////////////
-class Event
+struct Event
 {
-public:
     ////////////////////////////////////////////////////////////
     /// \brief Size events parameters (Resized)
     ///
@@ -61,11 +59,12 @@ public:
     ////////////////////////////////////////////////////////////
     struct KeyEvent
     {
-        Keyboard::Key code;    //!< Code of the key that has been pressed
-        bool          alt;     //!< Is the Alt key pressed?
-        bool          control; //!< Is the Control key pressed?
-        bool          shift;   //!< Is the Shift key pressed?
-        bool          system;  //!< Is the System key pressed?
+        Keyboard::Key      code;     //!< Code of the key that has been pressed
+        Keyboard::Scancode scancode; //!< Physical code of the key that has been pressed
+        bool               alt;      //!< Is the Alt key pressed?
+        bool               control;  //!< Is the Control key pressed?
+        bool               shift;    //!< Is the Shift key pressed?
+        bool               system;   //!< Is the System key pressed?
     };
 
     ////////////////////////////////////////////////////////////
@@ -74,7 +73,7 @@ public:
     ////////////////////////////////////////////////////////////
     struct TextEvent
     {
-        Uint32 unicode; //!< UTF-32 Unicode value of the character
+        std::uint32_t unicode; //!< UTF-32 Unicode value of the character
     };
 
     ////////////////////////////////////////////////////////////
@@ -222,14 +221,11 @@ public:
 } // namespace sf
 
 
-#endif // SFML_EVENT_HPP
-
-
 ////////////////////////////////////////////////////////////
 /// \class sf::Event
 /// \ingroup window
 ///
-/// sf::Event holds all the informations about a system event
+/// sf::Event holds all the information about a system event
 /// that just happened. Events are retrieved using the
 /// sf::Window::pollEvent and sf::Window::waitEvent functions.
 ///

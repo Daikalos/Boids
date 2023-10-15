@@ -9,12 +9,10 @@
 #include "../window/SFMLLoaders.hpp"
 
 #include "../utilities/PolicySelect.h"
-#include "../utilities/Utilities.h"
-#include "../utilities/VectorUtilities.h"
+#include "../utilities/CommonUtilities.hpp"
+#include "../utilities/VectorUtilities.hpp"
 
 #include "Config.h"
-
-#include "../utilities/WallpaperPath.h"
 
 MainState::MainState(Context context) 
 	: State(context), m_window(context.window), m_camera(context.camera), m_inputHandler(context.inputHandler), m_boids(Config::Inst().Boids.Count) {}
@@ -51,14 +49,14 @@ void MainState::Initialize()
 			for (int i = 0; i < Config::Inst().Boids.Count; ++i)
 			{
 				sf::Vector2f pos = sf::Vector2f(
-					util::random(0.0f, m_border.Width()) - m_border.left,
-					util::random(0.0f, m_border.Height()) - m_border.top);
+					util::Random(0.0f, m_border.width) - m_border.left,
+					util::Random(0.0f, m_border.height) - m_border.top);
 
 				m_boids.Push(pos);
 			}
 
 			m_vertices.resize(m_boids.GetSize() * 3);
-			m_vertices.setPrimitiveType(sf::Triangles);
+			m_vertices.setPrimitiveType(sf::PrimitiveType::Triangles);
 
 			m_policy = m_boids.GetSize() <= Config::Inst().Misc.PolicyThreshold ? Policy::unseq : Policy::par_unseq;
 		});
@@ -80,14 +78,7 @@ bool MainState::HandleEvent(const sf::Event& event)
 			m_fluid = Fluid(m_window->getSize());
 			m_border = m_window->GetBorder();
 
-            RectFloat grid_border = m_border + (Config::Inst().Interaction.TurnAtBorder ?
-                RectFloat(
-                    -m_minDistance * Config::Inst().Misc.GridExtraCells,
-                    -m_minDistance * Config::Inst().Misc.GridExtraCells,
-                    +m_minDistance * Config::Inst().Misc.GridExtraCells,
-                    +m_minDistance * Config::Inst().Misc.GridExtraCells) : RectFloat());
-
-            m_grid = Grid(grid_border, sf::Vector2f(m_minDistance, m_minDistance) * 2.0f);
+            m_grid = Grid(GetGridBorder(), sf::Vector2f(m_minDistance, m_minDistance) * 2.0f);
         }
         break;
     }
@@ -121,8 +112,8 @@ bool MainState::PreUpdate(float dt)
 						for (std::size_t i = prev.Boids.Count; i < Config::Inst().Boids.Count; ++i)
 						{
 							sf::Vector2f pos = sf::Vector2f(
-								util::random(0.0f, m_border.Width()) - m_border.left,
-								util::random(0.0f, m_border.Height()) - m_border.top);
+								util::Random(0.0f, m_border.width) - m_border.left,
+								util::Random(0.0f, m_border.height) - m_border.top);
 
 							m_boids.Push(pos);
 						}
@@ -152,9 +143,9 @@ bool MainState::PreUpdate(float dt)
 					m_background.LoadProperties(sf::Vector2i(m_window->getSize()));
 
 					m_window->SetClearColor(sf::Color(
-						static_cast<sf::Uint8>(Config::Inst().Background.Color.x * 255.0f),
-						static_cast<sf::Uint8>(Config::Inst().Background.Color.y * 255.0f),
-						static_cast<sf::Uint8>(Config::Inst().Background.Color.z * 255.0f)));
+						static_cast<std::uint8_t>(Config::Inst().Background.Color.x * 255.0f),
+						static_cast<std::uint8_t>(Config::Inst().Background.Color.y * 255.0f),
+						static_cast<std::uint8_t>(Config::Inst().Background.Color.z * 255.0f)));
 
 					break;
 				}
@@ -196,7 +187,7 @@ bool MainState::Update(float dt)
 
 	if (m_inputHandler->GetButtonHeld(sf::Mouse::Middle))
 	{
-		const sf::Vector2f mouseDelta = vu::direction(m_mousePosPrev, m_mousePos);
+		const sf::Vector2f mouseDelta = vu::Direction(m_mousePosPrev, m_mousePos);
 		if (mouseDelta.length() > Config::Inst().Interaction.BoidAddMouseDiff)
 		{
 			for (int i = 0; i < Config::Inst().Interaction.BoidAddAmount; ++i)
@@ -204,7 +195,7 @@ bool MainState::Update(float dt)
 				const sf::Vector2f center = sf::Vector2f(Config::Inst().Boids.Width, Config::Inst().Boids.Height) / 2.0f;
 				const sf::Vector2f initPos = m_mousePos - center;
 
-				m_boids.Push(initPos, vu::rotate_point(mouseDelta, {}, util::random(-1.0f, 1.0f)));
+				m_boids.Push(initPos, vu::RotatePoint(mouseDelta, {}, util::Random(-1.0f, 1.0f)));
 			}
 
 			m_vertices.resize(m_boids.GetSize() * 3);
@@ -244,7 +235,7 @@ bool MainState::Update(float dt)
 		m_fluidMousePosPrev = m_fluidMousePos;
 		m_fluidMousePos = sf::Vector2i(m_mousePos / (float)Config::Inst().Fluid.Scale);
 
-		const sf::Vector2i amount = vu::abs(m_fluidMousePos - m_fluidMousePosPrev);
+		const sf::Vector2i amount = vu::Abs(m_fluidMousePos - m_fluidMousePosPrev);
 
 		if (std::abs(amount.x) > 0 || std::abs(amount.y) > 0)
 		{
@@ -291,12 +282,14 @@ void MainState::Draw()
 
 RectFloat MainState::GetGridBorder() const
 {
-	return m_border + (Config::Inst().Interaction.TurnAtBorder ?
-		RectFloat(
-			-m_minDistance * Config::Inst().Misc.GridExtraCells,
-			-m_minDistance * Config::Inst().Misc.GridExtraCells,
-			+m_minDistance * Config::Inst().Misc.GridExtraCells,
-			+m_minDistance * Config::Inst().Misc.GridExtraCells) : RectFloat());
+	if (!Config::Inst().Interaction.TurnAtBorder)
+		return m_border;
+
+	return m_border + RectFloat(
+		-m_minDistance * Config::Inst().Misc.GridExtraCells,
+		-m_minDistance * Config::Inst().Misc.GridExtraCells,
+		+m_minDistance * Config::Inst().Misc.GridExtraCells * 2.0f,
+		+m_minDistance * Config::Inst().Misc.GridExtraCells * 2.0f);
 }
 
 float MainState::GetMinDistance() const

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,8 +22,7 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_SPRITE_HPP
-#define SFML_SPRITE_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -49,14 +48,6 @@ class SFML_GRAPHICS_API Sprite : public Drawable, public Transformable
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// Creates an empty sprite with no source texture.
-    ///
-    ////////////////////////////////////////////////////////////
-    Sprite();
-
-    ////////////////////////////////////////////////////////////
     /// \brief Construct the sprite from a source texture
     ///
     /// \param texture Source texture
@@ -65,6 +56,12 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     explicit Sprite(const Texture& texture);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Disallow construction from a temporary texture
+    ///
+    ////////////////////////////////////////////////////////////
+    explicit Sprite(Texture&& texture) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the sprite from a sub-rectangle of a source texture
@@ -76,6 +73,12 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     Sprite(const Texture& texture, const IntRect& rectangle);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Disallow construction from a temporary texture
+    ///
+    ////////////////////////////////////////////////////////////
+    Sprite(Texture&& texture, const IntRect& rectangle) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the source texture of the sprite
@@ -97,6 +100,12 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void setTexture(const Texture& texture, bool resetRect = false);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Disallow setting from a temporary texture
+    ///
+    ////////////////////////////////////////////////////////////
+    void setTexture(Texture&& texture, bool resetRect = false) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the sub-rectangle of the texture that the sprite will display
@@ -130,16 +139,15 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Get the source texture of the sprite
     ///
-    /// If the sprite has no source texture, a null pointer is returned.
-    /// The returned pointer is const, which means that you can't
+    /// The returned reference is const, which means that you can't
     /// modify the texture when you retrieve it with this function.
     ///
-    /// \return Pointer to the sprite's texture
+    /// \return Reference to the sprite's texture
     ///
     /// \see setTexture
     ///
     ////////////////////////////////////////////////////////////
-    const Texture* getTexture() const;
+    const Texture& getTexture() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the sub-rectangle of the texture displayed by the sprite
@@ -215,14 +223,11 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     Vertex         m_vertices[4]; //!< Vertices defining the sprite's geometry
-    const Texture* m_texture;     //!< Texture of the sprite
+    const Texture* m_texture{};   //!< Texture of the sprite
     IntRect        m_textureRect; //!< Rectangle defining the area of the source texture to display
 };
 
 } // namespace sf
-
-
-#endif // SFML_SPRITE_HPP
 
 
 ////////////////////////////////////////////////////////////
@@ -260,12 +265,14 @@ private:
 /// \code
 /// // Declare and load a texture
 /// sf::Texture texture;
-/// texture.loadFromFile("texture.png");
+/// if (!texture.loadFromFile("texture.png"))
+/// {
+///     // Handle error...
+/// }
 ///
 /// // Create a sprite
-/// sf::Sprite sprite;
-/// sprite.setTexture(texture);
-/// sprite.setTextureRect(sf::IntRect(10, 10, 50, 30));
+/// sf::Sprite sprite(texture);
+/// sprite.setTextureRect(sf::IntRect({10, 10}, {50, 30}));
 /// sprite.setColor(sf::Color(255, 255, 255, 200));
 /// sprite.setPosition(100, 25);
 ///

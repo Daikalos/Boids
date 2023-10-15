@@ -1,6 +1,6 @@
 #include "State.h"
 
-State::State(Context context)
+State::State(const Context& context)
 	: m_context(context) { }
 
 State::~State() = default;

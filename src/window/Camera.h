@@ -3,7 +3,7 @@
 #include <SFML/Graphics/View.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 
-#include "InputHandler.h"
+class InputHandler;
 
 class Camera : public sf::View
 {
@@ -29,7 +29,7 @@ public:
 public:
 	// call after poll event
 	//
-	void Update(const InputHandler& input_handler, const sf::RenderWindow& window);
+	void Update(const InputHandler& inputHandler, const sf::RenderWindow& window);
 	void HandleEvent(const sf::Event& event);
 
 private:

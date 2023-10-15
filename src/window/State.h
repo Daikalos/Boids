@@ -28,7 +28,7 @@ public:
 	};
 
 public:
-	explicit State(Context context);
+	explicit State(const Context& context);
 	virtual ~State();
 
 public:

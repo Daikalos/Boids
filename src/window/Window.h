@@ -20,7 +20,13 @@ class Camera;
 class Window : public sf::RenderWindow
 {
 public:
-	Window(std::string name, sf::VideoMode mode, WindowBorder windowBorder, sf::ContextSettings settings, bool verticalSync, int framerate, Camera& camera);
+	Window(
+		std::string name = "Title",
+		const sf::VideoMode& mode = sf::VideoMode::getDesktopMode(),
+		WindowBorder windowBorder = WindowBorder::Windowed, 
+		bool verticalSync = false, 
+		int frameRate = 60, 
+		const sf::ContextSettings& settings = sf::ContextSettings{});
 
 	void Initialize();
 	void HandleEvent(const sf::Event& event);
@@ -29,14 +35,14 @@ public:
 	//
 	void Setup();
 
-	void SetFramerate(int frame_rate);
+	void SetFramerate(int frameRate);
 	void SetVerticalSync(bool flag);
 
-	void Build(WindowBorder windowBorder, sf::VideoMode mode, sf::ContextSettings settings);
+	void Build(WindowBorder windowBorder, const sf::VideoMode& mode, const sf::ContextSettings& settings);
 
 	void SetBorder(WindowBorder border);
-	void SetMode(sf::VideoMode mode);
-	void SetSettings(sf::ContextSettings settings);
+	void SetMode(const sf::VideoMode& mode);
+	void SetSettings(const sf::ContextSettings& settings);
 
 	void SetClearColor(sf::Color Color);
 
@@ -55,6 +61,4 @@ private:
 	bool					m_verticalSync	{false};
 	int						m_framerate		{60};
 	sf::Color				m_clearColor	{sf::Color::Black};
-
-	Camera*					m_camera;
 };

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,18 +22,20 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_CONTEXT_HPP
-#define SFML_CONTEXT_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/Export.hpp>
 
-#include <SFML/System/Vector2.hpp>
 #include <SFML/Window/GlResource.hpp>
 
+#include <SFML/System/Vector2.hpp>
+
 #include <memory>
+
+#include <cstdint>
 
 
 namespace sf
@@ -145,7 +147,7 @@ public:
     /// \return The active context's ID or 0 if no context is currently active
     ///
     ////////////////////////////////////////////////////////////
-    static Uint64 getActiveContextId();
+    static std::uint64_t getActiveContextId();
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a in-memory context
@@ -169,8 +171,6 @@ private:
 
 } // namespace sf
 
-
-#endif // SFML_CONTEXT_HPP
 
 ////////////////////////////////////////////////////////////
 /// \class sf::Context

@@ -116,7 +116,7 @@
     <ClInclude Include="utilities\Rectangle.hpp">
       <Filter>Header Files\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="utilities\HideTaskbarIcon.h">
+    <ClInclude Include="utilities\WindowsUtilities.h">
       <Filter>Header Files\Utils</Filter>
     </ClInclude>
     <ClInclude Include="utilities\PolicySelect.h">
@@ -137,10 +137,13 @@
     <ClInclude Include="window\SFMLLoaders.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="utilities\WallpaperPath.h">
+    <ClInclude Include="boids\IAudioMeterInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="boids\IAudioMeterInfo.h">
+    <ClInclude Include="utilities\CommonUtilities.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="utilities\VectorUtilities.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,8 +22,7 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_ANGLE_HPP
-#define SFML_ANGLE_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -139,6 +138,7 @@ public:
     ////////////////////////////////////////////////////////////
     // Static member data
     ////////////////////////////////////////////////////////////
+    // NOLINTNEXTLINE(readability-identifier-naming)
     static const Angle Zero; //!< Predefined 0 degree angle value
 
 private:
@@ -156,11 +156,10 @@ private:
     ////////////////////////////////////////////////////////////
     constexpr explicit Angle(float degrees);
 
-private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    float m_degrees; //!< Angle value stored as degrees
+    float m_degrees{}; //!< Angle value stored as degrees
 };
 
 ////////////////////////////////////////////////////////////
@@ -436,7 +435,7 @@ namespace Literals
 /// \return \a Angle
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] constexpr Angle operator"" _deg(long double angle);
+[[nodiscard]] constexpr Angle operator""_deg(long double angle);
 
 ////////////////////////////////////////////////////////////
 /// \relates sf::Angle
@@ -447,7 +446,7 @@ namespace Literals
 /// \return \a Angle
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] constexpr Angle operator"" _deg(unsigned long long int angle);
+[[nodiscard]] constexpr Angle operator""_deg(unsigned long long int angle);
 
 ////////////////////////////////////////////////////////////
 /// \relates sf::Angle
@@ -458,7 +457,7 @@ namespace Literals
 /// \return \a Angle
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] constexpr Angle operator"" _rad(long double angle);
+[[nodiscard]] constexpr Angle operator""_rad(long double angle);
 
 ////////////////////////////////////////////////////////////
 /// \relates sf::Angle
@@ -469,16 +468,13 @@ namespace Literals
 /// \return \a Angle
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] constexpr Angle operator"" _rad(unsigned long long int angle);
+[[nodiscard]] constexpr Angle operator""_rad(unsigned long long int angle);
 
 } // namespace Literals
 
 #include <SFML/System/Angle.inl>
 
 } // namespace sf
-
-
-#endif // SFML_ANGLE_HPP
 
 
 ////////////////////////////////////////////////////////////

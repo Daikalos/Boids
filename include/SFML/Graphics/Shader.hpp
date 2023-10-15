@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,8 +22,7 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_SHADER_HPP
-#define SFML_SHADER_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -31,9 +30,11 @@
 #include <SFML/Graphics/Export.hpp>
 
 #include <SFML/Graphics/Glsl.hpp>
+
+#include <SFML/Window/GlResource.hpp>
+
 #include <SFML/System/Vector2.hpp>
 #include <SFML/System/Vector3.hpp>
-#include <SFML/Window/GlResource.hpp>
 
 #include <filesystem>
 #include <string>
@@ -82,9 +83,9 @@ public:
     /// \see setUniform(const std::string&, CurrentTextureType)
     ///
     ////////////////////////////////////////////////////////////
+    // NOLINTNEXTLINE(readability-identifier-naming)
     static CurrentTextureType CurrentTexture;
 
-public:
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
@@ -110,6 +111,19 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     Shader& operator=(const Shader&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    Shader(Shader&& source) noexcept;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    Shader& operator=(Shader&& right) noexcept;
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the vertex, geometry or fragment shader from a file
@@ -484,6 +498,12 @@ public:
     void setUniform(const std::string& name, const Texture& texture);
 
     ////////////////////////////////////////////////////////////
+    /// \brief Disallow setting from a temporary texture
+    ///
+    ////////////////////////////////////////////////////////////
+    void setUniform(const std::string& name, Texture&& texture) = delete;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Specify current texture as \p sampler2D uniform
     ///
     /// This overload maps a shader texture variable to the
@@ -685,16 +705,13 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    unsigned int m_shaderProgram;  //!< OpenGL identifier for the program
-    int          m_currentTexture; //!< Location of the current texture in the shader
-    TextureTable m_textures;       //!< Texture variables in the shader, mapped to their location
-    UniformTable m_uniforms;       //!< Parameters location cache
+    unsigned int m_shaderProgram{};    //!< OpenGL identifier for the program
+    int          m_currentTexture{-1}; //!< Location of the current texture in the shader
+    TextureTable m_textures;           //!< Texture variables in the shader, mapped to their location
+    UniformTable m_uniforms;           //!< Parameters location cache
 };
 
 } // namespace sf
-
-
-#endif // SFML_SHADER_HPP
 
 
 ////////////////////////////////////////////////////////////

@@ -8,7 +8,7 @@
 class Background
 {
 public:
-	Background() = default;
+	Background();
 
 public:
 	void Load(TextureHolder& textureHolder, const sf::Vector2i& size);

@@ -194,3 +194,6 @@ inline auto ResourceHolder<R, I>::Insert(const I& id, ResourcePtr& resource) -> 
 using TextureHolder = ResourceHolder<sf::Texture, TextureID>;
 using FontHolder = ResourceHolder<sf::Font, FontID>;
 
+
+static const sf::Texture DEFAULT_TEXTURE;
+static const sf::Font DEFAULT_FONT;

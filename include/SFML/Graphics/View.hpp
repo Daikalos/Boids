@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,8 +22,7 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_VIEW_HPP
-#define SFML_VIEW_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -32,6 +31,7 @@
 
 #include <SFML/Graphics/Rect.hpp>
 #include <SFML/Graphics/Transform.hpp>
+
 #include <SFML/System/Angle.hpp>
 #include <SFML/System/Vector2.hpp>
 
@@ -109,7 +109,7 @@ public:
     /// view are displayed, expressed as a factor (between 0 and 1)
     /// of the size of the RenderTarget to which the view is applied.
     /// For example, a view which takes the left side of the target would
-    /// be defined with View.setViewport(sf::FloatRect(0, 0, 0.5, 1)).
+    /// be defined with View.setViewport(sf::FloatRect({0.f, 0.f}, {0.5f, 1.f})).
     /// By default, a view has a viewport which covers the entire target.
     ///
     /// \param viewport New viewport rectangle
@@ -236,20 +236,17 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Vector2f          m_center;              //!< Center of the view, in scene coordinates
-    Vector2f          m_size;                //!< Size of the view, in scene coordinates
-    Angle             m_rotation;            //!< Angle of rotation of the view rectangle
-    FloatRect         m_viewport;            //!< Viewport rectangle, expressed as a factor of the render-target's size
-    mutable Transform m_transform;           //!< Precomputed projection transform corresponding to the view
-    mutable Transform m_inverseTransform;    //!< Precomputed inverse projection transform corresponding to the view
-    mutable bool      m_transformUpdated;    //!< Internal state telling if the transform needs to be updated
-    mutable bool      m_invTransformUpdated; //!< Internal state telling if the inverse transform needs to be updated
+    Vector2f  m_center;                     //!< Center of the view, in scene coordinates
+    Vector2f  m_size;                       //!< Size of the view, in scene coordinates
+    Angle     m_rotation;                   //!< Angle of rotation of the view rectangle
+    FloatRect m_viewport{{0, 0}, {1, 1}};   //!< Viewport rectangle, expressed as a factor of the render-target's size
+    mutable Transform m_transform;          //!< Precomputed projection transform corresponding to the view
+    mutable Transform m_inverseTransform;   //!< Precomputed inverse projection transform corresponding to the view
+    mutable bool      m_transformUpdated{}; //!< Internal state telling if the transform needs to be updated
+    mutable bool      m_invTransformUpdated{}; //!< Internal state telling if the inverse transform needs to be updated
 };
 
 } // namespace sf
-
-
-#endif // SFML_VIEW_HPP
 
 
 ////////////////////////////////////////////////////////////
@@ -282,13 +279,13 @@ private:
 /// sf::View view;
 ///
 /// // Initialize the view to a rectangle located at (100, 100) and with a size of 400x200
-/// view.reset(sf::FloatRect(100, 100, 400, 200));
+/// view.reset(sf::FloatRect({100, 100}, {400, 200}));
 ///
 /// // Rotate it by 45 degrees
 /// view.rotate(sf::degrees(45));
 ///
 /// // Set its target viewport to be half of the window
-/// view.setViewport(sf::FloatRect(0.f, 0.f, 0.5f, 1.f));
+/// view.setViewport(sf::FloatRect({0.f, 0.f}, {0.5f, 1.f}));
 ///
 /// // Apply it
 /// window.setView(view);

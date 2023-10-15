@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,8 +22,7 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_TRANSFORMABLE_HPP
-#define SFML_TRANSFORMABLE_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -31,6 +30,7 @@
 #include <SFML/Graphics/Export.hpp>
 
 #include <SFML/Graphics/Transform.hpp>
+
 #include <SFML/System/Angle.hpp>
 
 
@@ -230,20 +230,17 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Vector2f          m_origin;                     //!< Origin of translation/rotation/scaling of the object
-    Vector2f          m_position;                   //!< Position of the object in the 2D world
-    Angle             m_rotation;                   //!< Orientation of the object
-    Vector2f          m_scale;                      //!< Scale of the object
-    mutable Transform m_transform;                  //!< Combined transformation of the object
-    mutable bool      m_transformNeedUpdate;        //!< Does the transform need to be recomputed?
-    mutable Transform m_inverseTransform;           //!< Combined transformation of the object
-    mutable bool      m_inverseTransformNeedUpdate; //!< Does the transform need to be recomputed?
+    Vector2f          m_origin;                           //!< Origin of translation/rotation/scaling of the object
+    Vector2f          m_position;                         //!< Position of the object in the 2D world
+    Angle             m_rotation;                         //!< Orientation of the object
+    Vector2f          m_scale{1, 1};                      //!< Scale of the object
+    mutable Transform m_transform;                        //!< Combined transformation of the object
+    mutable Transform m_inverseTransform;                 //!< Combined transformation of the object
+    mutable bool      m_transformNeedUpdate{true};        //!< Does the transform need to be recomputed?
+    mutable bool      m_inverseTransformNeedUpdate{true}; //!< Does the transform need to be recomputed?
 };
 
 } // namespace sf
-
-
-#endif // SFML_TRANSFORMABLE_HPP
 
 
 ////////////////////////////////////////////////////////////

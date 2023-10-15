@@ -25,8 +25,8 @@ private:
 	void Draw();
 
 private:
-	Camera			m_camera;
 	Window			m_window;
+	Camera			m_camera;
 	InputHandler	m_inputHandler;
 	TextureHolder	m_textureHolder;
 	FontHolder		m_fontHolder;

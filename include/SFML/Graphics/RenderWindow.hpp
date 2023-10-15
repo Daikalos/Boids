@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,8 +22,7 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_RENDERWINDOW_HPP
-#define SFML_RENDERWINDOW_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -31,11 +30,14 @@
 #include <SFML/Graphics/Export.hpp>
 
 #include <SFML/Graphics/RenderTarget.hpp>
+
 #include <SFML/Window/Window.hpp>
 
 
 namespace sf
 {
+class Image;
+
 ////////////////////////////////////////////////////////////
 /// \brief Window that can serve as a target for 2D drawing
 ///
@@ -73,7 +75,7 @@ public:
     ////////////////////////////////////////////////////////////
     RenderWindow(VideoMode              mode,
                  const String&          title,
-                 Uint32                 style    = Style::Default,
+                 std::uint32_t          style    = Style::Default,
                  const ContextSettings& settings = ContextSettings());
 
     ////////////////////////////////////////////////////////////
@@ -113,6 +115,18 @@ public:
     ////////////////////////////////////////////////////////////
     Vector2u getSize() const override;
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Change the window's icon
+    ///
+    /// The OS default icon is used by default.
+    ///
+    /// \param icon Image to use as the icon. The image is copied,
+    ///             so you need not keep the source alive after
+    ///             calling this function.
+    ///
+    ////////////////////////////////////////////////////////////
+    void setIcon(const Image& icon);
+    using Window::setIcon;
 
     ////////////////////////////////////////////////////////////
     /// \brief Tell if the window will use sRGB encoding when drawing on it
@@ -166,13 +180,10 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    unsigned int m_defaultFrameBuffer; //!< Framebuffer to bind when targeting this window
+    unsigned int m_defaultFrameBuffer{}; //!< Framebuffer to bind when targeting this window
 };
 
 } // namespace sf
-
-
-#endif // SFML_RENDERWINDOW_HPP
 
 
 ////////////////////////////////////////////////////////////
@@ -195,7 +206,7 @@ private:
 ///
 /// \code
 /// // Declare and create a new render-window
-/// sf::RenderWindow window(sf::VideoMode(800, 600), "SFML window");
+/// sf::RenderWindow window(sf::VideoMode({800, 600}), "SFML window");
 ///
 /// // Limit the framerate to 60 frames per second (this step is optional)
 /// window.setFramerateLimit(60);
@@ -230,11 +241,21 @@ private:
 ///
 /// \code
 /// // Create the render window
-/// sf::RenderWindow window(sf::VideoMode(800, 600), "SFML OpenGL");
+/// sf::RenderWindow window(sf::VideoMode({800, 600}), "SFML OpenGL");
 ///
 /// // Create a sprite and a text to display
-/// sf::Sprite sprite;
-/// sf::Text text;
+/// sf::Texture texture;
+/// if (!texture.loadFromFile("circle.png"))
+/// {
+///     // error...
+/// }
+/// sf::Sprite sprite(texture);
+/// sf::Font font;
+/// if (!font.loadFromFile("arial.ttf"))
+/// {
+///     // error...
+/// }
+/// sf::Text text(font);
 /// ...
 ///
 /// // Perform OpenGL initializations

@@ -1,6 +1,6 @@
 #include "AudioMeter.h"
 
-#include "../utilities/Utilities.h"
+#include "../utilities/CommonUtilities.hpp"
 
 #include "Config.h"
 
@@ -118,7 +118,7 @@ void AudioMeterWin::Update(float dt)
 		}
 	}
 
-	m_lerpVolume = util::lerp(m_lerpVolume, m_volume, std::clamp(Config::Inst().Audio.Speed * dt, 0.0f, 1.0f));
+	m_lerpVolume = util::Lerp(m_lerpVolume, m_volume, std::clamp(Config::Inst().Audio.Speed * dt, 0.0f, 1.0f));
 }
 
 void AudioMeterWin::Clear()

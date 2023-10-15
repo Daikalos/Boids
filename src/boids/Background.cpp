@@ -1,9 +1,16 @@
 #include "Background.h"
 
-#include "../utilities/WallpaperPath.h"
+#include <SFML/Graphics/RenderWindow.hpp>
+
+#include "../utilities/WindowsUtilities.h"
 #include "../window/SFMLLoaders.hpp"
 
 #include "Config.h"
+
+Background::Background() : m_background(DEFAULT_TEXTURE)
+{
+
+}
 
 void Background::Load(TextureHolder& textureHolder, const sf::Vector2i& size)
 {
@@ -43,7 +50,7 @@ void Background::LoadTexture(TextureHolder& textureHolder)
 	if (textureHolder.Contains(TextureID::Background))
 		m_background.setTexture(textureHolder.Get(TextureID::Background), true);
 	else
-		m_background.setTexture(sf::Texture(), true);
+		m_background.setTextureRect(sf::IntRect{});
 }
 
 void Background::LoadProperties(const sf::Vector2i& size)
@@ -75,16 +82,15 @@ void Background::LoadProperties(const sf::Vector2i& size)
 		Config::Inst().Background.Color.z > FLT_EPSILON;
 
 	m_background.setColor(setColor ? sf::Color(
-		static_cast<sf::Uint8>(Config::Inst().Background.Color.x * 255.0f),
-		static_cast<sf::Uint8>(Config::Inst().Background.Color.y * 255.0f),
-		static_cast<sf::Uint8>(Config::Inst().Background.Color.z * 255.0f)) : sf::Color::White);
+		static_cast<std::uint8_t>(Config::Inst().Background.Color.x * 255.0f),
+		static_cast<std::uint8_t>(Config::Inst().Background.Color.y * 255.0f),
+		static_cast<std::uint8_t>(Config::Inst().Background.Color.z * 255.0f)) : sf::Color::White);
 }
 
 void Background::Draw(sf::RenderWindow& window) const
 {
-	if (m_background.getTexture() == nullptr ||
-		m_background.getTexture()->getSize().x == 0U ||
-		m_background.getTexture()->getSize().y == 0U)
+	if (m_background.getTexture().getSize().x == 0U ||
+		m_background.getTexture().getSize().y == 0U)
 		return;
 
 	window.draw(m_background);

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,20 +22,21 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_WINDOWBASE_HPP
-#define SFML_WINDOWBASE_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include <SFML/Window/Export.hpp>
 
-#include <SFML/System/Vector2.hpp>
 #include <SFML/Window/Vulkan.hpp>
 #include <SFML/Window/WindowHandle.hpp>
 #include <SFML/Window/WindowStyle.hpp>
 
+#include <SFML/System/Vector2.hpp>
+
 #include <memory>
+#include <optional>
 
 
 namespace sf
@@ -49,7 +50,7 @@ namespace priv
 class WindowImpl;
 }
 
-class Event;
+struct Event;
 
 ////////////////////////////////////////////////////////////
 /// \brief Window that serves as a base for other windows
@@ -81,7 +82,7 @@ public:
     /// \param style %Window style, a bitwise OR combination of sf::Style enumerators
     ///
     ////////////////////////////////////////////////////////////
-    WindowBase(VideoMode mode, const String& title, Uint32 style = Style::Default);
+    WindowBase(VideoMode mode, const String& title, std::uint32_t style = Style::Default);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the window from an existing control
@@ -123,7 +124,7 @@ public:
     /// \param style %Window style, a bitwise OR combination of sf::Style enumerators
     ///
     ////////////////////////////////////////////////////////////
-    virtual void create(VideoMode mode, const String& title, Uint32 style = Style::Default);
+    virtual void create(VideoMode mode, const String& title, std::uint32_t style = Style::Default);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create (or recreate) the window from an existing control
@@ -158,7 +159,7 @@ public:
     bool isOpen() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Pop the event on top of the event queue, if any, and return it
+    /// \brief Pop the next event from the front of the FIFO event queue, if any, and return it
     ///
     /// This function is not blocking: if there's no pending event then
     /// it will return false and leave \a event unmodified.
@@ -256,6 +257,26 @@ public:
     void setSize(const Vector2u& size);
 
     ////////////////////////////////////////////////////////////
+    /// \brief Set the minimum window rendering region size
+    ///
+    /// Pass std::nullopt to unset the minimum size
+    ///
+    /// \param minimumSize New minimum size, in pixels
+    ///
+    ////////////////////////////////////////////////////////////
+    void setMinimumSize(const std::optional<Vector2u>& minimumSize);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Set the maximum window rendering region size
+    ///
+    /// Pass std::nullopt to unset the maximum size
+    ///
+    /// \param maximumSize New maximum size, in pixels
+    ///
+    ////////////////////////////////////////////////////////////
+    void setMaximumSize(const std::optional<Vector2u>& maximumSize);
+
+    ////////////////////////////////////////////////////////////
     /// \brief Change the title of the window
     ///
     /// \param title New title
@@ -281,7 +302,7 @@ public:
     /// \see setTitle
     ///
     ////////////////////////////////////////////////////////////
-    void setIcon(const Vector2u& size, const Uint8* pixels);
+    void setIcon(const Vector2u& size, const std::uint8_t* pixels);
 
     ////////////////////////////////////////////////////////////
     /// \brief Show or hide the window
@@ -403,7 +424,7 @@ public:
     /// \return System handle of the window
     ///
     ////////////////////////////////////////////////////////////
-    WindowHandle getSystemHandle() const;
+    WindowHandle getNativeHandle() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a Vulkan rendering surface
@@ -488,9 +509,6 @@ private:
 } // namespace sf
 
 
-#endif // SFML_WINDOWBASE_HPP
-
-
 ////////////////////////////////////////////////////////////
 /// \class sf::WindowBase
 /// \ingroup window
@@ -508,7 +526,7 @@ private:
 /// Usage example:
 /// \code
 /// // Declare and create a new window
-/// sf::WindowBase window(sf::VideoMode(800, 600), "SFML window");
+/// sf::WindowBase window(sf::VideoMode({800, 600}), "SFML window");
 ///
 /// // The main loop - ends as soon as the window is closed
 /// while (window.isOpen())

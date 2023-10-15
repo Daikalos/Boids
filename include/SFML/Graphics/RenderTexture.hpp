@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,8 +22,7 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_RENDERTEXTURE_HPP
-#define SFML_RENDERTEXTURE_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -32,6 +31,7 @@
 
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/Texture.hpp>
+
 #include <SFML/Window/ContextSettings.hpp>
 
 #include <memory>
@@ -67,6 +67,30 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     ~RenderTexture() override;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    RenderTexture(const RenderTexture&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    RenderTexture& operator=(const RenderTexture&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    RenderTexture(RenderTexture&&) noexcept;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move assignment operator
+    ///
+    ////////////////////////////////////////////////////////////
+    RenderTexture& operator=(RenderTexture&&) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Create the render-texture
@@ -235,9 +259,6 @@ private:
 } // namespace sf
 
 
-#endif // SFML_RENDERTEXTURE_HPP
-
-
 ////////////////////////////////////////////////////////////
 /// \class sf::RenderTexture
 /// \ingroup graphics
@@ -258,11 +279,11 @@ private:
 ///
 /// \code
 /// // Create a new render-window
-/// sf::RenderWindow window(sf::VideoMode(800, 600), "SFML window");
+/// sf::RenderWindow window(sf::VideoMode({800, 600}), "SFML window");
 ///
 /// // Create a new render-texture
 /// sf::RenderTexture texture;
-/// if (!texture.create(500, 500))
+/// if (!texture.create({500, 500}))
 ///     return -1;
 ///
 /// // The main loop

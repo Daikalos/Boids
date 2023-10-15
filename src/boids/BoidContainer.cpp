@@ -1,9 +1,10 @@
 #include "BoidContainer.h"
 
 #include <ranges>
+#include <cassert>
 
-#include "../utilities/VectorUtilities.h"
-#include "../utilities/Utilities.h"
+#include "../utilities/VectorUtilities.hpp"
+#include "../utilities/CommonUtilities.hpp"
 
 #include "Config.h"
 
@@ -43,8 +44,8 @@ std::size_t BoidContainer::GetCapacity() const noexcept
 void BoidContainer::Push(const sf::Vector2f& pos)
 {
 	Push(pos, sf::Vector2f(
-		util::random(-1.0f, 1.0f),
-		util::random(-1.0f, 1.0f)) * Config::Inst().Boids.SpeedMax);
+		util::Random(-1.0f, 1.0f),
+		util::Random(-1.0f, 1.0f)) * Config::Inst().Boids.SpeedMax);
 }
 
 void BoidContainer::Push(const sf::Vector2f& pos, const sf::Vector2f& velocity)
@@ -64,13 +65,13 @@ void BoidContainer::Push(const sf::Vector2f& pos, const sf::Vector2f& velocity)
 
 	m_prevTriangles[m_size] = m_triangles[m_size] =
 	{ 
-		vu::rotate_point({ ori.x + Config::Inst().BoidHalfSize.x, ori.y									}, ori, angle),
-		vu::rotate_point({ ori.x - Config::Inst().BoidHalfSize.x, ori.y - Config::Inst().BoidHalfSize.y }, ori, angle),
-		vu::rotate_point({ ori.x - Config::Inst().BoidHalfSize.x, ori.y + Config::Inst().BoidHalfSize.y }, ori, angle)
+		vu::RotatePoint({ ori.x + Config::Inst().BoidHalfSize.x, ori.y									}, ori, angle),
+		vu::RotatePoint({ ori.x - Config::Inst().BoidHalfSize.x, ori.y - Config::Inst().BoidHalfSize.y }, ori, angle),
+		vu::RotatePoint({ ori.x - Config::Inst().BoidHalfSize.x, ori.y + Config::Inst().BoidHalfSize.y }, ori, angle)
 	};
 
 	if (Config::Inst().Cycle.Random)
-		m_cycleTimes[m_size] = util::random(0.0f, 1.0f);
+		m_cycleTimes[m_size] = util::Random(0.0f, 1.0f);
 
 	++m_size;
 }
@@ -191,12 +192,12 @@ void BoidContainer::Interaction(const InputHandler& inputHandler, const sf::Vect
 	{
 		for (std::size_t i = 0; i < m_size; ++i)
 		{
-			sf::Vector2f dir = vu::direction(m_positions[i], mousePos);
+			sf::Vector2f dir = vu::Direction(m_positions[i], mousePos);
 
 			const float factor = holdLeft ? 1.0f :
 				(holdRight ? -1.0f : 0.0f);
 
-			const float lengthOpt = vu::distance_opt(dir);
+			const float lengthOpt = vu::DistanceOpt(dir);
 			const float weight = 1.0f / (std::sqrtf(lengthOpt) + FLT_EPSILON);
 
 			SteerTowards(m_velocities[i], m_prevVelocities[i], dir, lengthOpt, Config::Inst().Interaction.SteerTowardsFactor * weight * factor * dt);
@@ -206,7 +207,7 @@ void BoidContainer::Interaction(const InputHandler& inputHandler, const sf::Vect
 	{
 		for (std::size_t i = 0; i < m_size; ++i)
 		{
-			sf::Vector2f dir = vu::direction(m_positions[i], mousePos);
+			sf::Vector2f dir = vu::Direction(m_positions[i], mousePos);
 
 			float lengthSqr = dir.lengthSq();
 			if (lengthSqr <= Config::Inst().Interaction.PredatorDistance)
@@ -295,7 +296,7 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 
 							if (withinCohesion || withinAlignment)
 							{
-								const float angle = vu::PI<> - std::abs(std::abs(vu::angle(dir.y, dir.x) - thisAngle) - vu::PI<>);
+								const float angle = vu::PI<> - std::abs(std::abs(vu::Angle(dir.y, dir.x) - thisAngle) - vu::PI<>);
 								if (angle > negFOV && angle < posFOV)
 								{
 									if (withinCohesion) [[likely]]
@@ -319,9 +320,9 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 						}
 					}
 
-					if (cohCount) m_velocities[lhs] += SteerAt(m_prevVelocities[lhs], vu::normalize(coh, config.Boids.SpeedMax)) * config.Rules.CohWeight;
-					if (aliCount) m_velocities[lhs] += SteerAt(m_prevVelocities[lhs], vu::normalize(ali / static_cast<float>(aliCount), config.Boids.SpeedMax)) * config.Rules.AliWeight;
-					if (sepCount) m_velocities[lhs] += SteerAt(m_prevVelocities[lhs], vu::normalize(sep / static_cast<float>(sepCount), config.Boids.SpeedMax)) * config.Rules.SepWeight;
+					if (cohCount) m_velocities[lhs] += SteerAt(m_prevVelocities[lhs], vu::Normalize(coh, config.Boids.SpeedMax)) * config.Rules.CohWeight;
+					if (aliCount) m_velocities[lhs] += SteerAt(m_prevVelocities[lhs], vu::Normalize(ali / static_cast<float>(aliCount), config.Boids.SpeedMax)) * config.Rules.AliWeight;
+					if (sepCount) m_velocities[lhs] += SteerAt(m_prevVelocities[lhs], vu::Normalize(sep / static_cast<float>(sepCount), config.Boids.SpeedMax)) * config.Rules.SepWeight;
 
 					m_densities[lhs] = std::max(std::max(cohCount, aliCount), sepCount);
 				});
@@ -339,12 +340,12 @@ void BoidContainer::Update(const RectFloat& border, const std::vector<Impulse>& 
 
 		if (lengthSq < Config::Inst().BoidSpeedMinSq)
 		{
-			velocity = vu::normalize(velocity, std::sqrt(lengthSq), Config::Inst().Boids.SpeedMin);
+			velocity = vu::Normalize(velocity, std::sqrt(lengthSq), Config::Inst().Boids.SpeedMin);
 			speed = Config::Inst().Boids.SpeedMin;
 		}
 		else if (lengthSq > Config::Inst().BoidSpeedMaxSq)
 		{
-			velocity = vu::normalize(velocity, std::sqrt(lengthSq), Config::Inst().Boids.SpeedMax);
+			velocity = vu::Normalize(velocity, std::sqrt(lengthSq), Config::Inst().Boids.SpeedMax);
 			speed = Config::Inst().Boids.SpeedMax;
 		}
 		else
@@ -379,7 +380,7 @@ void BoidContainer::Update(const RectFloat& border, const std::vector<Impulse>& 
 		auto& angle = m_angles[i];
 
 		angle = (velocity.x || velocity.y) ?
-			vu::angle(velocity.y, velocity.x) : 0.0f;
+			vu::Angle(velocity.y, velocity.x) : 0.0f;
 	}
 
 	for (std::size_t i = 0; i < m_size; ++i)
@@ -391,9 +392,9 @@ void BoidContainer::Update(const RectFloat& border, const std::vector<Impulse>& 
 
 		tri =
 		{
-			vu::rotate_point({ ori.x + Config::Inst().BoidHalfSize.x, ori.y								    }, ori, angle), // middle right tip
-			vu::rotate_point({ ori.x - Config::Inst().BoidHalfSize.x, ori.y - Config::Inst().BoidHalfSize.y }, ori, angle), // top left corner
-			vu::rotate_point({ ori.x - Config::Inst().BoidHalfSize.x, ori.y + Config::Inst().BoidHalfSize.y }, ori, angle)	// bot left corner
+			vu::RotatePoint({ ori.x + Config::Inst().BoidHalfSize.x, ori.y								    }, ori, angle), // middle right tip
+			vu::RotatePoint({ ori.x - Config::Inst().BoidHalfSize.x, ori.y - Config::Inst().BoidHalfSize.y }, ori, angle), // top left corner
+			vu::RotatePoint({ ori.x - Config::Inst().BoidHalfSize.x, ori.y + Config::Inst().BoidHalfSize.y }, ori, angle)	// bot left corner
 		};
 	}
 
@@ -427,7 +428,7 @@ void BoidContainer::Update(const RectFloat& border, const std::vector<Impulse>& 
 				const sf::Vector2f impulsePos = impulse.GetPosition();
 				const float impulseLength = impulse.GetLength();
 
-				const float length = vu::distance(m_positions[i], impulsePos);
+				const float length = vu::Distance(m_positions[i], impulsePos);
 				const float diff = std::abs(length - impulseLength);
 
 				const float percentage = (impulseLength / Config::Inst().Impulse.FadeDistance);
@@ -436,7 +437,7 @@ void BoidContainer::Update(const RectFloat& border, const std::vector<Impulse>& 
 				if (diff <= size)
 				{
 					SteerTowards(m_velocities[i], m_prevVelocities[i],
-						vu::direction(impulsePos, m_positions[i]), Config::Inst().Impulse.Force * (1.0f - percentage) * dt);
+						vu::Direction(impulsePos, m_positions[i]), Config::Inst().Impulse.Force * (1.0f - percentage) * dt);
 				}
 			}
 		}
@@ -529,9 +530,9 @@ void BoidContainer::UpdateVertices(sf::VertexArray& vertices, float interp, Poli
 					const sf::Vector3f& color = m_colors[i];
 
 					const sf::Color c = sf::Color(
-						static_cast<sf::Uint8>(color.x * 255.0f),
-						static_cast<sf::Uint8>(color.y * 255.0f),
-						static_cast<sf::Uint8>(color.z * 255.0f));
+						static_cast<std::uint8_t>(color.x * 255.0f),
+						static_cast<std::uint8_t>(color.y * 255.0f),
+						static_cast<std::uint8_t>(color.z * 255.0f));
 
 					const std::size_t v = static_cast<std::size_t>(i) * 3;
 
@@ -550,13 +551,13 @@ void BoidContainer::TurnAtBorder(const sf::Vector2f& pos, sf::Vector2f& vel, std
 {
 	const float maxSize = std::max(Config::Inst().Boids.Width, Config::Inst().Boids.Height);
 
-	float widthMargin	= border.Width() - (border.Width() * Config::Inst().Interaction.TurnMarginFactor);
-	float heightMargin	= border.Height() - (border.Height() * Config::Inst().Interaction.TurnMarginFactor);
+	float widthMargin	= border.width - (border.width * Config::Inst().Interaction.TurnMarginFactor);
+	float heightMargin	= border.width - (border.height * Config::Inst().Interaction.TurnMarginFactor);
 
 	const float leftMargin	= border.left + widthMargin;
 	const float topMargin	= border.top + heightMargin;
-	const float rightMargin = border.right - widthMargin;
-	const float botMargin	= border.bot - heightMargin;
+	const float rightMargin = border.Right() - widthMargin;
+	const float botMargin	= border.Bottom() - heightMargin;
 
 	widthMargin		= std::max(widthMargin, 1.0f);
 	heightMargin	= std::max(heightMargin, 1.0f);
@@ -583,15 +584,15 @@ bool BoidContainer::TeleportAtBorder(sf::Vector2f& pos, const RectFloat& border)
 	const sf::Vector2f previous = pos;
 
 	if (pos.x + maxSize < border.left)
-		pos.x = (float)border.right;
+		pos.x = (float)border.Right();
 
-	if (pos.x > border.right)
+	if (pos.x > border.Right())
 		pos.x = border.left - maxSize;
 
 	if (pos.y + maxSize < border.top)
-		pos.y = (float)border.bot;
+		pos.y = (float)border.Bottom();
 
-	if (pos.y > border.bot)
+	if (pos.y > border.Bottom())
 		pos.y = border.top - maxSize;
 
 	return (previous != pos);
@@ -599,7 +600,7 @@ bool BoidContainer::TeleportAtBorder(sf::Vector2f& pos, const RectFloat& border)
 
 sf::Vector2f BoidContainer::SteerAt(const sf::Vector2f& prevVel, const sf::Vector2f& steerDir)
 {
-	return vu::limit(vu::direction(prevVel, steerDir), Config::Inst().Boids.SteerMax);
+	return vu::Limit(vu::Direction(prevVel, steerDir), Config::Inst().Boids.SteerMax);
 }
 
 void BoidContainer::SteerTowards(sf::Vector2f& vel, const sf::Vector2f& prevVel, const sf::Vector2f& direction, float length, float weight)
@@ -607,7 +608,7 @@ void BoidContainer::SteerTowards(sf::Vector2f& vel, const sf::Vector2f& prevVel,
 	if (std::abs(weight) < FLT_EPSILON)
 		return;
 
-	const sf::Vector2f steer = vu::normalize(direction, length, Config::Inst().Boids.SpeedMax);
+	const sf::Vector2f steer = vu::Normalize(direction, length, Config::Inst().Boids.SpeedMax);
 
 	vel += SteerAt(prevVel, steer) * weight;
 }
@@ -622,7 +623,7 @@ void BoidContainer::ResetCycleTimes()
 	for (std::size_t i = 0; i < m_size; ++i)
 	{
 		m_cycleTimes[i] = Config::Inst().Cycle.Random ?
-			util::random(0.0f, 1.0f) : 0.0f;
+			util::Random(0.0f, 1.0f) : 0.0f;
 	}
 }
 
@@ -633,13 +634,13 @@ sf::Vector2f BoidContainer::GetOrigin(const sf::Vector2f& pos)
 
 sf::Vector3f BoidContainer::PositionColor(const sf::Vector2f& pos, const RectFloat& border)
 {
-	const float t = pos.x / border.Width();
-	const float s = pos.y / border.Height();
+	const float t = pos.x / border.width;
+	const float s = pos.y / border.height;
 
 	return sf::Vector3f(
-		util::interpolate(Config::Inst().Positional.TopLeft.x * 255.0f, Config::Inst().Positional.TopRight.x * 255.0f, Config::Inst().Positional.BotLeft.x * 255.0f, Config::Inst().Positional.BotRight.x * 255.0f, t, s) / 255.0f,
-		util::interpolate(Config::Inst().Positional.TopLeft.y * 255.0f, Config::Inst().Positional.TopRight.y * 255.0f, Config::Inst().Positional.BotLeft.y * 255.0f, Config::Inst().Positional.BotRight.y * 255.0f, t, s) / 255.0f,
-		util::interpolate(Config::Inst().Positional.TopLeft.z * 255.0f, Config::Inst().Positional.TopRight.z * 255.0f, Config::Inst().Positional.BotLeft.z * 255.0f, Config::Inst().Positional.BotRight.z * 255.0f, t, s) / 255.0f);
+		util::Interpolate(Config::Inst().Positional.TopLeft.x * 255.0f, Config::Inst().Positional.TopRight.x * 255.0f, Config::Inst().Positional.BotLeft.x * 255.0f, Config::Inst().Positional.BotRight.x * 255.0f, t, s) / 255.0f,
+		util::Interpolate(Config::Inst().Positional.TopLeft.y * 255.0f, Config::Inst().Positional.TopRight.y * 255.0f, Config::Inst().Positional.BotLeft.y * 255.0f, Config::Inst().Positional.BotRight.y * 255.0f, t, s) / 255.0f,
+		util::Interpolate(Config::Inst().Positional.TopLeft.z * 255.0f, Config::Inst().Positional.TopRight.z * 255.0f, Config::Inst().Positional.BotLeft.z * 255.0f, Config::Inst().Positional.BotRight.z * 255.0f, t, s) / 255.0f);
 }
 
 sf::Vector3f BoidContainer::CycleColor(float cycleTime)
@@ -654,7 +655,7 @@ sf::Vector3f BoidContainer::CycleColor(float cycleTime)
 
 	const float newT = scaledTime - std::floorf(scaledTime);
 
-	return vu::lerp(color1, color2, newT);
+	return vu::Lerp(color1, color2, newT);
 }
 
 sf::Vector3f BoidContainer::DensityColor(std::uint32_t density, float densityTime)
@@ -671,7 +672,7 @@ sf::Vector3f BoidContainer::DensityColor(std::uint32_t density, float densityTim
 
 	const float newT = scaledDensity - std::floorf(scaledDensity);
 
-	return vu::lerp(color1, color2, newT);
+	return vu::Lerp(color1, color2, newT);
 }
 
 sf::Vector3f BoidContainer::VelocityColor(float speed)
@@ -688,7 +689,7 @@ sf::Vector3f BoidContainer::VelocityColor(float speed)
 
 	const float newT = scaled_velocity - std::floorf(scaled_velocity);
 
-	return vu::lerp(color1, color2, newT);
+	return vu::Lerp(color1, color2, newT);
 }
 
 sf::Vector3f BoidContainer::RotationColor(float angle)
@@ -705,7 +706,7 @@ sf::Vector3f BoidContainer::RotationColor(float angle)
 
 	const float newT = scaledRotation - std::floorf(scaledRotation);
 
-	return vu::lerp(color1, color2, newT);
+	return vu::Lerp(color1, color2, newT);
 }
 
 sf::Vector3f BoidContainer::AudioColor(std::uint32_t density, float volume)
@@ -722,7 +723,7 @@ sf::Vector3f BoidContainer::AudioColor(std::uint32_t density, float volume)
 
 	const float newT = scaledVolume - std::floorf(scaledVolume);
 
-	return vu::lerp(color1, color2, newT);
+	return vu::Lerp(color1, color2, newT);
 }
 
 void BoidContainer::ImpulseColor(const sf::Vector2f& pos, sf::Vector3f& color, const Impulse& impulse)
@@ -730,7 +731,7 @@ void BoidContainer::ImpulseColor(const sf::Vector2f& pos, sf::Vector3f& color, c
 	const sf::Vector2f impulsePos = impulse.GetPosition();
 	const float impulseLength = impulse.GetLength();
 
-	const float length = vu::distance(pos, impulsePos);
+	const float length = vu::Distance(pos, impulsePos);
 	const float diff = std::abs(length - impulseLength);
 
 	const float percentage = (impulseLength / Config::Inst().Impulse.FadeDistance);
@@ -748,6 +749,6 @@ void BoidContainer::ImpulseColor(const sf::Vector2f& pos, sf::Vector3f& color, c
 
 		const float newT = scaled_length - std::floorf(scaled_length);
 
-		color = vu::lerp(color1, color2, newT);
+		color = vu::Lerp(color1, color2, newT);
 	}
 }

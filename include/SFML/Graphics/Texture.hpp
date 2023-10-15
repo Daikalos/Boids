@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,8 +22,7 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_TEXTURE_HPP
-#define SFML_TEXTURE_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -31,6 +30,7 @@
 #include <SFML/Graphics/Export.hpp>
 
 #include <SFML/Graphics/Rect.hpp>
+
 #include <SFML/Window/GlResource.hpp>
 
 #include <filesystem>
@@ -62,7 +62,6 @@ public:
         Pixels      //!< Texture coordinates in range [0 .. size]
     };
 
-public:
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
@@ -70,6 +69,12 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     Texture();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Destructor
+    ///
+    ////////////////////////////////////////////////////////////
+    ~Texture();
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy constructor
@@ -80,10 +85,22 @@ public:
     Texture(const Texture& copy);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Destructor
+    /// \brief Copy assignment operator
     ///
     ////////////////////////////////////////////////////////////
-    ~Texture();
+    Texture& operator=(const Texture&);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    Texture(Texture&&) noexcept;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move assignment operator
+    ///
+    ////////////////////////////////////////////////////////////
+    Texture& operator=(Texture&&) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Create the texture
@@ -103,8 +120,10 @@ public:
     /// This function is a shortcut for the following code:
     /// \code
     /// sf::Image image;
-    /// image.loadFromFile(filename);
-    /// texture.loadFromImage(image, area);
+    /// if (!image.loadFromFile(filename))
+    ///     return false;
+    /// if (!texture.loadFromImage(image, area))
+    ///     return false;
     /// \endcode
     ///
     /// The \a area argument can be used to load only a sub-rectangle
@@ -134,8 +153,10 @@ public:
     /// This function is a shortcut for the following code:
     /// \code
     /// sf::Image image;
-    /// image.loadFromMemory(data, size);
-    /// texture.loadFromImage(image, area);
+    /// if (!image.loadFromMemory(data, size))
+    ///     return false;
+    /// if (!texture.loadFromImage(image, area))
+    ///     return false;
     /// \endcode
     ///
     /// The \a area argument can be used to load only a sub-rectangle
@@ -166,8 +187,10 @@ public:
     /// This function is a shortcut for the following code:
     /// \code
     /// sf::Image image;
-    /// image.loadFromStream(stream);
-    /// texture.loadFromImage(image, area);
+    /// if (!image.loadFromStream(stream))
+    ///     return false;
+    /// if (!texture.loadFromImage(image, area))
+    ///     return false;
     /// \endcode
     ///
     /// The \a area argument can be used to load only a sub-rectangle
@@ -254,7 +277,7 @@ public:
     /// \param pixels Array of pixels to copy to the texture
     ///
     ////////////////////////////////////////////////////////////
-    void update(const Uint8* pixels);
+    void update(const std::uint8_t* pixels);
 
     ////////////////////////////////////////////////////////////
     /// \brief Update a part of the texture from an array of pixels
@@ -274,7 +297,7 @@ public:
     /// \param dest   Coordinates of the destination position
     ///
     ////////////////////////////////////////////////////////////
-    void update(const Uint8* pixels, const Vector2u& size, const Vector2u& dest);
+    void update(const std::uint8_t* pixels, const Vector2u& size, const Vector2u& dest);
 
     ////////////////////////////////////////////////////////////
     /// \brief Update a part of this texture from another texture
@@ -505,22 +528,12 @@ public:
     [[nodiscard]] bool generateMipmap();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Overload of assignment operator
-    ///
-    /// \param right Instance to assign
-    ///
-    /// \return Reference to self
-    ///
-    ////////////////////////////////////////////////////////////
-    Texture& operator=(const Texture& right);
-
-    ////////////////////////////////////////////////////////////
     /// \brief Swap the contents of this texture with those of another
     ///
     /// \param right Instance to swap with
     ///
     ////////////////////////////////////////////////////////////
-    void swap(Texture& right);
+    void swap(Texture& right) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the underlying OpenGL handle of the texture.
@@ -611,22 +624,29 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Vector2u     m_size;          //!< Public texture size
-    Vector2u     m_actualSize;    //!< Actual texture size (can be greater than public size because of padding)
-    unsigned int m_texture;       //!< Internal texture identifier
-    bool         m_isSmooth;      //!< Status of the smooth filter
-    bool         m_sRgb;          //!< Should the texture source be converted from sRGB?
-    bool         m_isRepeated;    //!< Is the texture in repeat mode?
-    mutable bool m_pixelsFlipped; //!< To work around the inconsistency in Y orientation
-    bool         m_fboAttachment; //!< Is this texture owned by a framebuffer object?
-    bool         m_hasMipmap;     //!< Has the mipmap been generated?
-    Uint64       m_cacheId;       //!< Unique number that identifies the texture to the render target's cache
+    Vector2u      m_size;            //!< Public texture size
+    Vector2u      m_actualSize;      //!< Actual texture size (can be greater than public size because of padding)
+    unsigned int  m_texture{};       //!< Internal texture identifier
+    bool          m_isSmooth{};      //!< Status of the smooth filter
+    bool          m_sRgb{};          //!< Should the texture source be converted from sRGB?
+    bool          m_isRepeated{};    //!< Is the texture in repeat mode?
+    mutable bool  m_pixelsFlipped{}; //!< To work around the inconsistency in Y orientation
+    bool          m_fboAttachment{}; //!< Is this texture owned by a framebuffer object?
+    bool          m_hasMipmap{};     //!< Has the mipmap been generated?
+    std::uint64_t m_cacheId;         //!< Unique number that identifies the texture to the render target's cache
 };
+
+////////////////////////////////////////////////////////////
+/// \brief Swap the contents of one texture with those of another
+///
+/// \param left First instance to swap
+/// \param right Second instance to swap
+///
+////////////////////////////////////////////////////////////
+SFML_GRAPHICS_API void swap(Texture& left, Texture& right) noexcept;
 
 } // namespace sf
 
-
-#endif // SFML_TEXTURE_HPP
 
 ////////////////////////////////////////////////////////////
 /// \class sf::Texture
@@ -679,8 +699,7 @@ private:
 ///     return -1;
 ///
 /// // Assign it to a sprite
-/// sf::Sprite sprite;
-/// sprite.setTexture(texture);
+/// sf::Sprite sprite(texture);
 ///
 /// // Draw the textured sprite
 /// window.draw(sprite);
@@ -692,7 +711,7 @@ private:
 ///
 /// // Create an empty texture
 /// sf::Texture texture;
-/// if (!texture.create(640, 480))
+/// if (!texture.create({640, 480}))
 ///     return -1;
 ///
 /// // Create a sprite that will display the texture
@@ -703,7 +722,7 @@ private:
 ///     ...
 ///
 ///     // update the texture
-///     sf::Uint8* pixels = ...; // get a fresh chunk of pixels (the next frame of a movie, for example)
+///     std::uint8_t* pixels = ...; // get a fresh chunk of pixels (the next frame of a movie, for example)
 ///     texture.update(pixels);
 ///
 ///     // draw it

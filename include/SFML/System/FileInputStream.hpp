@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,8 +22,7 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_FILEINPUTSTREAM_HPP
-#define SFML_FILEINPUTSTREAM_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -34,10 +33,10 @@
 
 #include <SFML/System/InputStream.hpp>
 
-#include <cstdio>
 #include <filesystem>
 #include <memory>
-#include <string>
+
+#include <cstdio>
 
 #ifdef SFML_SYSTEM_ANDROID
 namespace sf::priv
@@ -84,13 +83,13 @@ public:
     /// \brief Move constructor
     ///
     ////////////////////////////////////////////////////////////
-    FileInputStream(FileInputStream&&);
+    FileInputStream(FileInputStream&&) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move assignment
     ///
     ////////////////////////////////////////////////////////////
-    FileInputStream& operator=(FileInputStream&&);
+    FileInputStream& operator=(FileInputStream&&) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Open the stream from a file path
@@ -114,7 +113,7 @@ public:
     /// \return The number of bytes actually read, or -1 on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Int64 read(void* data, Int64 size) override;
+    [[nodiscard]] std::int64_t read(void* data, std::int64_t size) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current reading position
@@ -124,7 +123,7 @@ public:
     /// \return The position actually sought to, or -1 on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Int64 seek(Int64 position) override;
+    [[nodiscard]] std::int64_t seek(std::int64_t position) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the current reading position in the stream
@@ -132,7 +131,7 @@ public:
     /// \return The current position, or -1 on error.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Int64 tell() override;
+    [[nodiscard]] std::int64_t tell() override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size of the stream
@@ -140,7 +139,7 @@ public:
     /// \return The total number of bytes available in the stream, or -1 on error
     ///
     ////////////////////////////////////////////////////////////
-    Int64 getSize() override;
+    std::int64_t getSize() override;
 
 private:
     ////////////////////////////////////////////////////////////
@@ -163,9 +162,6 @@ private:
 };
 
 } // namespace sf
-
-
-#endif // SFML_FILEINPUTSTREAM_HPP
 
 
 ////////////////////////////////////////////////////////////

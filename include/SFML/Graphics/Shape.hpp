@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,8 +22,7 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_SHAPE_HPP
-#define SFML_SHAPE_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -33,6 +32,7 @@
 #include <SFML/Graphics/Drawable.hpp>
 #include <SFML/Graphics/Transformable.hpp>
 #include <SFML/Graphics/VertexArray.hpp>
+
 #include <SFML/System/Vector2.hpp>
 
 
@@ -47,12 +47,6 @@ class Texture;
 class SFML_GRAPHICS_API Shape : public Drawable, public Transformable
 {
 public:
-    ////////////////////////////////////////////////////////////
-    /// \brief Virtual destructor
-    ///
-    ////////////////////////////////////////////////////////////
-    ~Shape() override;
-
     ////////////////////////////////////////////////////////////
     /// \brief Change the source texture of the shape
     ///
@@ -215,6 +209,18 @@ public:
     virtual Vector2f getPoint(std::size_t index) const = 0;
 
     ////////////////////////////////////////////////////////////
+    /// \brief Get the geometric center of the shape
+    ///
+    /// The returned point is in local coordinates, that is,
+    /// the shape's transforms (position, rotation, scale) are
+    /// not taken into account.
+    ///
+    /// \return The geometric center of the shape
+    ///
+    ////////////////////////////////////////////////////////////
+    virtual Vector2f getGeometricCenter() const;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Get the local bounding rectangle of the entity
     ///
     /// The returned rectangle is in local coordinates, which means
@@ -259,7 +265,7 @@ protected:
     ////////////////////////////////////////////////////////////
     /// \brief Recompute the internal geometry of the shape
     ///
-    /// This function must be called by the derived class everytime
+    /// This function must be called by the derived class every time
     /// the shape's points change (i.e. the result of either
     /// getPointCount or getPoint is different).
     ///
@@ -300,25 +306,21 @@ private:
     ////////////////////////////////////////////////////////////
     void updateOutlineColors();
 
-private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    const Texture* m_texture;          //!< Texture of the shape
-    IntRect        m_textureRect;      //!< Rectangle defining the area of the source texture to display
-    Color          m_fillColor;        //!< Fill color
-    Color          m_outlineColor;     //!< Outline color
-    float          m_outlineThickness; //!< Thickness of the shape's outline
-    VertexArray    m_vertices;         //!< Vertex array containing the fill geometry
-    VertexArray    m_outlineVertices;  //!< Vertex array containing the outline geometry
-    FloatRect      m_insideBounds;     //!< Bounding rectangle of the inside (fill)
-    FloatRect      m_bounds;           //!< Bounding rectangle of the whole shape (outline + fill)
+    const Texture* m_texture{};                  //!< Texture of the shape
+    IntRect        m_textureRect;                //!< Rectangle defining the area of the source texture to display
+    Color          m_fillColor{Color::White};    //!< Fill color
+    Color          m_outlineColor{Color::White}; //!< Outline color
+    float          m_outlineThickness{};         //!< Thickness of the shape's outline
+    VertexArray    m_vertices{PrimitiveType::TriangleFan};          //!< Vertex array containing the fill geometry
+    VertexArray    m_outlineVertices{PrimitiveType::TriangleStrip}; //!< Vertex array containing the outline geometry
+    FloatRect      m_insideBounds;                                  //!< Bounding rectangle of the inside (fill)
+    FloatRect      m_bounds; //!< Bounding rectangle of the whole shape (outline + fill)
 };
 
 } // namespace sf
-
-
-#endif // SFML_SHAPE_HPP
 
 
 ////////////////////////////////////////////////////////////

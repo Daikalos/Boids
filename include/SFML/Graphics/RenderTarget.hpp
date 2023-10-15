@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,8 +22,7 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_RENDERTARGET_HPP
-#define SFML_RENDERTARGET_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -58,7 +57,7 @@ public:
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
-    virtual ~RenderTarget();
+    virtual ~RenderTarget() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted copy constructor
@@ -73,6 +72,18 @@ public:
     RenderTarget& operator=(const RenderTarget&) = delete;
 
     ////////////////////////////////////////////////////////////
+    /// \brief Move constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    RenderTarget(RenderTarget&&) noexcept = default;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    RenderTarget& operator=(RenderTarget&&) noexcept = default;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Clear the entire target with a single color
     ///
     /// This function is usually called once every frame,
@@ -81,7 +92,7 @@ public:
     /// \param color Fill color to use to clear the render target
     ///
     ////////////////////////////////////////////////////////////
-    void clear(const Color& color = Color(0, 0, 0, 255));
+    void clear(const Color& color = Color::Black);
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current active view
@@ -397,7 +408,7 @@ protected:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    RenderTarget();
+    RenderTarget() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Performs the common initialization step after creation
@@ -480,34 +491,28 @@ private:
     ////////////////////////////////////////////////////////////
     struct StatesCache
     {
-        enum
-        {
-            VertexCacheSize = 4
-        };
+        static constexpr std::size_t VertexCacheSize{4}; // NOLINT(readability-identifier-naming)
 
-        bool      enable;                       //!< Is the cache enabled?
-        bool      glStatesSet;                  //!< Are our internal GL states set yet?
-        bool      viewChanged;                  //!< Has the current view changed since last draw?
-        BlendMode lastBlendMode;                //!< Cached blending mode
-        Uint64    lastTextureId;                //!< Cached texture
-        bool      texCoordsArrayEnabled;        //!< Is GL_TEXTURE_COORD_ARRAY client state enabled?
-        bool      useVertexCache;               //!< Did we previously use the vertex cache?
-        Vertex    vertexCache[VertexCacheSize]; //!< Pre-transformed vertices cache
+        bool          enable;                       //!< Is the cache enabled?
+        bool          glStatesSet{};                //!< Are our internal GL states set yet?
+        bool          viewChanged;                  //!< Has the current view changed since last draw?
+        BlendMode     lastBlendMode;                //!< Cached blending mode
+        std::uint64_t lastTextureId;                //!< Cached texture
+        bool          texCoordsArrayEnabled;        //!< Is GL_TEXTURE_COORD_ARRAY client state enabled?
+        bool          useVertexCache;               //!< Did we previously use the vertex cache?
+        Vertex        vertexCache[VertexCacheSize]; //!< Pre-transformed vertices cache
     };
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    View        m_defaultView; //!< Default view
-    View        m_view;        //!< Current view
-    StatesCache m_cache;       //!< Render states cache
-    Uint64      m_id;          //!< Unique number that identifies the RenderTarget
+    View          m_defaultView; //!< Default view
+    View          m_view;        //!< Current view
+    StatesCache   m_cache{};     //!< Render states cache
+    std::uint64_t m_id{};        //!< Unique number that identifies the RenderTarget
 };
 
 } // namespace sf
-
-
-#endif // SFML_RENDERTARGET_HPP
 
 
 ////////////////////////////////////////////////////////////
@@ -531,6 +536,12 @@ private:
 /// and regular SFML drawing commands. When doing so, make sure that
 /// OpenGL states are not messed up by calling the
 /// pushGLStates/popGLStates functions.
+///
+/// While render targets are moveable, it is not valid to move them
+/// between threads. This will cause your program to crash. The
+/// problem boils down to OpenGL being limited with regard to how it
+/// works in multithreaded environments. Please ensure you only move
+/// render targets within the same thread.
 ///
 /// \see sf::RenderWindow, sf::RenderTexture, sf::View
 ///

@@ -3,8 +3,8 @@
 #include <future>
 #include <algorithm>
 
-#include "../utilities/Utilities.h"
-#include "../utilities/VectorUtilities.h"
+#include "../utilities/CommonUtilities.hpp"
+#include "../utilities/VectorUtilities.hpp"
 
 #include "Config.h"
 
@@ -32,9 +32,9 @@ sf::Vector3f Fluid::GetColor(const sf::Vector2f& origin) const
 	if (!IsWithin(x, y))
 		return sf::Vector3f();
 
-	const float vx = util::map_to_range(m_vx[IX(x, y)],
+	const float vx = util::MapToRange(m_vx[IX(x, y)],
 		-Config::Inst().Fluid.ColorVel, Config::Inst().Fluid.ColorVel, -1.0f, 1.0f);
-	const float vy = util::map_to_range(m_vy[IX(x, y)],
+	const float vy = util::MapToRange(m_vy[IX(x, y)],
 		-Config::Inst().Fluid.ColorVel, Config::Inst().Fluid.ColorVel, -1.0f, 1.0f);
 
 	const float bnd = (float)Config::Inst().Fluid.Colors.size() - 1.0f;
@@ -50,7 +50,7 @@ sf::Vector3f Fluid::GetColor(const sf::Vector2f& origin) const
 
 	const float newT = scaledSpeed - std::floorf(scaledSpeed);
 
-	return vu::lerp(color1, color2, newT) * Config::Inst().Color.FluidWeight;
+	return vu::Lerp(color1, color2, newT) * Config::Inst().Color.FluidWeight;
 }
 
 void Fluid::AddDensity(int x, int y, float amount)

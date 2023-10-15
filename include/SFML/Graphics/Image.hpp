@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,8 +22,7 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_IMAGE_HPP
-#define SFML_IMAGE_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -34,7 +33,7 @@
 #include <SFML/Graphics/Rect.hpp>
 
 #include <filesystem>
-#include <string>
+#include <string_view>
 #include <vector>
 
 
@@ -56,7 +55,7 @@ public:
     /// \param color Fill color
     ///
     ////////////////////////////////////////////////////////////
-    void create(const Vector2u& size, const Color& color = Color(0, 0, 0));
+    void create(const Vector2u& size, const Color& color = Color::Black);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create the image from an array of pixels
@@ -70,14 +69,14 @@ public:
     /// \param pixels Array of pixels to copy to the image
     ///
     ////////////////////////////////////////////////////////////
-    void create(const Vector2u& size, const Uint8* pixels);
+    void create(const Vector2u& size, const std::uint8_t* pixels);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the image from a file on disk
     ///
     /// The supported image formats are bmp, png, tga, jpg, gif,
-    /// psd, hdr and pic. Some format options are not supported,
-    /// like progressive jpeg.
+    /// psd, hdr, pic and pnm. Some format options are not supported,
+    /// like jpeg with arithmetic coding or ASCII pnm.
     /// If this function fails, the image is left unchanged.
     ///
     /// \param filename Path of the image file to load
@@ -93,8 +92,8 @@ public:
     /// \brief Load the image from a file in memory
     ///
     /// The supported image formats are bmp, png, tga, jpg, gif,
-    /// psd, hdr and pic. Some format options are not supported,
-    /// like progressive jpeg.
+    /// psd, hdr, pic and pnm. Some format options are not supported,
+    /// like jpeg with arithmetic coding or ASCII pnm.
     /// If this function fails, the image is left unchanged.
     ///
     /// \param data Pointer to the file data in memory
@@ -111,8 +110,8 @@ public:
     /// \brief Load the image from a custom stream
     ///
     /// The supported image formats are bmp, png, tga, jpg, gif,
-    /// psd, hdr and pic. Some format options are not supported,
-    /// like progressive jpeg.
+    /// psd, hdr, pic and pnm. Some format options are not supported,
+    /// like jpeg with arithmetic coding or ASCII pnm.
     /// If this function fails, the image is left unchanged.
     ///
     /// \param stream Source stream to read from
@@ -157,7 +156,7 @@ public:
     /// \see create, loadFromFile, loadFromMemory, saveToFile
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool saveToMemory(std::vector<sf::Uint8>& output, const std::string& format) const;
+    [[nodiscard]] bool saveToMemory(std::vector<std::uint8_t>& output, std::string_view format) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size (width and height) of the image
@@ -178,7 +177,7 @@ public:
     /// \param alpha Alpha value to assign to transparent pixels
     ///
     ////////////////////////////////////////////////////////////
-    void createMaskFromColor(const Color& color, Uint8 alpha = 0);
+    void createMaskFromColor(const Color& color, std::uint8_t alpha = 0);
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy pixels from another image onto this one
@@ -261,7 +260,7 @@ public:
     /// \return Read-only pointer to the array of pixels
     ///
     ////////////////////////////////////////////////////////////
-    const Uint8* getPixelsPtr() const;
+    const std::uint8_t* getPixelsPtr() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Flip the image horizontally (left <-> right)
@@ -279,14 +278,11 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Vector2u           m_size;   //!< Image size
-    std::vector<Uint8> m_pixels; //!< Pixels of the image
+    Vector2u                  m_size;   //!< Image size
+    std::vector<std::uint8_t> m_pixels; //!< Pixels of the image
 };
 
 } // namespace sf
-
-
-#endif // SFML_IMAGE_HPP
 
 
 ////////////////////////////////////////////////////////////

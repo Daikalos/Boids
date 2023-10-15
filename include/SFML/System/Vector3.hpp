@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,8 +22,7 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_VECTOR3_HPP
-#define SFML_VECTOR3_HPP
+#pragma once
 
 #include <SFML/System/Export.hpp>
 
@@ -51,12 +50,12 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Construct the vector from its coordinates
     ///
-    /// \param X X coordinate
-    /// \param Y Y coordinate
-    /// \param Z Z coordinate
+    /// \param x X coordinate
+    /// \param y Y coordinate
+    /// \param z Z coordinate
     ///
     ////////////////////////////////////////////////////////////
-    constexpr Vector3(T X, T Y, T Z);
+    constexpr Vector3(T x, T y, T z);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the vector from another type of vector
@@ -134,9 +133,9 @@ public:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    T x; //!< X coordinate of the vector
-    T y; //!< Y coordinate of the vector
-    T z; //!< Z coordinate of the vector
+    T x{}; //!< X coordinate of the vector
+    T y{}; //!< Y coordinate of the vector
+    T z{}; //!< Z coordinate of the vector
 };
 
 ////////////////////////////////////////////////////////////
@@ -317,9 +316,6 @@ using Vector3i = Vector3<int>;
 using Vector3f = Vector3<float>;
 
 } // namespace sf
-
-
-#endif // SFML_VECTOR3_HPP
 
 
 ////////////////////////////////////////////////////////////

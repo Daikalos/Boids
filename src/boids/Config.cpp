@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <ranges>
 
-#include "../utilities/Utilities.h"
+#include "../utilities/CommonUtilities.hpp"
 
 sf::Vector3f StrToColor(std::string str)
 {
@@ -95,7 +95,7 @@ void ReadJSON(Config& oc, nlohmann::json& json)
 	std::vector<int> temp_color_options = color["ColorOptions"];
 	oc.Color.Flags = !temp_color_options.empty() ? CF_None : CF_Cycle;
 	for (int i = 0; i < temp_color_options.size(); ++i)
-		oc.Color.Flags |= util::pow(2, temp_color_options[i] - 1);
+		oc.Color.Flags |= util::Pow(2, temp_color_options[i] - 1);
 
 	oc.Color.PositionalWeight		= color["ColorPositionalWeight"];
 	oc.Color.CycleWeight			= color["ColorCycleWeight"];
@@ -270,7 +270,7 @@ std::vector<Rebuild> Config::Refresh(Config& prev)
 
 void Config::UpdateMisc()
 {
-	Boids.ViewAngle = util::to_radians(Boids.ViewAngle) / 2.0f;
+	Boids.ViewAngle = util::ToRadians(Boids.ViewAngle) / 2.0f;
 
 	Rules.SepDistance *= Rules.SepDistance;
 	Rules.AliDistance *= Rules.AliDistance;

@@ -1,10 +1,13 @@
 #include "Debug.h"
 
-#include "../utilities/Utilities.h"
+#include "../utilities/CommonUtilities.hpp"
 
 #include "Config.h"
 
-Debug::Debug() : m_updateFreqMax(Config::Inst().Misc.DebugUpdateFreq) {}
+Debug::Debug() 
+	: m_updateFreqMax(Config::Inst().Misc.DebugUpdateFreq)
+	, m_textState(DEFAULT_FONT)
+	, m_textInfo(DEFAULT_FONT) {}
 
 bool Debug::GetRefresh() const noexcept			{ return m_refresh; }
 const char* Debug::GetState() const noexcept	{ return m_enabled ? "DEBUG ENABLED" : "DEBUG DISABLED"; }
@@ -63,7 +66,7 @@ void Debug::Update(const InputHandler& inputHandler, std::size_t boidCount, std:
 	}
 
 	m_textInfo.setString("\nCONFIG REFRESH: " + 
-		util::remove_trailing_zeroes(std::to_string(util::set_precision(m_updateFreq, 2))) + m_info);
+		util::RemoveTrailingZeroes(std::to_string(util::SetPrecision(m_updateFreq, 2))) + m_info);
 }
 
 void Debug::Draw(sf::RenderWindow& window) const

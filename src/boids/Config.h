@@ -6,7 +6,7 @@
 #include <SFML/System/Vector2.hpp>
 #include <SFML/System/Vector3.hpp>
 
-inline constexpr const char* FILE_NAME	= "config-v1.json";
+inline constexpr const char* FILE_NAME	= "Config.json";
 
 inline constexpr const char* CONFIG			= "Config";
 inline constexpr const char* BACKGROUND		= "Background";

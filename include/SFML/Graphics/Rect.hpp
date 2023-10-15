@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2022 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,8 +22,7 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_RECT_HPP
-#define SFML_RECT_HPP
+#pragma once
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -47,7 +46,7 @@ public:
     /// \brief Default constructor
     ///
     /// Creates an empty rectangle (it is equivalent to calling
-    /// Rect(0, 0, 0, 0)).
+    /// Rect({0, 0}, {0, 0})).
     ///
     ////////////////////////////////////////////////////////////
     constexpr Rect();
@@ -128,10 +127,10 @@ public:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    T left;   //!< Left coordinate of the rectangle
-    T top;    //!< Top coordinate of the rectangle
-    T width;  //!< Width of the rectangle
-    T height; //!< Height of the rectangle
+    T left{};   //!< Left coordinate of the rectangle
+    T top{};    //!< Top coordinate of the rectangle
+    T width{};  //!< Width of the rectangle
+    T height{}; //!< Height of the rectangle
 };
 
 ////////////////////////////////////////////////////////////
@@ -173,9 +172,6 @@ using FloatRect = Rect<float>;
 } // namespace sf
 
 
-#endif // SFML_RECT_HPP
-
-
 ////////////////////////////////////////////////////////////
 /// \class sf::Rect
 /// \ingroup graphics
@@ -195,7 +191,7 @@ using FloatRect = Rect<float>;
 /// \li The left and top edges are included in the rectangle's area
 /// \li The right (left + width) and bottom (top + height) edges are excluded from the rectangle's area
 ///
-/// This means that sf::IntRect(0, 0, 1, 1) and sf::IntRect(1, 1, 1, 1)
+/// This means that sf::IntRect({0, 0}, {1, 1}) and sf::IntRect({1, 1}, {1, 1})
 /// don't intersect.
 ///
 /// sf::Rect is a template and may be used with any numeric type, but
