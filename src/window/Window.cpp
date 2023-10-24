@@ -19,22 +19,15 @@ void Window::Initialize()
 {
 	Build(m_border, m_mode, m_settings);
 
-#ifdef _WIN32
-	HideTaskbarIcon(*this);
-#endif
-
 	if (!setActive(true))
 		throw std::runtime_error("Window could not be activated.");
 
-	glViewport(0, 0, getSize().x, getSize().y);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glScalef(1.0f, -1.0f, 1.0f);
-	glOrtho(0, getSize().x, 0, getSize().y, -1.0, 1.0);
-	glMatrixMode(GL_MODELVIEW);
+	setMouseCursorGrabbed(false);
+	setMouseCursorVisible(true);
 
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
+#ifdef _WIN32
+	HideTaskbarIcon(*this);
+#endif
 }
 
 void Window::HandleEvent(const sf::Event& event)
@@ -43,17 +36,7 @@ void Window::HandleEvent(const sf::Event& event)
 	{
 		case sf::Event::Closed:
 		{
-			close();
-			break;
-		}
-		case sf::Event::Resized:
-		{
-			glViewport(0, 0, getSize().x, getSize().y);
-			glMatrixMode(GL_PROJECTION);
-			glLoadIdentity();
-			glScalef(1.0f, -1.0f, 1.0f);
-			glOrtho(0, getSize().x, 0, getSize().y, -1.0, 1.0);
-			glMatrixMode(GL_MODELVIEW);
+			//close();
 			break;
 		}
 	}

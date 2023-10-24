@@ -31,16 +31,16 @@ public:
 	InputHandler();
 
 public:
-	bool GetButtonHeld(const sf::Mouse::Button& button) const;
-	bool GetButtonPressed(const sf::Mouse::Button& button) const;
-	bool GetButtonReleased(const sf::Mouse::Button& button) const;
+	bool GetButtonHeld(sf::Mouse::Button button) const;
+	bool GetButtonPressed(sf::Mouse::Button button) const;
+	bool GetButtonReleased(sf::Mouse::Button button) const;
 
 	bool GetScrollUp() const;
 	bool GetScrollDown() const;
 
-	bool GetKeyHeld(const sf::Keyboard::Key& key) const;
-	bool GetKeyPressed(const sf::Keyboard::Key& key) const;
-	bool GetKeyReleased(const sf::Keyboard::Key& key) const;
+	bool GetKeyHeld(sf::Keyboard::Key key) const;
+	bool GetKeyPressed(sf::Keyboard::Key key) const;
+	bool GetKeyReleased(sf::Keyboard::Key key) const;
 
 public:
 	// call at start of loop before poll event
