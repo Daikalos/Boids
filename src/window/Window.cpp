@@ -112,7 +112,5 @@ void Window::SetCursorState(bool flag)
 
 RectFloat Window::GetBorder() const
 {
-	return RectFloat(0, 0, 
-		static_cast<float>(getSize().x), 
-		static_cast<float>(getSize().y));
+	return RectFloat(0, 0, (float)getSize().x, (float)getSize().y);
 }

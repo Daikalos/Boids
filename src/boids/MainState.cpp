@@ -46,7 +46,7 @@ void MainState::Initialize()
 
 			m_boids.Reserve(Config::Inst().Boids.Count);
 
-			for (int i = 0; i < Config::Inst().Boids.Count; ++i)
+			for (std::size_t i = 0; i < Config::Inst().Boids.Count; ++i)
 			{
 				sf::Vector2f pos = sf::Vector2f(
 					util::Random(0.0f, m_border.width) - m_border.left,
@@ -143,9 +143,9 @@ bool MainState::PreUpdate(float dt)
 					m_background.LoadProperties(sf::Vector2i(m_window->getSize()));
 
 					m_window->SetClearColor(sf::Color(
-						static_cast<std::uint8_t>(Config::Inst().Background.Color.x * 255.0f),
-						static_cast<std::uint8_t>(Config::Inst().Background.Color.y * 255.0f),
-						static_cast<std::uint8_t>(Config::Inst().Background.Color.z * 255.0f)));
+						(std::uint8_t)(Config::Inst().Background.Color.x * 255.0f),
+						(std::uint8_t)(Config::Inst().Background.Color.y * 255.0f),
+						(std::uint8_t)(Config::Inst().Background.Color.z * 255.0f)));
 
 					break;
 				}
@@ -188,7 +188,7 @@ bool MainState::Update(float dt)
 	if (m_inputHandler->GetButtonHeld(sf::Mouse::Middle))
 	{
 		const sf::Vector2f mouseDelta = vu::Direction(m_mousePosPrev, m_mousePos);
-		if (mouseDelta.length() > Config::Inst().Interaction.BoidAddMouseDiff)
+		if (mouseDelta.lengthSq() > Config::Inst().Interaction.BoidAddMouseDiff)
 		{
 			for (int i = 0; i < Config::Inst().Interaction.BoidAddAmount; ++i)
 			{
@@ -202,18 +202,16 @@ bool MainState::Update(float dt)
 			m_policy = m_boids.GetSize() <= Config::Inst().Misc.PolicyThreshold ? Policy::unseq : Policy::par_unseq;
 		}
 	}
-	if (m_inputHandler->GetKeyHeld(sf::Keyboard::Key::Delete))
+	if (m_inputHandler->GetKeyHeld(sf::Keyboard::Key::Delete) && m_boids.GetSize() > Config::Inst().Boids.Count)
 	{
-		if (m_boids.GetSize() > Config::Inst().Boids.Count)
-		{
-			std::size_t removeAmount = (m_boids.GetSize() - Config::Inst().Boids.Count) >= Config::Inst().Interaction.BoidRemoveAmount ?
-				Config::Inst().Interaction.BoidRemoveAmount : m_boids.GetSize() - Config::Inst().Boids.Count;
+		std::size_t removeAmount = std::min(
+			m_boids.GetSize() - Config::Inst().Boids.Count, 
+			(std::size_t)Config::Inst().Interaction.BoidRemoveAmount);
 
-			m_boids.Pop(removeAmount);
+		m_boids.Pop(removeAmount);
 
-			m_vertices.resize(m_boids.GetSize() * 3);
-			m_policy = m_boids.GetSize() <= Config::Inst().Misc.PolicyThreshold ? Policy::unseq : Policy::par_unseq;
-		}
+		m_vertices.resize(m_boids.GetSize() * 3);
+		m_policy = m_boids.GetSize() <= Config::Inst().Misc.PolicyThreshold ? Policy::unseq : Policy::par_unseq;
 	}
 
 	if (Config::Inst().Impulse.Enabled && m_inputHandler->GetButtonPressed(sf::Mouse::Button::Left))
@@ -266,7 +264,7 @@ bool MainState::FixedUpdate(float dt)
     return true;
 }
 
-bool MainState::PostUpdate(float dt, float interp)
+bool MainState::PostUpdate([[maybe_unused]] float dt, float interp)
 {
 	m_boids.UpdateVertices(m_vertices, interp, m_policy);
 

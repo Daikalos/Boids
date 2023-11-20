@@ -52,15 +52,15 @@ namespace util
 	constexpr T Pow(T base, int exponent)
 	{
 		if (exponent < 0)
-			return pow(1 / base, -exponent);
+			return Pow(1 / base, -exponent);
 
 		if (exponent == 0)
 			return 1;
 
 		if (exponent % 2 == 0)
-			return pow(base, exponent / 2) * pow(base, exponent / 2);
+			return Pow(base, exponent / 2) * Pow(base, exponent / 2);
 
-		return base * pow(base, (exponent - 1) / 2) * pow(base, (exponent - 1) / 2);
+		return base * Pow(base, (exponent - 1) / 2) * Pow(base, (exponent - 1) / 2);
 	}
 
 	template<typename T>
@@ -79,7 +79,7 @@ namespace util
 	template<typename T>
 	inline T SetPrecision(T val, int places)
 	{
-		const int n = pow(10, places);
+		const int n = Pow(10, places);
 		return std::roundf(val * n) / n;
 	}
 

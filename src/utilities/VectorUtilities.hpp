@@ -132,7 +132,7 @@ namespace vu
 			util::Lerp(lhs.z, rhs.z, a));
 	}
 
-	inline float AtanApproximation(float x)
+	__forceinline float AtanApproximation(float x)
 	{
 		const float a1 = 0.99997726f;
 		const float a3 = -0.33262347f;
@@ -146,7 +146,7 @@ namespace vu
 		return x * fmaf(xSq, fmaf(xSq, fmaf(xSq, fmaf(xSq, fmaf(xSq, a11, a9), a7), a5), a3), a1);
 	}
 
-	inline float Angle(float y, float x)
+	__forceinline float Angle(float y, float x)
 	{
 		const bool swap = std::fabs(x) < std::fabs(y);
 		const float atan_input = (swap ? x / y : y / x);

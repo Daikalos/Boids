@@ -82,9 +82,9 @@ void Background::LoadProperties(const sf::Vector2i& size)
 		Config::Inst().Background.Color.z > FLT_EPSILON;
 
 	m_background.setColor(setColor ? sf::Color(
-		static_cast<std::uint8_t>(Config::Inst().Background.Color.x * 255.0f),
-		static_cast<std::uint8_t>(Config::Inst().Background.Color.y * 255.0f),
-		static_cast<std::uint8_t>(Config::Inst().Background.Color.z * 255.0f)) : sf::Color::White);
+		(std::uint8_t)(Config::Inst().Background.Color.x * 255.0f),
+		(std::uint8_t)(Config::Inst().Background.Color.y * 255.0f),
+		(std::uint8_t)(Config::Inst().Background.Color.z * 255.0f)) : sf::Color::White);
 }
 
 void Background::Draw(sf::RenderWindow& window) const

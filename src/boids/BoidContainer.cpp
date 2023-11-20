@@ -51,9 +51,9 @@ void BoidContainer::Push(const sf::Vector2f& pos)
 void BoidContainer::Push(const sf::Vector2f& pos, const sf::Vector2f& velocity)
 {
 	if (m_size == m_capacity)
-		Reallocate(static_cast<std::size_t>(1.5 * m_capacity + 1));
+		Reallocate((std::size_t)(1.5 * m_capacity + 1));
 
-	m_indices[m_size] = static_cast<std::uint32_t>(m_size);
+	m_indices[m_size] = (std::uint32_t)m_size;
 
 	m_prevVelocities[m_size] = m_velocities[m_size]	= velocity;
 
@@ -148,7 +148,7 @@ void BoidContainer::PreUpdate(const Grid& grid)
 		const sf::Vector2f gridCellOverflow = gridCellRaw - sf::Vector2f(gridCell);
 
 		m_relativePositions[i]	= gridCellOverflow * grid.GetContDims();
-		m_cellIndices[i]		= static_cast<std::uint16_t>(grid.AtPos(gridCell));
+		m_cellIndices[i]		= (std::uint16_t)grid.AtPos(gridCell);
 	}
 }
 
@@ -175,12 +175,12 @@ void BoidContainer::UpdateCells(Grid& grid)
 
 		if (otherIndex != cellIndex)
 		{
-			grid.SetStartIndex(cellIndex, static_cast<int>(i));
-			grid.SetEndIndex(otherIndex, static_cast<int>(i) - 1);
+			grid.SetStartIndex(cellIndex, (int)i);
+			grid.SetEndIndex(otherIndex, (int)i - 1);
 		}
 	}
 
-	grid.SetEndIndex(m_cellIndices[m_indices[m_size - 1]], static_cast<int>(m_size) - 1);
+	grid.SetEndIndex(m_cellIndices[m_indices[m_size - 1]], (int)m_size - 1);
 }
 
 void BoidContainer::Interaction(const InputHandler& inputHandler, const sf::Vector2f& mousePos, float dt)
@@ -272,7 +272,7 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 					const float negFOV = -config.Boids.ViewAngle;
 					const float posFOV =  config.Boids.ViewAngle;
 
-					for (std::uint8_t i = 0; i < neighbourCount; ++i)
+					for (int i = 0; i < neighbourCount; ++i)
 					{
 						const int gridCellIndex = neighIndices[i];
 						const int start = grid.GetStartIndices()[gridCellIndex];
@@ -321,8 +321,8 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 					}
 
 					if (cohCount) m_velocities[lhs] += SteerAt(m_prevVelocities[lhs], vu::Normalize(coh, config.Boids.SpeedMax)) * config.Rules.CohWeight;
-					if (aliCount) m_velocities[lhs] += SteerAt(m_prevVelocities[lhs], vu::Normalize(ali / static_cast<float>(aliCount), config.Boids.SpeedMax)) * config.Rules.AliWeight;
-					if (sepCount) m_velocities[lhs] += SteerAt(m_prevVelocities[lhs], vu::Normalize(sep / static_cast<float>(sepCount), config.Boids.SpeedMax)) * config.Rules.SepWeight;
+					if (aliCount) m_velocities[lhs] += SteerAt(m_prevVelocities[lhs], vu::Normalize(ali / (float)aliCount, config.Boids.SpeedMax)) * config.Rules.AliWeight;
+					if (sepCount) m_velocities[lhs] += SteerAt(m_prevVelocities[lhs], vu::Normalize(sep / (float)sepCount, config.Boids.SpeedMax)) * config.Rules.SepWeight;
 
 					m_densities[lhs] = std::max(std::max(cohCount, aliCount), sepCount);
 				});
@@ -530,11 +530,11 @@ void BoidContainer::UpdateVertices(sf::VertexArray& vertices, float interp, Poli
 					const sf::Vector3f& color = m_colors[i];
 
 					const sf::Color c = sf::Color(
-						static_cast<std::uint8_t>(color.x * 255.0f),
-						static_cast<std::uint8_t>(color.y * 255.0f),
-						static_cast<std::uint8_t>(color.z * 255.0f));
+						(std::uint8_t)(color.x * 255.0f),
+						(std::uint8_t)(color.y * 255.0f),
+						(std::uint8_t)(color.z * 255.0f));
 
-					const std::size_t v = static_cast<std::size_t>(i) * 3;
+					const std::size_t v = (std::size_t)i * 3;
 
 					vertices[v + 0].position = drawTri.v0;
 					vertices[v + 1].position = drawTri.v1;
@@ -648,7 +648,7 @@ sf::Vector3f BoidContainer::CycleColor(float cycleTime)
 	float scaledTime = cycleTime * (float)(Config::Inst().Cycle.Colors.size() - 1);
 
 	const auto i1 = (int)scaledTime;
-	const auto i2 = (i1 == Config::Inst().Cycle.Colors.size() - 1) ? 0 : i1 + 1;
+	const auto i2 = (i1 == (int)Config::Inst().Cycle.Colors.size() - 1) ? 0 : i1 + 1;
 
 	const sf::Vector3f color1 = Config::Inst().Cycle.Colors[i1];
 	const sf::Vector3f color2 = Config::Inst().Cycle.Colors[i2];
@@ -665,7 +665,7 @@ sf::Vector3f BoidContainer::DensityColor(std::uint32_t density, float densityTim
 	const float scaledDensity = std::fmodf(densityPercentage + densityTime, 1.0f) * (float)(Config::Inst().Density.Colors.size() - 1);
 
 	const auto i1 = (int)scaledDensity;
-	const auto i2 = (i1 == Config::Inst().Density.Colors.size() - 1) ? 0 : i1 + 1;
+	const auto i2 = (i1 == (int)Config::Inst().Density.Colors.size() - 1) ? 0 : i1 + 1;
 
 	const sf::Vector3f color1 = Config::Inst().Density.Colors[i1];
 	const sf::Vector3f color2 = Config::Inst().Density.Colors[i2];
@@ -682,7 +682,7 @@ sf::Vector3f BoidContainer::VelocityColor(float speed)
 	const float scaled_velocity = velocity_percentage * (float)(Config::Inst().Velocity.Colors.size() - 1);
 
 	const auto i1 = (int)scaled_velocity;
-	const auto i2 = (i1 == Config::Inst().Velocity.Colors.size() - 1) ? 0 : i1 + 1;
+	const auto i2 = (i1 == (int)Config::Inst().Velocity.Colors.size() - 1) ? 0 : i1 + 1;
 
 	const sf::Vector3f color1 = Config::Inst().Velocity.Colors[i1];
 	const sf::Vector3f color2 = Config::Inst().Velocity.Colors[i2];
@@ -699,7 +699,7 @@ sf::Vector3f BoidContainer::RotationColor(float angle)
 	const float scaledRotation = rotationPercentage * (float)(Config::Inst().Rotation.Colors.size() - 1);
 
 	const auto i1 = (int)scaledRotation;
-	const auto i2 = (i1 == Config::Inst().Rotation.Colors.size() - 1) ? 0 : i1 + 1;
+	const auto i2 = (i1 == (int)Config::Inst().Rotation.Colors.size() - 1) ? 0 : i1 + 1;
 
 	const sf::Vector3f color1 = Config::Inst().Rotation.Colors[i1];
 	const sf::Vector3f color2 = Config::Inst().Rotation.Colors[i2];
@@ -716,7 +716,7 @@ sf::Vector3f BoidContainer::AudioColor(std::uint32_t density, float volume)
 	const float scaledVolume = std::fminf(volume * densityPercentage, 1.0f) * (float)(Config::Inst().Audio.Colors.size() - 1);
 
 	const auto i1 = (int)scaledVolume;
-	const auto i2 = (i1 == Config::Inst().Audio.Colors.size() - 1) ? 0 : i1 + 1;
+	const auto i2 = (i1 == (int)Config::Inst().Audio.Colors.size() - 1) ? 0 : i1 + 1;
 
 	const sf::Vector3f color1 = Config::Inst().Audio.Colors[i1];
 	const sf::Vector3f color2 = Config::Inst().Audio.Colors[i2];
@@ -742,7 +742,7 @@ void BoidContainer::ImpulseColor(const sf::Vector2f& pos, sf::Vector3f& color, c
 		const float scaled_length = std::fmodf(percentage, 1.0f) * (float)(Config::Inst().Impulse.Colors.size() - 1);
 
 		const auto i1 = (int)scaled_length;
-		const auto i2 = (i1 == Config::Inst().Impulse.Colors.size() - 1) ? 0 : i1 + 1;
+		const auto i2 = (i1 == (int)Config::Inst().Impulse.Colors.size() - 1) ? 0 : i1 + 1;
 
 		const sf::Vector3f color1 = Config::Inst().Impulse.Colors[i1];
 		const sf::Vector3f color2 = Config::Inst().Impulse.Colors[i2];

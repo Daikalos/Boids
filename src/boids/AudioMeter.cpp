@@ -14,10 +14,8 @@ AudioMeterWin::~AudioMeterWin()
 	SAFE_RELEASE(m_meterInfo);
 	SAFE_RELEASE(m_sessionManager);
 
-	for (int i = 0; i < Config::Inst().Audio.Apps.size(); ++i)
+	for (const auto& process_name : Config::Inst().Audio.Apps)
 	{
-		std::wstring& process_name = Config::Inst().Audio.Apps[i];
-
 		SAFE_RELEASE(m_psc[process_name].first);
 		SAFE_RELEASE(m_psc[process_name].second);
 	}

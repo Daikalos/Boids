@@ -1,5 +1,7 @@
 #pragma once
 
+#pragma warning(disable : 4201)
+
 #include <SFML/Graphics/Rect.hpp>
 #include <SFML/System/Vector2.hpp>
 
@@ -59,9 +61,6 @@ public:
 
 	[[nodiscard]] constexpr bool Contains(const sf::Vector2<T>& point) const;
 	[[nodiscard]] constexpr bool Contains(const Rect& other) const;
-
-	[[nodiscard]] constexpr Rect<T> Inflate(const sf::Vector2<T>& m) const;
-	[[nodiscard]] constexpr Rect<T> Inflate(T multiplier) const;
 
 	union
 	{
@@ -233,29 +232,6 @@ inline constexpr bool Rect<T>::Contains(const Rect& other) const
 	const T r2b = max(other.top, other.Bottom());
 
 	return (r2l >= r1l && r2r < r1r && r2t >= r1t && r2b < r1b);
-}
-
-template<typename T>
-inline constexpr Rect<T> Rect<T>::Inflate(const sf::Vector2<T>& m) const
-{
-	Rect result(*this);
-
-	float prev_width = result.width;
-	float prev_height = result.height;
-
-	result.width *= m.x;
-	result.height *= m.y;
-
-	result.left -= (result.width - prev_width) / static_cast<T>(2);
-	result.top -= (result.height - prev_height) / static_cast<T>(2);
-
-	return result;
-}
-
-template<typename T>
-inline constexpr Rect<T> Rect<T>::Inflate(T multiplier) const
-{
-	return Inflate({ multiplier, multiplier });
 }
 
 template<typename T>

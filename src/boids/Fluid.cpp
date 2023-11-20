@@ -43,7 +43,7 @@ sf::Vector3f Fluid::GetColor(const sf::Vector2f& origin) const
 	scaledSpeed = std::clamp(scaledSpeed, 0.0f, bnd);
 
 	const int i1 = (int)scaledSpeed;
-	const int i2 = (i1 == Config::Inst().Fluid.Colors.size() - 1) ? 0 : i1 + 1;
+	const int i2 = (i1 == (int)Config::Inst().Fluid.Colors.size() - 1) ? 0 : i1 + 1;
 
 	const sf::Vector3f color1 = Config::Inst().Fluid.Colors[i1];
 	const sf::Vector3f color2 = Config::Inst().Fluid.Colors[i2];

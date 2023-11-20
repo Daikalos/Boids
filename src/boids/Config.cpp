@@ -7,36 +7,24 @@
 
 #include "../utilities/CommonUtilities.hpp"
 
-sf::Vector3f StrToColor(std::string str)
+sf::Vector3f ConvertToColor(const nlohmann::basic_json<>::value_type& src)
 {
-	std::stringstream stream(str);
-	std::string segment;
-	std::vector<std::string> values;
-
-	while (std::getline(stream, segment, ' '))
+	return sf::Vector3f
 	{
-		values.emplace_back(segment);
-	}
-
-	sf::Vector3f result(1.0f, 1.0f, 1.0f);
-
-	try
-	{
-		result.x = std::stof(values[0]) / 255.0f;
-		result.y = std::stof(values[1]) / 255.0f;
-		result.z = std::stof(values[2]) / 255.0f;
-	}
-	catch (std::exception e) {}
-
-	return result;
+		src["r"] / 255.0f,
+		src["g"] / 255.0f,
+		src["b"] / 255.0f
+	};
 }
 
-void ConvertToColor(std::vector<sf::Vector3f>& dest, const std::vector<std::string>& src)
+std::vector<sf::Vector3f> ConvertToColorList(const std::vector<nlohmann::basic_json<>::value_type>& src)
 {
-	dest = std::vector<sf::Vector3f>(src.size());
+	std::vector<sf::Vector3f> result(src.size());
 
-	for (int i = 0; i < src.size(); ++i)
-		dest[i] = StrToColor(src[i]);
+	for (std::size_t i = 0; i < src.size(); ++i)
+		result[i] = ConvertToColor(src[i]);
+
+	return result;
 }
 
 void ReadJSON(Config& oc, nlohmann::json& json)
@@ -50,7 +38,7 @@ void ReadJSON(Config& oc, nlohmann::json& json)
 	auto& color			= ic[COLOR];
 	auto& misc			= ic[MISC];
 
-	oc.Background.Color				= StrToColor(background["Color"]);
+	oc.Background.Color				= ConvertToColor(background["Color"]);
 	oc.Background.Texture			= background["Texture"];
 	oc.Background.PositionX			= background["PositionX"];
 	oc.Background.PositionY			= background["PositionY"];
@@ -94,7 +82,7 @@ void ReadJSON(Config& oc, nlohmann::json& json)
 
 	std::vector<int> temp_color_options = color["ColorOptions"];
 	oc.Color.Flags = !temp_color_options.empty() ? CF_None : CF_Cycle;
-	for (int i = 0; i < temp_color_options.size(); ++i)
+	for (std::size_t i = 0; i < temp_color_options.size(); ++i)
 		oc.Color.Flags |= util::Pow(2, temp_color_options[i] - 1);
 
 	oc.Color.PositionalWeight		= color["ColorPositionalWeight"];
@@ -107,17 +95,17 @@ void ReadJSON(Config& oc, nlohmann::json& json)
 
 	if ((oc.Color.Flags & CF_Positional) == CF_Positional)
 	{
-		oc.Positional.TopLeft		= StrToColor(color["TopLeft"]);
-		oc.Positional.TopRight		= StrToColor(color["TopRight"]);
-		oc.Positional.BotLeft		= StrToColor(color["BotLeft"]);
-		oc.Positional.BotRight		= StrToColor(color["BotRight"]);
+		oc.Positional.TopLeft		= ConvertToColor(color["TopLeft"]);
+		oc.Positional.TopRight		= ConvertToColor(color["TopRight"]);
+		oc.Positional.BotLeft		= ConvertToColor(color["BotLeft"]);
+		oc.Positional.BotRight		= ConvertToColor(color["BotRight"]);
 	}
 	if ((oc.Color.Flags & CF_Cycle) == CF_Cycle)
 	{
 		oc.Cycle.Random				= color["CycleRandom"];
 		oc.Cycle.Speed				= color["CycleSpeed"];
 
-		ConvertToColor(oc.Cycle.Colors, color["CycleColors"]);
+		oc.Cycle.Colors = ConvertToColorList(color["CycleColors"]);
 	}
 	if ((oc.Color.Flags & CF_Density) == CF_Density)
 	{
@@ -125,22 +113,22 @@ void ReadJSON(Config& oc, nlohmann::json& json)
 		oc.Density.DensityCycleEnabled	= color["DensityCycleEnabled"];
 		oc.Density.DensityCycleSpeed	= color["DensityCycleSpeed"];
 
-		ConvertToColor(oc.Density.Colors, color["DensityColors"]);
+		oc.Density.Colors = ConvertToColorList(color["DensityColors"]);
 	}
 	if ((oc.Color.Flags & CF_Velocity) == CF_Velocity)
 	{
-		ConvertToColor(oc.Velocity.Colors, color["VelocityColors"]);
+		oc.Velocity.Colors = ConvertToColorList(color["VelocityColors"]);
 	}
 	if ((oc.Color.Flags & CF_Rotation) == CF_Rotation)
 	{
-		ConvertToColor(oc.Rotation.Colors, color["RotationColors"]);
+		oc.Rotation.Colors = ConvertToColorList(color["RotationColors"]);
 	}
 	if ((oc.Color.Flags & CF_Audio) == CF_Audio)
 	{
 		std::vector<std::string> temp_processes = color["AudioApps"];
 		oc.Audio.Apps = std::vector<std::wstring>(temp_processes.size());
 
-		for (int i = 0; i < oc.Audio.Apps.size(); ++i)
+		for (std::size_t i = 0; i < oc.Audio.Apps.size(); ++i)
 		{
 			std::string process = temp_processes[i];
 			oc.Audio.Apps[i] = std::wstring(process.begin(), process.end());
@@ -151,7 +139,7 @@ void ReadJSON(Config& oc, nlohmann::json& json)
 		oc.Audio.Speed				= color["AudioSpeed"];
 		oc.Audio.Density			= color["AudioDensity"];
 
-		ConvertToColor(oc.Audio.Colors, color["AudioColors"]);
+		oc.Audio.Colors = ConvertToColorList(color["AudioColors"]);
 	}
 	if ((oc.Color.Flags & CF_Fluid) == CF_Fluid)
 	{
@@ -161,7 +149,7 @@ void ReadJSON(Config& oc, nlohmann::json& json)
 		oc.Fluid.Diffusion			= color["FluidDiffusion"];
 		oc.Fluid.Viscosity			= color["FluidViscosity"];
 
-		ConvertToColor(oc.Fluid.Colors, color["FluidColors"]);
+		oc.Fluid.Colors = ConvertToColorList(color["FluidColors"]);
 	}
 
 	oc.Impulse.Enabled				= color["ImpulseEnabled"];
@@ -170,7 +158,7 @@ void ReadJSON(Config& oc, nlohmann::json& json)
 	oc.Impulse.FadeDistance			= color["ImpulseFadeDistance"];
 	oc.Impulse.Force				= color["ImpulseForce"];
 
-	ConvertToColor(oc.Impulse.Colors, color["ImpulseColors"]);
+	oc.Impulse.Colors = ConvertToColorList(color["ImpulseColors"]);
 
 	oc.Misc.GridExtraCells			= misc["GridExtraCells"];
 	oc.Misc.CameraEnabled			= misc["CameraEnabled"];
@@ -217,7 +205,7 @@ void Config::Load()
 std::vector<Rebuild> Config::Refresh(Config& prev)
 {
 	std::vector<Rebuild> result;
-	result.reserve(static_cast<int>(Rebuild::Count));
+	result.reserve((int)Rebuild::Count);
 
 	Load();
 
@@ -277,6 +265,7 @@ void Config::UpdateMisc()
 	Rules.CohDistance *= Rules.CohDistance;
 
 	Interaction.PredatorDistance *= Interaction.PredatorDistance;
+	Interaction.BoidAddMouseDiff *= Interaction.BoidAddMouseDiff;
 
 	BoidHalfSize = sf::Vector2f(Boids.Width, Boids.Height) / 2.0f;
 
