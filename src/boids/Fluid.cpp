@@ -8,17 +8,20 @@
 
 #include "Config.h"
 
+ThreadPool Fluid::threadPool(std::thread::hardware_concurrency());
+
 Fluid::Fluid(const sf::Vector2u& size)
-	: W(size.x / Config::Inst().Fluid.Scale), H(size.y / Config::Inst().Fluid.Scale), N(W * H)
+	: W(size.x / Config::Inst().Fluid.Scale)
+	, H(size.y / Config::Inst().Fluid.Scale)
+	, N(W * H)
+	, m_vx(std::make_unique<float[]>(N))
+	, m_vy(std::make_unique<float[]>(N))
+	, m_vxPrev(std::make_unique<float[]>(N))
+	, m_vyPrev(std::make_unique<float[]>(N))
+	, m_density(std::make_unique<float[]>(N))
+	, m_densityPrev(std::make_unique<float[]>(N))
 {
-	m_vx = std::make_unique<float[]>(N);
-	m_vy = std::make_unique<float[]>(N);
 
-	m_vxPrev = std::make_unique<float[]>(N);
-	m_vyPrev = std::make_unique<float[]>(N);
-
-	m_density = std::make_unique<float[]>(N);
-	m_densityPrev = std::make_unique<float[]>(N);
 }
 
 sf::Vector3f Fluid::GetColor(const sf::Vector2f& origin) const
@@ -246,37 +249,33 @@ void Fluid::StepLine(int x0, int y0, int x1, int y1, int dx, int dy, float a)
 
 void Fluid::Update(float dt)
 {
-	static std::future<void> thread1;
-	static std::future<void> thread2;
-	static std::future<void> thread3;
-
 	{
-		thread1 = std::async(std::launch::async, &Fluid::Diffuse, this, m_vxPrev.get(), m_vx.get(), Config::Inst().Fluid.Viscosity, 1, dt);
-		thread2 = std::async(std::launch::async, &Fluid::Diffuse, this, m_vyPrev.get(), m_vy.get(), Config::Inst().Fluid.Viscosity, 2, dt);
+		auto thread1 = threadPool.Enqueue(&Fluid::Diffuse, this, m_vxPrev.get(), m_vx.get(), Config::Inst().Fluid.Viscosity, 1, dt);
+		auto thread2 = threadPool.Enqueue(&Fluid::Diffuse, this, m_vyPrev.get(), m_vy.get(), Config::Inst().Fluid.Viscosity, 2, dt);
 
 		thread1.wait();
 		thread2.wait();
 	}
 	
 	{
-		thread1 = std::async(std::launch::async, &Fluid::Project, this, m_vxPrev.get(), m_vyPrev.get(), m_vx.get(), m_vy.get());
+		auto thread1 = threadPool.Enqueue(&Fluid::Project, this, m_vxPrev.get(), m_vyPrev.get(), m_vx.get(), m_vy.get());
 
 		thread1.wait();
-
-		thread2 = std::async(std::launch::async, &Fluid::Advect, this, m_vx.get(), m_vxPrev.get(), m_vxPrev.get(), m_vyPrev.get(), 1, dt);
-		thread3 = std::async(std::launch::async, &Fluid::Advect, this, m_vy.get(), m_vyPrev.get(), m_vxPrev.get(), m_vyPrev.get(), 2, dt);
+		 
+		auto thread2 = threadPool.Enqueue(&Fluid::Advect, this, m_vx.get(), m_vxPrev.get(), m_vxPrev.get(), m_vyPrev.get(), 1, dt);
+		auto thread3 = threadPool.Enqueue(&Fluid::Advect, this, m_vy.get(), m_vyPrev.get(), m_vxPrev.get(), m_vyPrev.get(), 2, dt);
 
 		thread2.wait();
 		thread3.wait();
 	}
 
 	{
-		thread1 = std::async(std::launch::async, &Fluid::Project, this, m_vx.get(), m_vy.get(), m_vxPrev.get(), m_vyPrev.get());
-		thread2 = std::async(std::launch::async, &Fluid::Diffuse, this, m_densityPrev.get(), m_density.get(), Config::Inst().Fluid.Diffusion, 0, dt);
+		auto thread1 = threadPool.Enqueue(&Fluid::Project, this, m_vx.get(), m_vy.get(), m_vxPrev.get(), m_vyPrev.get());
+		auto thread2 = threadPool.Enqueue(&Fluid::Diffuse, this, m_densityPrev.get(), m_density.get(), Config::Inst().Fluid.Diffusion, 0, dt);
 
 		thread1.wait();
 
-		thread3 = std::async(std::launch::async, &Fluid::Advect, this, m_density.get(), m_densityPrev.get(), m_vx.get(), m_vy.get(), 0, dt);
+		auto thread3 = threadPool.Enqueue(&Fluid::Advect, this, m_density.get(), m_densityPrev.get(), m_vx.get(), m_vy.get(), 0, dt);
 
 		thread2.wait();
 		thread3.wait();

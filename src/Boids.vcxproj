@@ -30,6 +30,7 @@
     <ClCompile Include="boids\MainState.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="utilities\FPSCounter.cpp" />
+    <ClCompile Include="utilities\ThreadPool.cpp" />
     <ClCompile Include="window\Application.cpp" />
     <ClCompile Include="window\Camera.cpp" />
     <ClCompile Include="window\InputHandler.cpp" />
@@ -50,6 +51,7 @@
     <ClInclude Include="utilities\FPSCounter.h" />
     <ClInclude Include="utilities\PolicySelect.h" />
     <ClInclude Include="utilities\Rectangle.hpp" />
+    <ClInclude Include="utilities\ThreadPool.h" />
     <ClInclude Include="utilities\VectorUtilities.h" />
     <ClInclude Include="utilities\VectorUtilities.hpp" />
     <ClInclude Include="window\ResourceHolder.hpp" />

@@ -5,6 +5,8 @@
 
 #include <memory>
 
+#include "../utilities/ThreadPool.h"
+
 class Fluid final
 {
 public:
@@ -53,6 +55,8 @@ private:
 
 	std::unique_ptr<float[]> m_density;
 	std::unique_ptr<float[]> m_densityPrev;
+
+	static ThreadPool threadPool;
 };
 
 constexpr int Fluid::IX(int x, int y) const noexcept
