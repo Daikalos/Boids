@@ -8,7 +8,7 @@
 
 #include "Config.h"
 
-ThreadPool Fluid::threadPool(std::thread::hardware_concurrency());
+ThreadPool Fluid::threadPool(3);
 
 Fluid::Fluid(const sf::Vector2u& size)
 	: W(size.x / Config::Inst().Fluid.Scale)
