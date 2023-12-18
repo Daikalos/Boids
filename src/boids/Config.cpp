@@ -11,9 +11,9 @@ sf::Vector3f ConvertToColor(const nlohmann::basic_json<>::value_type& src)
 {
 	return sf::Vector3f
 	{
-		src["r"] / 255.0f,
-		src["g"] / 255.0f,
-		src["b"] / 255.0f
+		src["r"] / 255.999f,
+		src["g"] / 255.999f,
+		src["b"] / 255.999f
 	};
 }
 

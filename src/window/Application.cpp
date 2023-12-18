@@ -20,9 +20,9 @@ Application::Application(std::string name)
 	m_camera.SetScale({ Config::Inst().Misc.CameraZoom, Config::Inst().Misc.CameraZoom });
 
 	m_window.SetClearColor(sf::Color(
-		(std::uint8_t)(Config::Inst().Background.Color.x * 255.0f),
-		(std::uint8_t)(Config::Inst().Background.Color.y * 255.0f),
-		(std::uint8_t)(Config::Inst().Background.Color.z * 255.0f)));
+		(std::uint8_t)(Config::Inst().Background.Color.x * 255.999f),
+		(std::uint8_t)(Config::Inst().Background.Color.y * 255.999f),
+		(std::uint8_t)(Config::Inst().Background.Color.z * 255.999f)));
 }
 
 void Application::Run()

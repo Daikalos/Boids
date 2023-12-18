@@ -143,9 +143,9 @@ bool MainState::PreUpdate(float dt)
 					m_background.LoadProperties(sf::Vector2i(m_window->getSize()));
 
 					m_window->SetClearColor(sf::Color(
-						(std::uint8_t)(Config::Inst().Background.Color.x * 255.0f),
-						(std::uint8_t)(Config::Inst().Background.Color.y * 255.0f),
-						(std::uint8_t)(Config::Inst().Background.Color.z * 255.0f)));
+						(std::uint8_t)(Config::Inst().Background.Color.x * 255.999f),
+						(std::uint8_t)(Config::Inst().Background.Color.y * 255.999f),
+						(std::uint8_t)(Config::Inst().Background.Color.z * 255.999f)));
 
 					break;
 				}

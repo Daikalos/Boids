@@ -530,9 +530,9 @@ void BoidContainer::UpdateVertices(sf::VertexArray& vertices, float interp, Poli
 					const sf::Vector3f& color = m_colors[i];
 
 					const sf::Color c = sf::Color(
-						(std::uint8_t)(color.x * 255.0f),
-						(std::uint8_t)(color.y * 255.0f),
-						(std::uint8_t)(color.z * 255.0f));
+						(std::uint8_t)(color.x * 255.999f),
+						(std::uint8_t)(color.y * 255.999f),
+						(std::uint8_t)(color.z * 255.999f));
 
 					const std::size_t v = (std::size_t)i * 3;
 
@@ -638,9 +638,9 @@ sf::Vector3f BoidContainer::PositionColor(const sf::Vector2f& pos, const RectFlo
 	const float s = pos.y / border.height;
 
 	return sf::Vector3f(
-		util::Interpolate(Config::Inst().Positional.TopLeft.x * 255.0f, Config::Inst().Positional.TopRight.x * 255.0f, Config::Inst().Positional.BotLeft.x * 255.0f, Config::Inst().Positional.BotRight.x * 255.0f, t, s) / 255.0f,
-		util::Interpolate(Config::Inst().Positional.TopLeft.y * 255.0f, Config::Inst().Positional.TopRight.y * 255.0f, Config::Inst().Positional.BotLeft.y * 255.0f, Config::Inst().Positional.BotRight.y * 255.0f, t, s) / 255.0f,
-		util::Interpolate(Config::Inst().Positional.TopLeft.z * 255.0f, Config::Inst().Positional.TopRight.z * 255.0f, Config::Inst().Positional.BotLeft.z * 255.0f, Config::Inst().Positional.BotRight.z * 255.0f, t, s) / 255.0f);
+		util::Interpolate(Config::Inst().Positional.TopLeft.x * 255.999f, Config::Inst().Positional.TopRight.x * 255.999f, Config::Inst().Positional.BotLeft.x * 255.999f, Config::Inst().Positional.BotRight.x * 255.999f, t, s) / 255.999f,
+		util::Interpolate(Config::Inst().Positional.TopLeft.y * 255.999f, Config::Inst().Positional.TopRight.y * 255.999f, Config::Inst().Positional.BotLeft.y * 255.999f, Config::Inst().Positional.BotRight.y * 255.999f, t, s) / 255.999f,
+		util::Interpolate(Config::Inst().Positional.TopLeft.z * 255.999f, Config::Inst().Positional.TopRight.z * 255.999f, Config::Inst().Positional.BotLeft.z * 255.999f, Config::Inst().Positional.BotRight.z * 255.999f, t, s) / 255.999f);
 }
 
 sf::Vector3f BoidContainer::CycleColor(float cycleTime)
