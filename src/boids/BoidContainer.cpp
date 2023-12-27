@@ -285,34 +285,58 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 
 						for (int j = start; j <= end; ++j) // do in one loop
 						{
-							if (lhs == m_indices[j])
+							const auto rhs = m_indices[j];
+
+							if (lhs == rhs)
 								continue;
 
-							const sf::Vector2f dir = (neighbourCell + m_relativePositions[m_indices[j]]) - thisRelative;
+							const sf::Vector2f dir = (neighbourCell + m_relativePositions[rhs]) - thisRelative;
 							const float distanceSqr = dir.lengthSq();
 
-							const bool withinCohesion	= distanceSqr < cohDistance;
-							const bool withinAlignment	= distanceSqr < aliDistance;
+							const int withinCohesion	= distanceSqr < cohDistance;
+							const int withinAlignment	= distanceSqr < aliDistance;
+							const int withinSeperation	= distanceSqr < sepDistance;
 
-							if (withinCohesion || withinAlignment)
+							const int flag = (withinCohesion | withinAlignment << 1);
+
+							switch (flag)
 							{
-								const float angle = vu::PI<> - std::abs(std::abs(vu::Angle(dir.y, dir.x) - thisAngle) - vu::PI<>);
-								if (angle > negFOV && angle < posFOV)
+								case 1: // cohesion
 								{
-									if (withinCohesion) [[likely]]
-									{
-										coh += dir; // Head towards center of boids
-										++cohCount;
-									}
-									if (withinAlignment) [[likely]]
-									{
-										ali += m_prevVelocities[m_indices[j]]; // Align with every boids velocity
-										++aliCount;
-									}
+									const float angle		= vu::PI<> - std::abs(std::abs(vu::Angle(dir.y, dir.x) - thisAngle) - vu::PI<>);
+									const bool withinFOV	= angle > negFOV && angle < posFOV;
+
+									coh += dir * (float)withinFOV; // Head towards center of boids
+									cohCount += withinFOV;
+
+									break; 
+								}
+								case 2: // alignment
+								{
+									const float angle		= vu::PI<> - std::abs(std::abs(vu::Angle(dir.y, dir.x) - thisAngle) - vu::PI<>);
+									const bool withinFOV	= angle > negFOV && angle < posFOV;
+
+									ali += m_prevVelocities[rhs] * (float)withinFOV; // Align with every boids velocity
+									aliCount += withinFOV;
+
+									break;
+								}
+								[[likely]] case 3: // both
+								{
+									const float angle		= vu::PI<> - std::abs(std::abs(vu::Angle(dir.y, dir.x) - thisAngle) - vu::PI<>);
+									const bool withinFOV	= angle > negFOV && angle < posFOV;
+
+									coh += dir * (float)withinFOV;
+									cohCount += withinFOV;
+
+									ali += m_prevVelocities[rhs] * (float)withinFOV;
+									aliCount += withinFOV;
+
+									break;
 								}
 							}
 
-							if (distanceSqr < sepDistance)
+							if (withinSeperation)
 							{
 								sep += -dir / (distanceSqr ? distanceSqr : FLT_EPSILON);
 								++sepCount;
@@ -392,7 +416,7 @@ void BoidContainer::Update(const RectFloat& border, const std::vector<Impulse>& 
 
 		tri =
 		{
-			vu::RotatePoint({ ori.x + Config::Inst().BoidHalfSize.x, ori.y								    }, ori, angle), // middle right tip
+			vu::RotatePoint({ ori.x + Config::Inst().BoidHalfSize.x, ori.y								   }, ori, angle), // middle right tip
 			vu::RotatePoint({ ori.x - Config::Inst().BoidHalfSize.x, ori.y - Config::Inst().BoidHalfSize.y }, ori, angle), // top left corner
 			vu::RotatePoint({ ori.x - Config::Inst().BoidHalfSize.x, ori.y + Config::Inst().BoidHalfSize.y }, ori, angle)	// bot left corner
 		};
