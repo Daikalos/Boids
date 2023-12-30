@@ -290,18 +290,19 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 							if (lhs == rhs)
 								continue;
 
-							const sf::Vector2f dir = (neighbourCell + m_relativePositions[rhs]) - thisRelative;
+							const sf::Vector2f dir	= neighbourCell + m_relativePositions[rhs] - thisRelative;
 							const float distanceSqr = dir.lengthSq();
 
-							const int withinCohesion	= distanceSqr < cohDistance;
-							const int withinAlignment	= distanceSqr < aliDistance;
-							const int withinSeperation	= distanceSqr < sepDistance;
+							const bool withinCohesion	= distanceSqr < cohDistance;
+							const bool withinAlignment	= distanceSqr < aliDistance;
 
-							const int flag = (withinCohesion | withinAlignment << 1);
+							const std::uint8_t flag = (static_cast<std::uint8_t>(withinCohesion) | static_cast<std::uint8_t>(withinAlignment) << 1);
 
 							switch (flag)
 							{
-								case 1: // cohesion
+								[[unlikely]] case 0U: break;
+
+								[[unlikely]] case 1U: // cohesion
 								{
 									const float angle		= vu::PI<> - std::abs(std::abs(vu::Angle(dir.y, dir.x) - thisAngle) - vu::PI<>);
 									const bool withinFOV	= angle > negFOV && angle < posFOV;
@@ -311,7 +312,7 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 
 									break; 
 								}
-								case 2: // alignment
+								[[unlikely]] case 2U: // alignment
 								{
 									const float angle		= vu::PI<> - std::abs(std::abs(vu::Angle(dir.y, dir.x) - thisAngle) - vu::PI<>);
 									const bool withinFOV	= angle > negFOV && angle < posFOV;
@@ -321,7 +322,7 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 
 									break;
 								}
-								[[likely]] case 3: // both
+								[[likely]] case 3U: // both
 								{
 									const float angle		= vu::PI<> - std::abs(std::abs(vu::Angle(dir.y, dir.x) - thisAngle) - vu::PI<>);
 									const bool withinFOV	= angle > negFOV && angle < posFOV;
@@ -336,7 +337,7 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 								}
 							}
 
-							if (withinSeperation)
+							if (distanceSqr < sepDistance)
 							{
 								sep += -dir / (distanceSqr ? distanceSqr : FLT_EPSILON);
 								++sepCount;
@@ -703,15 +704,15 @@ sf::Vector3f BoidContainer::VelocityColor(float speed)
 {
 	const float velocity_percentage = std::clamp((speed - Config::Inst().Boids.SpeedMin) * Config::Inst().BoidSpeedInv, 0.0f, 1.0f);
 
-	const float scaled_velocity = velocity_percentage * (float)(Config::Inst().Velocity.Colors.size() - 1);
+	const float scaledVlocity = velocity_percentage * (float)(Config::Inst().Velocity.Colors.size() - 1);
 
-	const auto i1 = (int)scaled_velocity;
+	const auto i1 = (int)scaledVlocity;
 	const auto i2 = (i1 == (int)Config::Inst().Velocity.Colors.size() - 1) ? 0 : i1 + 1;
 
 	const sf::Vector3f color1 = Config::Inst().Velocity.Colors[i1];
 	const sf::Vector3f color2 = Config::Inst().Velocity.Colors[i2];
 
-	const float newT = scaled_velocity - std::floorf(scaled_velocity);
+	const float newT = scaledVlocity - std::floorf(scaledVlocity);
 
 	return vu::Lerp(color1, color2, newT);
 }

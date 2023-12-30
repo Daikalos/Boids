@@ -132,33 +132,41 @@ namespace vu
 			util::Lerp(lhs.z, rhs.z, a));
 	}
 
+	// decrease accuracy in favor of performance
+
 	__forceinline float AtanApproximation(float x)
 	{
-		const float a1 = 0.99997726f;
-		const float a3 = -0.33262347f;
-		const float a5 = 0.19354346f;
-		const float a7 = -0.11643287f;
-		const float a9 = 0.05265332f;
-		const float a11 = -0.01172120f;
+		//static constexpr float a1  =  0.99997726f;
+		//static constexpr float a3  = -0.33262347f;
+		//static constexpr float a5  =  0.19354346f;
+		//static constexpr float a7  = -0.11643287f;
+		//static constexpr float a9  =  0.05265332f;
+		//static constexpr float a11 = -0.01172120f;
 
-		const float xSq = x * x;
+		//const float xSq = x * x;
 
-		return x * fmaf(xSq, fmaf(xSq, fmaf(xSq, fmaf(xSq, fmaf(xSq, a11, a9), a7), a5), a3), a1);
+		//return x * fmaf(xSq, fmaf(xSq, fmaf(xSq, fmaf(xSq, fmaf(xSq, a11, a9), a7), a5), a3), a1);
+
+		static constexpr float a1 = 0.97239411f;
+		static constexpr float a3 = -0.19194795f;
+
+		return x * std::fmaf(x * x, a3, a1);
 	}
 
 	__forceinline float Angle(float y, float x)
 	{
-		const bool swap = std::fabs(x) < std::fabs(y);
-		const float atan_input = (swap ? x / y : y / x);
+		const float ay = std::abs(y);
+		const float ax = std::abs(x);
 
-		float res = AtanApproximation(atan_input);
+		const bool swap = ax < ay;
+		const float atanInput = (swap ? ax / ay : ay / ax);
 
-		res = swap ? std::copysignf(PI_2<>, atan_input) - res : res;
+		float res = AtanApproximation(atanInput);
 
-		if (x < 0.0f)
-			res = std::copysignf(PI<>, y) + res;
+		if (swap)	res = PI_2<> - res;
+		if (x < 0)	res = PI<> - res;
 
-		return res;
+		return std::copysignf(res, y);
 	}
 }
 

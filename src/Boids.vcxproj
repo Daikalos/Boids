@@ -190,6 +190,7 @@
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <StringPooling>true</StringPooling>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
