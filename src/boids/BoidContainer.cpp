@@ -281,7 +281,9 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 							continue;
 
 						const int end = grid.GetEndIndices()[gridCellIndex];
+
 						const sf::Vector2f neighbourCell = neighbours[i];
+						const sf::Vector2f cellRel = neighbourCell - thisRelative;
 
 						for (int j = start; j <= end; ++j) // do in one loop
 						{
@@ -290,7 +292,7 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 							if (lhs == rhs)
 								continue;
 
-							const sf::Vector2f dir	= neighbourCell + m_relativePositions[rhs] - thisRelative;
+							const sf::Vector2f dir	= cellRel + m_relativePositions[rhs];
 							const float distanceSqr = dir.lengthSq();
 
 							const bool withinCohesion	= distanceSqr < cohDistance;
