@@ -22,56 +22,39 @@
 //
 ////////////////////////////////////////////////////////////
 
+#pragma once
+
 
 namespace sf
 {
-////////////////////////////////////////////////////////////
-template <typename T>
-ThreadLocalPtr<T>::ThreadLocalPtr(T* value) :
-ThreadLocal(value)
+namespace Style
 {
-}
-
-
 ////////////////////////////////////////////////////////////
-template <typename T>
-T& ThreadLocalPtr<T>::operator *() const
-{
-    return *static_cast<T*>(getValue());
-}
-
-
+/// \ingroup window
+/// \brief Enumeration of the window styles
+///
 ////////////////////////////////////////////////////////////
-template <typename T>
-T* ThreadLocalPtr<T>::operator ->() const
+enum
 {
-    return static_cast<T*>(getValue());
-}
+    None     = 0,      //!< No border / title bar (this flag and all others are mutually exclusive)
+    Titlebar = 1 << 0, //!< Title bar + fixed border
+    Resize   = 1 << 1, //!< Title bar + resizable border + maximize button
+    Close    = 1 << 2, //!< Title bar + close button
 
+    Default = Titlebar | Resize | Close //!< Default window style
+};
+
+} // namespace Style
 
 ////////////////////////////////////////////////////////////
-template <typename T>
-ThreadLocalPtr<T>::operator T*() const
-{
-    return static_cast<T*>(getValue());
-}
-
-
+/// \ingroup window
+/// \brief Enumeration of the window states
+///
 ////////////////////////////////////////////////////////////
-template <typename T>
-ThreadLocalPtr<T>& ThreadLocalPtr<T>::operator =(T* value)
+enum class State
 {
-    setValue(value);
-    return *this;
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-ThreadLocalPtr<T>& ThreadLocalPtr<T>::operator =(const ThreadLocalPtr<T>& right)
-{
-    setValue(right.getValue());
-    return *this;
-}
+    Windowed,  //!< Floating window
+    Fullscreen //!< Fullscreen window
+};
 
 } // namespace sf

@@ -181,7 +181,7 @@ Config::Config()
 
 void Config::Load()
 {
-	std::ifstream projectFile(FILE_NAME, std::ifstream::binary);
+	std::ifstream projectFile(FILE_NAME);
 	if (projectFile.good())
 	{
 		try
@@ -189,7 +189,7 @@ void Config::Load()
 			LoadStatus = false;
 			Config temp = *this;
 
-			nlohmann::json json = nlohmann::json::parse(projectFile);
+			nlohmann::json json = nlohmann::json::parse(projectFile, nullptr, true, true);
 			ReadJSON(temp, json);
 
 			*this = temp;

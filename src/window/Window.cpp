@@ -70,16 +70,16 @@ void Window::Build(WindowBorder windowBorder, const sf::VideoMode& mode, const s
 	switch (windowBorder)
 	{
 	case WindowBorder::Windowed:
-		create(sf::VideoMode(mode.size, sf::VideoMode::getDesktopMode().bitsPerPixel), m_name, sf::Style::Close, settings);
+		create(sf::VideoMode(mode.size, sf::VideoMode::getDesktopMode().bitsPerPixel), m_name, sf::Style::Close, sf::State::Windowed, settings);
 		break;
 	case WindowBorder::Fullscreen:
-		create(sf::VideoMode(mode.size, sf::VideoMode::getDesktopMode().bitsPerPixel), m_name, sf::Style::Fullscreen, settings);
+		create(sf::VideoMode(mode.size, sf::VideoMode::getDesktopMode().bitsPerPixel), m_name, sf::Style::None, sf::State::Fullscreen, settings);
 		break;
 	case WindowBorder::BorderlessWindowed:
-		create(sf::VideoMode(mode.size, sf::VideoMode::getDesktopMode().bitsPerPixel), m_name, sf::Style::None, settings);
+		create(sf::VideoMode(mode.size, sf::VideoMode::getDesktopMode().bitsPerPixel), m_name, sf::Style::None, sf::State::Windowed, settings);
 		break;
 	}
-
+	
 	setFramerateLimit(m_verticalSync ? 0 : m_framerate);
 	setVerticalSyncEnabled(m_verticalSync);
 }

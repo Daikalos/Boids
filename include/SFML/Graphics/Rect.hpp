@@ -109,7 +109,7 @@ public:
     ///
     /// \return Position of rectangle
     ///
-    /// \see getSize
+    /// \see getSize, getCenter
     ///
     ////////////////////////////////////////////////////////////
     constexpr Vector2<T> getPosition() const;
@@ -119,10 +119,20 @@ public:
     ///
     /// \return Size of rectangle
     ///
-    /// \see getPosition
+    /// \see getPosition, getCenter
     ///
     ////////////////////////////////////////////////////////////
     constexpr Vector2<T> getSize() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the position of the center of the rectangle
+    ///
+    /// \return Center of rectangle
+    ///
+    /// \see getSize, getPosition
+    ///
+    ////////////////////////////////////////////////////////////
+    constexpr Vector2<T> getCenter() const;
 
     ////////////////////////////////////////////////////////////
     // Member data
@@ -204,7 +214,7 @@ using FloatRect = Rect<float>;
 /// Usage example:
 /// \code
 /// // Define a rectangle, located at (0, 0) with a size of 20x5
-/// sf::IntRect r1(0, 0, 20, 5);
+/// sf::IntRect r1({0, 0}, {20, 5});
 ///
 /// // Define another rectangle, located at (4, 2) with a size of 18x10
 /// sf::Vector2i position(4, 2);
@@ -212,8 +222,8 @@ using FloatRect = Rect<float>;
 /// sf::IntRect r2(position, size);
 ///
 /// // Test intersections with the point (3, 1)
-/// bool b1 = r1.contains(3, 1); // true
-/// bool b2 = r2.contains(3, 1); // false
+/// bool b1 = r1.contains({3, 1}); // true
+/// bool b2 = r2.contains({3, 1}); // false
 ///
 /// // Test the intersection between r1 and r2
 /// std::optional<sf::IntRect> result = r1.findIntersection(r2);

@@ -4,15 +4,15 @@ InputHandler::InputHandler() : m_heldThreshold(0.1f) { }
 
 bool InputHandler::GetButtonHeld(sf::Mouse::Button button) const
 {
-	return m_currButtonState[button] && m_heldButtonTime[button] >= m_heldThreshold;
+	return m_currButtonState[static_cast<int>(button)] && m_heldButtonTime[static_cast<int>(button)] >= m_heldThreshold;
 }
 bool InputHandler::GetButtonPressed(sf::Mouse::Button button) const
 {
-	return m_currButtonState[button] && !m_prevButtonState[button];
+	return m_currButtonState[static_cast<int>(button)] && !m_prevButtonState[static_cast<int>(button)];
 }
 bool InputHandler::GetButtonReleased(sf::Mouse::Button button) const
 {
-	return !m_currButtonState[button] && m_prevButtonState[button];
+	return !m_currButtonState[static_cast<int>(button)] && m_prevButtonState[static_cast<int>(button)];
 }
 
 bool InputHandler::GetScrollUp() const { return m_scrollDelta > 0; }
@@ -20,15 +20,15 @@ bool InputHandler::GetScrollDown() const { return m_scrollDelta < 0; }
 
 bool InputHandler::GetKeyHeld(sf::Keyboard::Key key) const
 {
-	return m_currKeyState[key] && m_heldKeyTime[key] >= m_heldThreshold;
+	return m_currKeyState[static_cast<int>(key)] && m_heldKeyTime[static_cast<int>(key)] >= m_heldThreshold;
 }
 bool InputHandler::GetKeyPressed(sf::Keyboard::Key key) const
 {
-	return m_currKeyState[key] && !m_prevKeyState[key];
+	return m_currKeyState[static_cast<int>(key)] && !m_prevKeyState[static_cast<int>(key)];
 }
 bool InputHandler::GetKeyReleased(sf::Keyboard::Key key) const
 {
-	return !m_currKeyState[key] && m_prevKeyState[key];
+	return !m_currKeyState[static_cast<int>(key)] && m_prevKeyState[static_cast<int>(key)];
 }
 
 void InputHandler::Update(float dt)

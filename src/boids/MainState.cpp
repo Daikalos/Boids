@@ -185,7 +185,7 @@ bool MainState::Update(float dt)
 	m_mousePos = sf::Vector2f(m_camera->
 		GetMouseWorldPosition(*m_window));
 
-	if (m_inputHandler->GetButtonHeld(sf::Mouse::Middle))
+	if (m_inputHandler->GetButtonHeld(sf::Mouse::Button::Middle))
 	{
 		const sf::Vector2f mouseDelta = vu::Direction(m_mousePosPrev, m_mousePos);
 		if (mouseDelta.lengthSq() > Config::Inst().Interaction.BoidAddMouseDiff)
