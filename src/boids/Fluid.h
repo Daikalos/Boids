@@ -40,10 +40,10 @@ private:
 	void Project(float* u, float* v, float* p, float* div);
 
 private:
-	[[nodiscard]] constexpr int IX(int x, int y) const noexcept;
-	[[nodiscard]] int SafeIX(int x, int y) const noexcept;
+	[[nodiscard]] constexpr int IX(int x, int y) const;
+	[[nodiscard]] constexpr int SafeIX(int x, int y) const;
 
-	[[nodiscard]] bool IsWithin(int x, int y) const;
+	[[nodiscard]] constexpr bool IsWithin(int x, int y) const;
 
 private:
 	int W{0}, H{0}, N{0};
@@ -59,8 +59,25 @@ private:
 	static ThreadPool threadPool;
 };
 
-constexpr int Fluid::IX(int x, int y) const noexcept
+constexpr int Fluid::IX(int x, int y) const
 {
 	return x + y * W;
 }
 
+constexpr int Fluid::SafeIX(int x, int y) const
+{
+	x = std::clamp<int>(x, 0, W - 1);
+	y = std::clamp<int>(y, 0, H - 1);
+
+	return IX(x, y);
+}
+
+constexpr bool Fluid::IsWithin(int x, int y) const
+{
+	if (x < 0 || y < 0)
+		return false;
+	if (x >= W || y >= H)
+		return false;
+
+	return true;
+}

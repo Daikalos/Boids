@@ -302,8 +302,6 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 
 							switch (flag)
 							{
-								[[unlikely]] case 0U: break;
-
 								[[unlikely]] case 1U: // cohesion
 								{
 									const float angle		= vu::PI<> - std::abs(std::abs(vu::Angle(dir.y, dir.x) - thisAngle) - vu::PI<>);

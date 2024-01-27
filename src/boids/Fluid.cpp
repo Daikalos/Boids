@@ -96,16 +96,56 @@ void Fluid::LinSolve(float* x, const float* x0, float a, int b, float c)
 
 void Fluid::SetBnd(float* x, int b)
 {
-	for (int i = 1; i < H - 1; ++i)
+	switch (b)
 	{
-		x[IX(0,		i)] = b == 1 ? -x[IX(1,		i)] : x[IX(1,	  i)];
-		x[IX(W - 1, i)] = b == 1 ? -x[IX(W - 2, i)] : x[IX(W - 2, i)];
-	}
+		case 0:
+		{
+			for (int i = 1; i < H - 1; ++i)
+			{
+				x[IX(0,		i)] = x[IX(1,	  i)];
+				x[IX(W - 1, i)] = x[IX(W - 2, i)];
+			}
 
-	for (int i = 1; i < W - 1; ++i)
-	{
-		x[IX(i, 0	 )] = b == 2 ? -x[IX(i, 1	 )] : x[IX(i, 1	   )];
-		x[IX(i, H - 1)] = b == 2 ? -x[IX(i, H - 2)] : x[IX(i, H - 2)];
+			for (int i = 1; i < W - 1; ++i)
+			{
+				x[IX(i, 0	 )] = x[IX(i, 1	   )];
+				x[IX(i, H - 1)] = x[IX(i, H - 2)];
+			}
+
+			break;
+		}
+		case 1:
+		{
+			for (int i = 1; i < H - 1; ++i)
+			{
+				x[IX(0,		i)] = -x[IX(1,		i)];
+				x[IX(W - 1, i)] = -x[IX(W - 2,	i)];
+			}
+
+			for (int i = 1; i < W - 1; ++i)
+			{
+				x[IX(i, 0	 )] = x[IX(i, 1	   )];
+				x[IX(i, H - 1)] = x[IX(i, H - 2)];
+			}
+
+			break;
+		}
+		case 2:
+		{
+			for (int i = 1; i < H - 1; ++i)
+			{
+				x[IX(0,		i)] = x[IX(1,	  i)];
+				x[IX(W - 1, i)] = x[IX(W - 2, i)];
+			}
+
+			for (int i = 1; i < W - 1; ++i)
+			{
+				x[IX(i, 0	 )] = -x[IX(i, 1	)];
+				x[IX(i, H - 1)] = -x[IX(i, H - 2)];
+			}
+
+			break;
+		}
 	}
 
 	x[IX(0,		0	 )] = 0.5f * (x[IX(1,	  0	   )] + x[IX(0,		1	 )]);
@@ -139,14 +179,12 @@ void Fluid::Advect(float* d, const float* d0, const float* vx, const float* vy, 
 			x = float(j) - dtx * vx[IX(j, i)]; 
 			y = float(i) - dty * vy[IX(j, i)];
 
-			if (x < 0.5f) x = 0.5f; 
-			if (x > wf + 0.5f) x = wf + 0.5f;
+			x = std::clamp(x, 0.5f, wf - 1.5f);
 
 			i0 = std::floorf(x); 
 			i1 = i0 + 1;
 
-			if (y < 0.5f) y = 0.5f;
-			if (y > hf + 0.5f) y = hf + 0.5f;
+			y = std::clamp(y, 0.5f, hf - 1.5f);
 			
 			j0 = std::floorf(y);
 			j1 = j0 + 1;
@@ -161,9 +199,11 @@ void Fluid::Advect(float* d, const float* d0, const float* vx, const float* vy, 
 			const int j0i = (int)j0;
 			const int j1i = (int)j1;
 
+			assert(IsWithin(i0i, j0i) && IsWithin(i1i, j1i));
+
 			d[IX(j, i)] =
-				s0 * (t0 * d0[SafeIX(i0i, j0i)] + t1 * d0[SafeIX(i0i, j1i)]) +
-				s1 * (t0 * d0[SafeIX(i1i, j0i)] + t1 * d0[SafeIX(i1i, j1i)]);
+				s0 * (t0 * d0[IX(i0i, j0i)] + t1 * d0[IX(i0i, j1i)]) +
+				s1 * (t0 * d0[IX(i1i, j0i)] + t1 * d0[IX(i1i, j1i)]);
 		}
 	}
 
@@ -280,22 +320,4 @@ void Fluid::Update(float dt)
 		thread2.wait();
 		thread3.wait();
 	}
-}
-
-int Fluid::SafeIX(int x, int y) const noexcept
-{
-	x = std::clamp<int>(x, 0, W - 1);
-	y = std::clamp<int>(y, 0, H - 1);
-
-	return IX(x, y);
-}
-
-bool Fluid::IsWithin(int x, int y) const
-{
-	if (x < 0 || y < 0)
-		return false;
-	if (x >= W || y >= H)
-		return false;
-
-	return true;
 }
