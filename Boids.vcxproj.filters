@@ -16,132 +16,132 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Window.cpp">
+    <ClCompile Include="src/Window.cpp">
       <Filter>Window</Filter>
     </ClCompile>
-    <ClCompile Include="ThreadPool.cpp">
+    <ClCompile Include="src/ThreadPool.cpp">
       <Filter>Utilities</Filter>
     </ClCompile>
-    <ClCompile Include="InputHandler.cpp">
+    <ClCompile Include="src/InputHandler.cpp">
       <Filter>Window</Filter>
     </ClCompile>
-    <ClCompile Include="Impulse.cpp">
+    <ClCompile Include="src/Impulse.cpp">
       <Filter>Boids</Filter>
     </ClCompile>
-    <ClCompile Include="State.cpp">
+    <ClCompile Include="src/State.cpp">
       <Filter>Window</Filter>
     </ClCompile>
-    <ClCompile Include="Debug.cpp">
+    <ClCompile Include="src/Debug.cpp">
       <Filter>Boids</Filter>
     </ClCompile>
-    <ClCompile Include="Config.cpp">
+    <ClCompile Include="src/Config.cpp">
       <Filter>Boids</Filter>
     </ClCompile>
-    <ClCompile Include="AudioMeter.cpp">
+    <ClCompile Include="src/AudioMeter.cpp">
       <Filter>Boids</Filter>
     </ClCompile>
-    <ClCompile Include="Application.cpp">
+    <ClCompile Include="src/Application.cpp">
       <Filter>Window</Filter>
     </ClCompile>
-    <ClCompile Include="Background.cpp">
+    <ClCompile Include="src/Background.cpp">
       <Filter>Boids</Filter>
     </ClCompile>
-    <ClCompile Include="BoidContainer.cpp">
+    <ClCompile Include="src/BoidContainer.cpp">
       <Filter>Boids</Filter>
     </ClCompile>
-    <ClCompile Include="Camera.cpp">
+    <ClCompile Include="src/Camera.cpp">
       <Filter>Window</Filter>
     </ClCompile>
-    <ClCompile Include="Fluid.cpp">
+    <ClCompile Include="src/Fluid.cpp">
       <Filter>Boids</Filter>
     </ClCompile>
-    <ClCompile Include="MainState.cpp">
+    <ClCompile Include="src/MainState.cpp">
       <Filter>Boids</Filter>
     </ClCompile>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="src/main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Grid.cpp">
+    <ClCompile Include="src/Grid.cpp">
       <Filter>Boids</Filter>
     </ClCompile>
-    <ClCompile Include="FPSCounter.cpp">
+    <ClCompile Include="src/FPSCounter.cpp">
       <Filter>Utilities</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Window.h">
+    <ClInclude Include="src/Window.h">
       <Filter>Window</Filter>
     </ClInclude>
-    <ClInclude Include="SFMLLoaders.hpp">
+    <ClInclude Include="src/SFMLLoaders.hpp">
       <Filter>Window</Filter>
     </ClInclude>
-    <ClInclude Include="VectorUtilities.hpp">
+    <ClInclude Include="src/VectorUtilities.hpp">
       <Filter>Utilities</Filter>
     </ClInclude>
-    <ClInclude Include="ResourceLoader.hpp">
+    <ClInclude Include="src/ResourceLoader.hpp">
       <Filter>Window</Filter>
     </ClInclude>
-    <ClInclude Include="InputHandler.h">
+    <ClInclude Include="src/InputHandler.h">
       <Filter>Window</Filter>
     </ClInclude>
-    <ClInclude Include="Impulse.h">
+    <ClInclude Include="src/Impulse.h">
       <Filter>Boids</Filter>
     </ClInclude>
-    <ClInclude Include="PolicySelect.h">
+    <ClInclude Include="src/PolicySelect.h">
       <Filter>Utilities</Filter>
     </ClInclude>
-    <ClInclude Include="Rectangle.hpp">
+    <ClInclude Include="src/Rectangle.hpp">
       <Filter>Utilities</Filter>
     </ClInclude>
-    <ClInclude Include="ResourceHolder.hpp">
+    <ClInclude Include="src/ResourceHolder.hpp">
       <Filter>Utilities</Filter>
     </ClInclude>
-    <ClInclude Include="WindowsUtilities.h">
+    <ClInclude Include="src/WindowsUtilities.h">
       <Filter>Utilities</Filter>
     </ClInclude>
-    <ClInclude Include="State.h">
+    <ClInclude Include="src/State.h">
       <Filter>Window</Filter>
     </ClInclude>
-    <ClInclude Include="Debug.h">
+    <ClInclude Include="src/Debug.h">
       <Filter>Boids</Filter>
     </ClInclude>
-    <ClInclude Include="Fluid.h">
+    <ClInclude Include="src/Fluid.h">
       <Filter>Boids</Filter>
     </ClInclude>
-    <ClInclude Include="AudioMeter.h">
+    <ClInclude Include="src/AudioMeter.h">
       <Filter>Boids</Filter>
     </ClInclude>
-    <ClInclude Include="Background.h">
+    <ClInclude Include="src/Background.h">
       <Filter>Boids</Filter>
     </ClInclude>
-    <ClInclude Include="Application.h">
+    <ClInclude Include="src/Application.h">
       <Filter>Window</Filter>
     </ClInclude>
-    <ClInclude Include="BoidContainer.h">
+    <ClInclude Include="src/BoidContainer.h">
       <Filter>Boids</Filter>
     </ClInclude>
-    <ClInclude Include="Camera.h">
+    <ClInclude Include="src/Camera.h">
       <Filter>Window</Filter>
     </ClInclude>
-    <ClInclude Include="Config.h">
+    <ClInclude Include="src/Config.h">
       <Filter>Boids</Filter>
     </ClInclude>
-    <ClInclude Include="CommonUtilities.hpp">
+    <ClInclude Include="src/CommonUtilities.hpp">
       <Filter>Utilities</Filter>
     </ClInclude>
-    <ClInclude Include="Grid.h">
+    <ClInclude Include="src/Grid.h">
       <Filter>Boids</Filter>
     </ClInclude>
-    <ClInclude Include="MainState.h">
+    <ClInclude Include="src/MainState.h">
       <Filter>Boids</Filter>
     </ClInclude>
-    <ClInclude Include="FPSCounter.h">
+    <ClInclude Include="src/FPSCounter.h">
       <Filter>Utilities</Filter>
     </ClInclude>
-    <ClInclude Include="IAudioMeterInfo.h">
+    <ClInclude Include="src/IAudioMeterInfo.h">
       <Filter>Boids</Filter>
     </ClInclude>
-    <ClInclude Include="ThreadPool.h">
+    <ClInclude Include="src/ThreadPool.h">
       <Filter>Utilities</Filter>
     </ClInclude>
   </ItemGroup>

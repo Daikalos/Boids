@@ -29,7 +29,7 @@ namespace res
 	};
 }
 
-static constexpr auto RESOURCE_FOLDER = "Content/";
+static constexpr auto RESOURCE_FOLDER = "assets/";
 
 /// Holds resources, for example, fonts, textures, and sounds.
 ///
