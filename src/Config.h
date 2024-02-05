@@ -33,6 +33,7 @@ enum class Rebuild
 	None = -1,
 	Grid,
 	Boids,
+	BoidsTex,
 	BoidsCycle,
 	BackgroundTex,
 	BackgroundProp,
@@ -48,56 +49,57 @@ using WStringCont = std::vector<std::wstring>;
 
 struct BackgroundConfig
 {
-	std::string		Texture			{""};
-	sf::Vector3f	Color			{0.0f, 0.0f, 0.0f};
-	int				PositionX		{0};
-	int				PositionY		{0};
-	int				Width			{0};
-	int				Height			{0};
-	bool			FitScreen		{true};
-	bool			OverrideSize	{false};
-	bool			UseWallpaper	{false};
+	std::string		Texture				{""};
+	sf::Vector3f	Color				{0.0f, 0.0f, 0.0f};
+	int				PositionX			{0};
+	int				PositionY			{0};
+	int				Width				{0};
+	int				Height				{0};
+	bool			FitScreen			{true};
+	bool			OverrideSize		{false};
+	bool			UseWallpaper		{false};
 };
 
 struct BoidsConfig
 {
-	std::size_t		Count						{2000};
-	float			Width						{22.0f};
-	float			Height						{11.0f};
-	float			SpeedMax					{360.0f};
-	float			SpeedMin					{160.0f};
-	float			SteerMax					{4.0f};
-	float			ViewAngle					{240.0f};
+	std::string		Texture				{""};
+	std::size_t		Count				{2000};
+	float			Width				{22.0f};
+	float			Height				{11.0f};
+	float			SpeedMax			{360.0f};
+	float			SpeedMin			{160.0f};
+	float			SteerMax			{4.0f};
+	float			ViewAngle			{240.0f};
 };
 
 struct RulesConfig
 {
-	float			SepDistance					{30.0f};
-	float			AliDistance					{60.0f};
-	float			CohDistance					{60.0f};
-	float			SepWeight					{2.8f};
-	float			AliWeight					{1.5f};
-	float			CohWeight					{1.8f};
+	float			SepDistance			{30.0f};
+	float			AliDistance			{60.0f};
+	float			CohDistance			{60.0f};
+	float			SepWeight			{2.8f};
+	float			AliWeight			{1.5f};
+	float			CohWeight			{1.8f};
 };
 
 struct InteractionConfig
 {
-	int				BoidAddAmount				{5};
-	float			BoidAddMouseDiff			{1.0f};
-	int				BoidRemoveAmount			{50};
+	int				BoidAddAmount		{5};
+	float			BoidAddMouseDiff	{1.0f};
+	int				BoidRemoveAmount	{50};
 
-	float			SteerTowardsFactor			{0.9f};
-	float			SteerAwayFactor				{0.9f};
+	float			SteerTowardsFactor	{0.9f};
+	float			SteerAwayFactor		{0.9f};
 
-	float			PredatorDistance			{250.0f};
-	float			PredatorFactor				{0.6f};
+	float			PredatorDistance	{250.0f};
+	float			PredatorFactor		{0.6f};
 
-	float			TurnMarginFactor			{0.85f};
-	float			TurnFactor					{275.0f};
+	float			TurnMarginFactor	{0.85f};
+	float			TurnFactor			{275.0f};
 
-	bool			SteerEnabled				{true};
-	bool			PredatorEnabled				{true};
-	bool			TurnAtBorder				{false};
+	bool			SteerEnabled		{true};
+	bool			PredatorEnabled		{true};
+	bool			TurnAtBorder		{false};
 };
 
 struct ColorConfig

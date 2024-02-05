@@ -2,13 +2,15 @@
 
 #include <algorithm>
 
-#include "../utilities/VectorUtilities.hpp"
+#include "VectorUtilities.hpp"
 
 #include "Config.h"
 
-Grid::Grid(const RectFloat& rect, const sf::Vector2f& contDims)
-	: m_rootRect(rect), m_contDims(contDims)
+void Grid::Initialize(const RectFloat& rect, const sf::Vector2f& contDims)
 {
+	m_rootRect = rect;
+	m_contDims = contDims;
+
 	float sizeMax = std::max(Config::Inst().Boids.Width, Config::Inst().Boids.Height);
 	sf::Vector2f offset = sf::Vector2f(sizeMax, sizeMax) / 2.0f;
 

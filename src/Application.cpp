@@ -4,7 +4,7 @@
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/System/Clock.hpp>
 
-#include "../boids/Config.h"
+#include "Config.h"
 
 Application::Application(std::string name) 
 	: m_window(

@@ -1,6 +1,6 @@
 #include "Debug.h"
 
-#include "../utilities/CommonUtilities.hpp"
+#include "CommonUtilities.hpp"
 
 #include "Config.h"
 

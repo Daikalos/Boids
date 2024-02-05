@@ -3,29 +3,39 @@
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/Font.hpp>
 
-#include "../window/Camera.h"
-#include "../window/Window.h"
-#include "../window/InputHandler.h"
-#include "../window/SFMLLoaders.hpp"
+#include "Camera.h"
+#include "Window.h"
+#include "InputHandler.h"
+#include "SFMLLoaders.hpp"
 
-#include "../utilities/PolicySelect.h"
-#include "../utilities/CommonUtilities.hpp"
-#include "../utilities/VectorUtilities.hpp"
+#include "PolicySelect.h"
+#include "CommonUtilities.hpp"
+#include "VectorUtilities.hpp"
 
 #include "Config.h"
 
 MainState::MainState(Context context) 
-	: State(context), m_window(context.window), m_camera(context.camera), m_inputHandler(context.inputHandler), m_boids(Config::Inst().Boids.Count) {}
+	: State(context)
+	, m_window(&context.GetWindow())
+	, m_camera(&context.GetCamera())
+	, m_inputHandler(&context.GetInputHandler())
+	, m_boids(Config::Inst().Boids.Count) {}
 
 void MainState::Initialize()
 {
-	m_background.Load(*GetContext().textureHolder, sf::Vector2i(m_window->getSize()));
+	m_vertices.setPrimitiveType(sf::PrimitiveType::Triangles);
 
-	auto loadFont = GetContext().fontHolder->AcquireAsync(FontID::F8Bit, 
-		FromFile<sf::Font>(RESOURCE_FOLDER + std::string("font_8bit.ttf")));
+	auto loadBoidTex = GetContext().GetTextureHolder().AcquireAsync(TextureID::Boid,
+		FromFile<sf::Texture>(RESOURCE_FOLDER + Config::Inst().Boids.Texture));
 
-	m_border = m_window->GetBorder();
-	m_minDistance = GetMinDistance();
+	auto loadFont = GetContext().GetFontHolder().AcquireAsync(FontID::F8Bit, 
+		FromFile<sf::Font>(RESOURCE_FOLDER + std::string("8bit.ttf")));
+
+	loadBoidTex.wait();
+	loadFont.wait();
+
+	m_background.Load(GetContext().GetTextureHolder(), sf::Vector2i(m_window->getSize()));
+	m_debug.Load(GetContext().GetFontHolder());
 
 #if defined(_WIN32)
 	m_audioMeter = std::make_unique<AudioMeterWin>(1.0f);
@@ -33,52 +43,46 @@ void MainState::Initialize()
 	m_audioMeter = std::make_unique<AudioMeterEmpty>();
 #endif
 
+	m_border = m_window->GetBorder();
+	m_minDistance = GetMinDistance();
+
 	m_audioMeter->Initialize();
+	m_fluid.Initialize(m_window->getSize());
+	m_grid.Initialize(GetGridBorder(), sf::Vector2f(m_minDistance, m_minDistance) * 2.0f);
 
-	const auto createBoids = std::async(std::launch::async,
-		[this]()
-		{
-			m_fluid = Fluid(m_window->getSize());
-			m_fluidMousePosPrev = m_fluidMousePos = sf::Vector2i(m_camera->
-				GetMouseWorldPosition(*m_window)) / Config::Inst().Fluid.Scale;
+	m_fluidMousePosPrev = m_fluidMousePos = sf::Vector2i(m_camera->
+		GetMouseWorldPosition(*m_window)) / Config::Inst().Fluid.Scale;
 
-			m_grid = Grid(GetGridBorder(), sf::Vector2f(m_minDistance, m_minDistance) * 2.0f);
+	m_grid.Initialize(GetGridBorder(), sf::Vector2f(m_minDistance, m_minDistance) * 2.0f);
 
-			m_boids.Reserve(Config::Inst().Boids.Count);
+	m_boids.Reserve(Config::Inst().Boids.Count);
+	for (std::size_t i = 0; i < Config::Inst().Boids.Count; ++i)
+	{
+		sf::Vector2f pos = sf::Vector2f(
+			util::Random(0.0f, m_border.width) - m_border.left,
+			util::Random(0.0f, m_border.height) - m_border.top);
 
-			for (std::size_t i = 0; i < Config::Inst().Boids.Count; ++i)
-			{
-				sf::Vector2f pos = sf::Vector2f(
-					util::Random(0.0f, m_border.width) - m_border.left,
-					util::Random(0.0f, m_border.height) - m_border.top);
+		m_boids.Push(pos);
+	}
 
-				m_boids.Push(pos);
-			}
+	UpdateVertices();
+	UpdatePolicy();
 
-			m_vertices.resize(m_boids.GetSize() * 3);
-			m_vertices.setPrimitiveType(sf::PrimitiveType::Triangles);
-
-			m_policy = m_boids.GetSize() <= Config::Inst().Misc.PolicyThreshold ? Policy::unseq : Policy::par_unseq;
-		});
-
-	createBoids.wait(); // have to do this, otherwise it wont start correctly?
-	loadFont.wait();
-
-	m_debug.Load(*GetContext().fontHolder);
+	SetBoidTexture(loadBoidTex.get());
 }
 
 bool MainState::HandleEvent(const sf::Event& event)
 {
     switch (event.type)
     {
-    case sf::Event::Resized:
+		case sf::Event::Resized:
         {
 			m_background.LoadProperties(sf::Vector2i(m_window->getSize()));
 
-			m_fluid = Fluid(m_window->getSize());
+			m_fluid.Initialize(m_window->getSize());
 			m_border = m_window->GetBorder();
 
-            m_grid = Grid(GetGridBorder(), sf::Vector2f(m_minDistance, m_minDistance) * 2.0f);
+			m_grid.Initialize(GetGridBorder(), sf::Vector2f(m_minDistance, m_minDistance) * 2.0f);
         }
         break;
     }
@@ -92,14 +96,14 @@ bool MainState::PreUpdate(float dt)
 	if (m_debug.GetRefresh()) // time to refresh data
 	{
 		Config prev = Config::Inst();
-		for (Rebuild rebuild : Config::Inst().Refresh(prev)) // not very clean, but it does not matter much for small project
+		for (Rebuild rebuild : Config::Inst().Refresh(prev))
 		{
 			switch (rebuild)
 			{
 				case Rebuild::Grid:
 				{
 					m_minDistance = GetMinDistance();
-					m_grid = Grid(GetGridBorder(), sf::Vector2f(m_minDistance, m_minDistance) * 2.0f);
+					m_grid.Initialize(GetGridBorder(), sf::Vector2f(m_minDistance, m_minDistance) * 2.0f);
 
 					break;
 				}
@@ -123,8 +127,15 @@ bool MainState::PreUpdate(float dt)
 						m_boids.Pop(m_boids.GetSize() - Config::Inst().Boids.Count);
 					}
 
-					m_vertices.resize(m_boids.GetSize() * 3);
-					m_policy = m_boids.GetSize() <= Config::Inst().Misc.PolicyThreshold ? Policy::unseq : Policy::par_unseq;
+					UpdateVertices();
+					UpdatePolicy();
+
+					break;
+				}
+				case Rebuild::BoidsTex:
+				{
+					SetBoidTexture(GetContext().GetTextureHolder().Acquire(TextureID::Boid,
+						FromFile<sf::Texture>(RESOURCE_FOLDER + Config::Inst().Boids.Texture), res::LoadStrategy::Reload));
 
 					break;
 				}
@@ -135,7 +146,7 @@ bool MainState::PreUpdate(float dt)
 				}
 				case Rebuild::BackgroundTex:
 				{
-					m_background.Load(*GetContext().textureHolder, sf::Vector2i(m_window->getSize()));
+					m_background.Load(GetContext().GetTextureHolder(), sf::Vector2i(m_window->getSize()));
 					break;
 				}
 				case Rebuild::BackgroundProp:
@@ -167,7 +178,7 @@ bool MainState::PreUpdate(float dt)
 				}
 				case Rebuild::Fluid:
 				{
-					m_fluid = Fluid(m_window->getSize());
+					m_fluid.Initialize(m_window->getSize());
 					break;
 				}
 			}
@@ -182,8 +193,7 @@ bool MainState::Update(float dt)
 	m_audioMeter->Update(dt);
 
 	m_mousePosPrev = m_mousePos;
-	m_mousePos = sf::Vector2f(m_camera->
-		GetMouseWorldPosition(*m_window));
+	m_mousePos = sf::Vector2f(m_camera->GetMouseWorldPosition(*m_window));
 
 	if (m_inputHandler->GetKeyHeld(sf::Keyboard::Key::RAlt) && m_inputHandler->GetButtonHeld(sf::Mouse::Button::Middle))
 	{
@@ -192,14 +202,11 @@ bool MainState::Update(float dt)
 		{
 			for (int i = 0; i < Config::Inst().Interaction.BoidAddAmount; ++i)
 			{
-				const sf::Vector2f center = sf::Vector2f(Config::Inst().Boids.Width, Config::Inst().Boids.Height) / 2.0f;
-				const sf::Vector2f initPos = m_mousePos - center;
-
-				m_boids.Push(initPos, vu::RotatePoint(mouseDelta, {}, util::Random(-1.0f, 1.0f)));
+				m_boids.Push(m_mousePos, vu::RotatePoint(mouseDelta, {}, util::Random(-1.0f, 1.0f)));
 			}
 
-			m_vertices.resize(m_boids.GetSize() * 3);
-			m_policy = m_boids.GetSize() <= Config::Inst().Misc.PolicyThreshold ? Policy::unseq : Policy::par_unseq;
+			UpdateVertices();
+			UpdatePolicy();
 		}
 	}
 	if (m_inputHandler->GetKeyHeld(sf::Keyboard::Key::Delete) && m_boids.GetSize() > Config::Inst().Boids.Count)
@@ -210,8 +217,8 @@ bool MainState::Update(float dt)
 
 		m_boids.Pop(removeAmount);
 
-		m_vertices.resize(m_boids.GetSize() * 3);
-		m_policy = m_boids.GetSize() <= Config::Inst().Misc.PolicyThreshold ? Policy::unseq : Policy::par_unseq;
+		UpdateVertices();
+		UpdatePolicy();
 	}
 
 	if (Config::Inst().Impulse.Enabled && m_inputHandler->GetButtonPressed(sf::Mouse::Button::Left))
@@ -225,7 +232,9 @@ bool MainState::Update(float dt)
 
 		impulse.Update(dt);
 		if (impulse.GetLength() > Config::Inst().Impulse.FadeDistance)
+		{
 			m_impulses.erase(m_impulses.begin() + i);
+		}
 	}
 
 	if ((Config::Inst().Color.Flags & CF_Fluid) == CF_Fluid)
@@ -273,8 +282,11 @@ bool MainState::PostUpdate([[maybe_unused]] float dt, float interp)
 
 void MainState::Draw()
 {
+	sf::RenderStates renderStates;
+	renderStates.texture = m_boidTexture;
+
 	m_background.Draw(*m_window);
-	m_window->draw(m_vertices);
+	m_window->draw(m_vertices, renderStates);
 	m_debug.Draw(*m_window);
 }
 
@@ -292,5 +304,52 @@ RectFloat MainState::GetGridBorder() const
 
 float MainState::GetMinDistance() const
 {
-	return std::sqrtf(std::fmaxf(std::fmaxf(Config::Inst().Rules.SepDistance, Config::Inst().Rules.AliDistance), Config::Inst().Rules.CohDistance));
+	return std::sqrtf(std::max({ Config::Inst().Rules.SepDistance, Config::Inst().Rules.AliDistance, Config::Inst().Rules.CohDistance }));
+}
+
+void MainState::SetBoidTexture(sf::Texture& texture)
+{
+	m_boidTexture = &texture;
+
+	const sf::Vector2u texSize = m_boidTexture->getSize();
+	for (std::size_t i = 0; i < m_boids.GetSize(); ++i)
+	{
+		const std::size_t v = i * 6;
+
+		m_vertices[v + 0].texCoords = sf::Vector2f(0.0f,				0.0f);
+		m_vertices[v + 1].texCoords = sf::Vector2f((float)texSize.x,	0.0f);
+		m_vertices[v + 2].texCoords = sf::Vector2f(0.0f,				(float)texSize.y);
+		m_vertices[v + 3].texCoords = sf::Vector2f((float)texSize.x,	0.0f);
+		m_vertices[v + 4].texCoords = sf::Vector2f(0.0f,				(float)texSize.y);
+		m_vertices[v + 5].texCoords = sf::Vector2f((float)texSize.x,	(float)texSize.y);
+	}
+}
+
+void MainState::UpdateVertices()
+{
+	std::size_t oldSize = m_vertices.getVertexCount() / 6;
+	std::size_t newSize = m_boids.GetSize();
+
+	m_vertices.resize(newSize * 6);
+	 
+	if (newSize > oldSize && m_boidTexture != nullptr)
+	{
+		const sf::Vector2u texSize = m_boidTexture->getSize();
+		for (std::size_t i = oldSize; i < newSize; ++i)
+		{
+			const std::size_t v = i * 6;
+
+			m_vertices[v + 0].texCoords = sf::Vector2f(0.0f,				0.0f);
+			m_vertices[v + 1].texCoords = sf::Vector2f((float)texSize.x,	0.0f);
+			m_vertices[v + 2].texCoords = sf::Vector2f(0.0f,				(float)texSize.y);
+			m_vertices[v + 3].texCoords = sf::Vector2f((float)texSize.x,	0.0f);
+			m_vertices[v + 4].texCoords = sf::Vector2f(0.0f,				(float)texSize.y);
+			m_vertices[v + 5].texCoords = sf::Vector2f((float)texSize.x,	(float)texSize.y);
+		}
+	}
+}
+
+void MainState::UpdatePolicy()
+{
+	m_policy = m_boids.GetSize() <= Config::Inst().Misc.PolicyThreshold ? Policy::unseq : Policy::par_unseq;
 }

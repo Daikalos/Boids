@@ -2,8 +2,8 @@
 
 #include <SFML/Graphics/RenderWindow.hpp>
 
-#include "../utilities/WindowsUtilities.h"
-#include "../window/SFMLLoaders.hpp"
+#include "WindowsUtilities.h"
+#include "SFMLLoaders.hpp"
 
 #include "Config.h"
 

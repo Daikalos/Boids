@@ -10,20 +10,12 @@
 #include "Impulse.h"
 #include "Fluid.h"
 
-#include "../utilities/PolicySelect.h"
-#include "../utilities/Rectangle.hpp"
-#include "../window/InputHandler.h"
+#include "PolicySelect.h"
+#include "Rectangle.hpp"
+#include "InputHandler.h"
 
 class BoidContainer
 {
-private:
-	struct Triangle
-	{
-		sf::Vector2f v0;
-		sf::Vector2f v1;
-		sf::Vector2f v2;
-	};
-
 public:
 	BoidContainer(std::size_t capacity);
 
@@ -77,8 +69,6 @@ public:
 	void ResetCycleTimes();
 
 private:
-	static sf::Vector2f GetOrigin(const sf::Vector2f& pos);
-
 	static sf::Vector3f PositionColor(const sf::Vector2f& pos, const RectFloat& border);
 	static sf::Vector3f CycleColor(float cycleTime);
 	static sf::Vector3f DensityColor(std::uint32_t density, float densityTime);
@@ -89,10 +79,9 @@ private:
 
 private:
 	std::unique_ptr<std::uint32_t[]>	m_indices;
-	std::unique_ptr<Triangle[]>			m_triangles;
-	std::unique_ptr<Triangle[]>			m_prevTriangles;
 
 	std::unique_ptr<sf::Vector2f[]>		m_positions;
+	std::unique_ptr<sf::Vector2f[]>		m_prevPositions;
 	std::unique_ptr<sf::Vector2f[]>		m_velocities;
 	std::unique_ptr<sf::Vector2f[]>		m_prevVelocities;
 	std::unique_ptr<sf::Vector2f[]>		m_relativePositions;
@@ -100,6 +89,7 @@ private:
 
 	std::unique_ptr<float[]>			m_speeds;
 	std::unique_ptr<float[]>			m_angles;
+	std::unique_ptr<float[]>			m_prevAngles;
 	std::unique_ptr<float[]>			m_cycleTimes;
 	std::unique_ptr<float[]>			m_densityTimes;
 

@@ -15,6 +15,7 @@ enum class FontID
 
 enum class TextureID
 {
+	Boid,
 	Background
 };
 
@@ -28,7 +29,7 @@ namespace res
 	};
 }
 
-static constexpr auto RESOURCE_FOLDER = "content/";
+static constexpr auto RESOURCE_FOLDER = "Content/";
 
 /// Holds resources, for example, fonts, textures, and sounds.
 ///
@@ -176,6 +177,7 @@ template<class R, typename I>
 inline auto ResourceHolder<R, I>::Load(const I& id, const ResourceLoader<R>& loader) -> ReturnType
 {
 	ResourcePtr resource = loader();
+
 	if (!resource)
 		throw std::runtime_error("Failed to load resource");
 

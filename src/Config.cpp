@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <ranges>
 
-#include "../utilities/CommonUtilities.hpp"
+#include "CommonUtilities.hpp"
 
 sf::Vector3f ConvertToColor(const nlohmann::basic_json<>::value_type& src)
 {
@@ -48,6 +48,7 @@ void ReadJSON(Config& oc, nlohmann::json& json)
 	oc.Background.Width				= background["Width"];
 	oc.Background.Height			= background["Height"];
 
+	oc.Boids.Texture				= boids["Texture"];
 	oc.Boids.Count					= boids["Count"];
 	oc.Boids.Width					= boids["Width"];
 	oc.Boids.Height					= boids["Height"];
@@ -209,7 +210,7 @@ std::vector<Rebuild> Config::Refresh(Config& prev)
 
 	Load();
 
-	if (prev.Rules.SepDistance != Rules.SepDistance || 
+	if ( prev.Rules.SepDistance != Rules.SepDistance || 
 		prev.Rules.AliDistance != Rules.AliDistance || 
 		prev.Rules.CohDistance != Rules.CohDistance || 
 		prev.Boids.Width != Boids.Width || 
@@ -221,6 +222,9 @@ std::vector<Rebuild> Config::Refresh(Config& prev)
 
 	if (prev.Boids.Count != Boids.Count)
 		result.emplace_back(Rebuild::Boids);
+
+	if (prev.Boids.Texture != Boids.Texture)
+		result.emplace_back(Rebuild::BoidsTex);
 
 	if (prev.Cycle.Random != Cycle.Random)
 		result.emplace_back(Rebuild::BoidsCycle);

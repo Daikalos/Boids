@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../boids/MainState.h"
+#include "MainState.h"
 
 #include "Camera.h"
 #include "Window.h"

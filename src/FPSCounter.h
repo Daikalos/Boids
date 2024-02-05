@@ -3,7 +3,7 @@
 class FPSCounter
 {
 private:
-	static constexpr int BUFFER_SIZE = 100;
+	static constexpr int BUFFER_SIZE = 128;
 
 public:
 	float GetFPS() const;

@@ -4,7 +4,7 @@
 #include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/ContextSettings.hpp>
 
-#include "../utilities/Rectangle.hpp"
+#include "Rectangle.hpp"
 
 enum class WindowBorder
 {
@@ -15,7 +15,7 @@ enum class WindowBorder
 
 class Camera;
 
-// allow for toggle fullscreen, change resolution, and other settings
+// Allow for toggle fullscreen, change resolution, and other settings
 //
 class Window : public sf::RenderWindow
 {

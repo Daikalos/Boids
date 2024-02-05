@@ -3,18 +3,19 @@
 #include <ranges>
 #include <cassert>
 
-#include "../utilities/VectorUtilities.hpp"
-#include "../utilities/CommonUtilities.hpp"
+#include <SFML/Graphics/Transform.hpp>
+
+#include "VectorUtilities.hpp"
+#include "CommonUtilities.hpp"
 
 #include "Config.h"
 
 BoidContainer::BoidContainer(std::size_t capacity) : m_capacity(capacity)
 {
 	m_indices			= std::make_unique<std::uint32_t[]>(m_capacity);
-	m_triangles			= std::make_unique<Triangle[]>(m_capacity);
-	m_prevTriangles		= std::make_unique<Triangle[]>(m_capacity);
 
 	m_positions			= std::make_unique<sf::Vector2f[]>(m_capacity);
+	m_prevPositions		= std::make_unique<sf::Vector2f[]>(m_capacity);
 	m_velocities		= std::make_unique<sf::Vector2f[]>(m_capacity);
 	m_prevVelocities	= std::make_unique<sf::Vector2f[]>(m_capacity);
 	m_relativePositions = std::make_unique<sf::Vector2f[]>(m_capacity);
@@ -22,6 +23,7 @@ BoidContainer::BoidContainer(std::size_t capacity) : m_capacity(capacity)
 
 	m_speeds			= std::make_unique<float[]>(m_capacity);
 	m_angles			= std::make_unique<float[]>(m_capacity);
+	m_prevAngles		= std::make_unique<float[]>(m_capacity);
 	m_cycleTimes		= std::make_unique<float[]>(m_capacity);
 	m_densityTimes		= std::make_unique<float[]>(m_capacity);
 
@@ -57,18 +59,8 @@ void BoidContainer::Push(const sf::Vector2f& pos, const sf::Vector2f& velocity)
 
 	m_prevVelocities[m_size] = m_velocities[m_size]	= velocity;
 
-	m_positions[m_size] = pos;
-	m_angles[m_size] = velocity.angle().asRadians();
-
-	sf::Vector2f ori = GetOrigin(m_positions[m_size]);
-	const float angle = m_angles[m_size];
-
-	m_prevTriangles[m_size] = m_triangles[m_size] =
-	{ 
-		vu::RotatePoint({ ori.x + Config::Inst().BoidHalfSize.x, ori.y									}, ori, angle),
-		vu::RotatePoint({ ori.x - Config::Inst().BoidHalfSize.x, ori.y - Config::Inst().BoidHalfSize.y }, ori, angle),
-		vu::RotatePoint({ ori.x - Config::Inst().BoidHalfSize.x, ori.y + Config::Inst().BoidHalfSize.y }, ori, angle)
-	};
+	m_prevPositions[m_size] = m_positions[m_size] = pos;
+	m_prevAngles[m_size] = m_angles[m_size] = velocity.angle().asRadians();
 
 	if (Config::Inst().Cycle.Random)
 		m_cycleTimes[m_size] = util::Random(0.0f, 1.0f);
@@ -103,10 +95,9 @@ void BoidContainer::Reallocate(std::size_t capacity)
 		};
 
 	realloc(m_indices);
-	realloc(m_triangles);
-	realloc(m_prevTriangles);
 
 	realloc(m_positions);
+	realloc(m_prevPositions);
 	realloc(m_velocities);
 	realloc(m_prevVelocities);
 	realloc(m_relativePositions);
@@ -114,6 +105,7 @@ void BoidContainer::Reallocate(std::size_t capacity)
 
 	realloc(m_speeds);
 	realloc(m_angles);
+	realloc(m_prevAngles);
 	realloc(m_cycleTimes);
 	realloc(m_densityTimes);
 
@@ -138,12 +130,17 @@ void BoidContainer::PreUpdate(const Grid& grid)
 
 	for (std::size_t i = 0; i < m_size; ++i)
 	{
-		m_prevTriangles[i] = m_triangles[i];
+		m_prevPositions[i] = m_positions[i];
 	}
 
 	for (std::size_t i = 0; i < m_size; ++i)
 	{
-		const sf::Vector2f gridCellRaw		= grid.RelativePos(GetOrigin(m_positions[i]));
+		m_prevAngles[i] = m_angles[i];
+	}
+
+	for (std::size_t i = 0; i < m_size; ++i)
+	{
+		const sf::Vector2f gridCellRaw		= grid.RelativePos(m_positions[i]);
 		const sf::Vector2i gridCell			= sf::Vector2i(gridCellRaw);
 		const sf::Vector2f gridCellOverflow = gridCellRaw - sf::Vector2f(gridCell);
 
@@ -234,16 +231,16 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 					std::uint32_t aliCount = 0;
 					std::uint32_t cohCount = 0;
 
-					const sf::Vector2f origin = GetOrigin(m_positions[lhs]);
-					const sf::Vector2f thisRelative = m_relativePositions[lhs];
-					const float thisAngle = m_angles[lhs];
+					const sf::Vector2f firstPos			= m_positions[lhs];
+					const sf::Vector2f firstRelative	= m_relativePositions[lhs];
+					const float firstAngle				= m_angles[lhs];
 
 					static constexpr auto neighbourCount = 4; // max 4 neighbours at a time
 
 					int neighIndices[neighbourCount]{};
 					sf::Vector2f neighbours[neighbourCount];
 
-					const sf::Vector2f gridCellRaw		= grid.RelativePos(origin);
+					const sf::Vector2f gridCellRaw		= grid.RelativePos(firstPos);
 					const sf::Vector2i gridCell			= sf::Vector2i(gridCellRaw);
 					const sf::Vector2f gridCellOverflow = gridCellRaw - sf::Vector2f(gridCell);
 
@@ -283,7 +280,7 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 						const int end = grid.GetEndIndices()[gridCellIndex];
 
 						const sf::Vector2f neighbourCell = neighbours[i];
-						const sf::Vector2f cellRel = neighbourCell - thisRelative;
+						const sf::Vector2f cellRel = neighbourCell - firstRelative;
 
 						for (int j = start; j <= end; ++j) // do in one loop
 						{
@@ -304,7 +301,7 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 							{
 								[[unlikely]] case 1U: // cohesion
 								{
-									const float angle		= vu::PI<> - std::abs(std::abs(vu::Angle(dir.y, dir.x) - thisAngle) - vu::PI<>);
+									const float angle		= vu::PI<> - std::abs(std::abs(vu::Angle(dir.y, dir.x) - firstAngle) - vu::PI<>);
 									const bool withinFOV	= angle > negFOV && angle < posFOV;
 
 									coh += dir * (float)withinFOV; // Head towards center of boids
@@ -314,7 +311,7 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 								}
 								[[unlikely]] case 2U: // alignment
 								{
-									const float angle		= vu::PI<> - std::abs(std::abs(vu::Angle(dir.y, dir.x) - thisAngle) - vu::PI<>);
+									const float angle		= vu::PI<> - std::abs(std::abs(vu::Angle(dir.y, dir.x) - firstAngle) - vu::PI<>);
 									const bool withinFOV	= angle > negFOV && angle < posFOV;
 
 									ali += m_prevVelocities[rhs] * (float)withinFOV; // Align with every boids velocity
@@ -324,7 +321,7 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 								}
 								[[likely]] case 3U: // both
 								{
-									const float angle		= vu::PI<> - std::abs(std::abs(vu::Angle(dir.y, dir.x) - thisAngle) - vu::PI<>);
+									const float angle		= vu::PI<> - std::abs(std::abs(vu::Angle(dir.y, dir.x) - firstAngle) - vu::PI<>);
 									const bool withinFOV	= angle > negFOV && angle < posFOV;
 
 									coh += dir * (float)withinFOV;
@@ -408,27 +405,30 @@ void BoidContainer::Update(const RectFloat& border, const std::vector<Impulse>& 
 			vu::Angle(velocity.y, velocity.x) : 0.0f;
 	}
 
-	for (std::size_t i = 0; i < m_size; ++i)
-	{
-		auto& tri = m_triangles[i];
+	//for (std::size_t i = 0; i < m_size; ++i)
+	//{
+	//	auto& tri = m_triangles[i];
 
-		const auto ori = GetOrigin(m_positions[i]);
-		const auto angle = m_angles[i];
+	//	const auto ori = GetOrigin(m_positions[i]);
+	//	const auto angle = m_angles[i];
 
-		tri =
-		{
-			vu::RotatePoint({ ori.x + Config::Inst().BoidHalfSize.x, ori.y								   }, ori, angle), // middle right tip
-			vu::RotatePoint({ ori.x - Config::Inst().BoidHalfSize.x, ori.y - Config::Inst().BoidHalfSize.y }, ori, angle), // top left corner
-			vu::RotatePoint({ ori.x - Config::Inst().BoidHalfSize.x, ori.y + Config::Inst().BoidHalfSize.y }, ori, angle)	// bot left corner
-		};
-	}
+	//	tri =
+	//	{
+	//		vu::RotatePoint({ ori.x + Config::Inst().BoidHalfSize.x, ori.y								   }, ori, angle), // middle right tip
+	//		vu::RotatePoint({ ori.x - Config::Inst().BoidHalfSize.x, ori.y - Config::Inst().BoidHalfSize.y }, ori, angle), // top left corner
+	//		vu::RotatePoint({ ori.x - Config::Inst().BoidHalfSize.x, ori.y + Config::Inst().BoidHalfSize.y }, ori, angle)	// bot left corner
+	//	};
+	//}
 
 	if (!Config::Inst().Interaction.TurnAtBorder)
 	{
 		for (std::size_t i = 0; i < m_size; ++i)
 		{
 			if (m_teleported[i])
-				m_prevTriangles[i] = m_triangles[i];
+			{
+				m_prevPositions[i]	= m_positions[i];
+				m_prevAngles[i]		= m_angles[i];
+			}
 		}
 	}
 
@@ -511,7 +511,7 @@ void BoidContainer::UpdateColors(const RectFloat& border, const Fluid& fluid, co
 	if ((flag & CF_Fluid) == CF_Fluid && !config.Fluid.Colors.empty())
 	{
 		for (std::size_t i = 0; i < m_size; ++i)
-			m_colors[i] += fluid.GetColor(GetOrigin(m_positions[i]));
+			m_colors[i] += fluid.GetColor(m_positions[i]);
 	}
 
 	if (!config.Impulse.Colors.empty() && !impulses.empty())
@@ -542,32 +542,54 @@ void BoidContainer::UpdateVertices(sf::VertexArray& vertices, float interp, Poli
 			std::for_each(pol, m_indices.get(), m_indices.get() + m_size,
 				[this, &vertices, interp](std::uint32_t i)
 				{
-					const auto& tri			= m_triangles[i];
-					const auto& prevTri		= m_prevTriangles[i];
-
-					const Triangle drawTri 
-					{
-						(tri.v0 * interp + prevTri.v0 * (1.0f - interp)),
-						(tri.v1 * interp + prevTri.v1 * (1.0f - interp)),
-						(tri.v2 * interp + prevTri.v2 * (1.0f - interp))
-					};
+					const sf::Vector2f lerpPosition = vu::Lerp(m_prevPositions[i], m_positions[i], interp);
+					const float lerpAngle = -util::Lerp(sf::radians(m_prevAngles[i]), sf::radians(m_angles[i]), interp).asRadians();
 
 					const sf::Vector3f& color = m_colors[i];
 
 					const sf::Color c = sf::Color(
-						(std::uint8_t)(color.x * 255.999f),
-						(std::uint8_t)(color.y * 255.999f),
-						(std::uint8_t)(color.z * 255.999f));
+						(std::uint8_t)(color.x * 255.9999f),
+						(std::uint8_t)(color.y * 255.9999f),
+						(std::uint8_t)(color.z * 255.9999f));
 
-					const std::size_t v = (std::size_t)i * 3;
+					const sf::Vector2f hSize = Config::Inst().BoidHalfSize;
 
-					vertices[v + 0].position = drawTri.v0;
-					vertices[v + 1].position = drawTri.v1;
-					vertices[v + 2].position = drawTri.v2;
+					const float cos	= std::cos(lerpAngle);
+					const float sin	= std::sin(lerpAngle);
+					const float sxc = hSize.x * cos;
+					const float syc = hSize.y * cos;
+					const float sxs = hSize.x * sin;
+					const float sys = hSize.y * sin;
+					const float tx	= -0.5f * sxc - 0.5f * sys + lerpPosition.x;
+					const float ty	=  0.5f * sxs - 0.5f * syc + lerpPosition.y;
+
+					sf::Transform transform
+					{
+						 sxc,  sys,  tx,
+						-sxs,  syc,  ty,
+						 0.0f, 0.0f, 1.0f
+					};
+
+					const std::size_t v = (std::size_t)i * 6;
+
+					const sf::Vector2f topLeft	= transform.transformPoint(sf::Vector2f(-1.0f,  1.0f));
+					const sf::Vector2f topRight	= transform.transformPoint(sf::Vector2f( 1.0f,  1.0f));
+					const sf::Vector2f botLeft	= transform.transformPoint(sf::Vector2f(-1.0f, -1.0f));
+					const sf::Vector2f botRight	= transform.transformPoint(sf::Vector2f( 1.0f, -1.0f));
+
+					vertices[v + 0].position = botLeft;
+					vertices[v + 1].position = botRight;
+					vertices[v + 2].position = topLeft;
+					vertices[v + 3].position = botRight;
+					vertices[v + 4].position = topLeft;
+					vertices[v + 5].position = topRight;
 
 					vertices[v + 0].color = c;
 					vertices[v + 1].color = c;
 					vertices[v + 2].color = c;
+					vertices[v + 3].color = c;
+					vertices[v + 4].color = c;
+					vertices[v + 5].color = c;
 				});
 		}, policy);
 }
@@ -650,11 +672,6 @@ void BoidContainer::ResetCycleTimes()
 		m_cycleTimes[i] = Config::Inst().Cycle.Random ?
 			util::Random(0.0f, 1.0f) : 0.0f;
 	}
-}
-
-sf::Vector2f BoidContainer::GetOrigin(const sf::Vector2f& pos)
-{
-	return pos + Config::Inst().BoidHalfSize;
 }
 
 sf::Vector3f BoidContainer::PositionColor(const sf::Vector2f& pos, const RectFloat& border)

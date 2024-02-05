@@ -2,7 +2,7 @@
 
 #include "InputHandler.h"
 
-#include "../utilities/VectorUtilities.hpp"
+#include "VectorUtilities.hpp"
 
 Camera::Camera() 
 	: m_position(0, 0)
@@ -14,7 +14,7 @@ const sf::Vector2f& Camera::GetPosition() const { return m_position; }
 const sf::Vector2f& Camera::GetScale() const { return m_scale; }
 const sf::Vector2f& Camera::GetSize() const { return m_size; }
 
-sf::Vector2f Camera::ViewToWorld(const sf::Vector2f& position) const
+sf::Vector2f Camera::WorldToView(const sf::Vector2f& position) const
 {
 	return GetViewMatrix() * position;
 }
@@ -51,7 +51,7 @@ const sf::Transform& Camera::GetViewMatrix() const
 
 sf::Vector2f Camera::GetMouseWorldPosition(const sf::RenderWindow& window) const
 {
-	return ViewToWorld(sf::Vector2f(sf::Mouse::getPosition(window)));
+	return WorldToView(sf::Vector2f(sf::Mouse::getPosition(window)));
 }
 
 void Camera::SetPosition(const sf::Vector2f& position)

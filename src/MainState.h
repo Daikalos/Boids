@@ -4,8 +4,8 @@
 
 #include <SFML/Graphics/VertexArray.hpp>
 
-#include "../window/ResourceHolder.hpp"
-#include "../window/State.h"
+#include "ResourceHolder.hpp"
+#include "State.h"
 
 #include "Debug.h"
 #include "AudioMeter.h"
@@ -40,6 +40,11 @@ private:
 	RectFloat GetGridBorder() const;
 	float GetMinDistance() const;
 
+	void SetBoidTexture(sf::Texture& texture);
+
+	void UpdateVertices();
+	void UpdatePolicy();
+
 private:
 	Window*						m_window		{nullptr};
 	Camera*						m_camera		{nullptr};
@@ -64,4 +69,6 @@ private:
 
 	float						m_minDistance	{0.0f};
 	Policy						m_policy		{Policy::unseq};
+
+	sf::Texture*				m_boidTexture	{nullptr};
 };

@@ -1,27 +1,25 @@
 #include "Fluid.h"
 
-#include <future>
 #include <algorithm>
 
-#include "../utilities/CommonUtilities.hpp"
-#include "../utilities/VectorUtilities.hpp"
+#include "CommonUtilities.hpp"
+#include "VectorUtilities.hpp"
 
 #include "Config.h"
 
 ThreadPool Fluid::threadPool(3);
 
-Fluid::Fluid(const sf::Vector2u& size)
-	: W(size.x / Config::Inst().Fluid.Scale)
-	, H(size.y / Config::Inst().Fluid.Scale)
-	, N(W * H)
-	, m_vx(std::make_unique<float[]>(N))
-	, m_vy(std::make_unique<float[]>(N))
-	, m_vxPrev(std::make_unique<float[]>(N))
-	, m_vyPrev(std::make_unique<float[]>(N))
-	, m_density(std::make_unique<float[]>(N))
-	, m_densityPrev(std::make_unique<float[]>(N))
+void Fluid::Initialize(const sf::Vector2u& size)
 {
-
+	W = size.x / Config::Inst().Fluid.Scale;
+	H = size.y / Config::Inst().Fluid.Scale;
+	N = W * H;
+	m_vx = std::make_unique<float[]>(N);
+	m_vy = std::make_unique<float[]>(N);
+	m_vxPrev = std::make_unique<float[]>(N);
+	m_vyPrev = std::make_unique<float[]>(N);
+	m_density = std::make_unique<float[]>(N);
+	m_densityPrev = std::make_unique<float[]>(N);
 }
 
 sf::Vector3f Fluid::GetColor(const sf::Vector2f& origin) const

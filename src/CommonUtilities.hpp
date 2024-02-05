@@ -7,6 +7,8 @@
 #include <string_view>
 #include <concepts>
 
+#include <SFML/System/Angle.hpp>
+
 namespace util
 {
 	template<typename T>
@@ -83,10 +85,21 @@ namespace util
 		return std::roundf(val * n) / n;
 	}
 
-	template<typename T>
-	constexpr auto Lerp(T a, T b, float f)
+	inline float ShortestAngle(sf::Angle a, sf::Angle b)
 	{
-		return (a * (1.0f - f)) + (b * f);
+		return float(M_PI) - std::abs(std::fmodf(std::abs(b.asRadians() - a.asRadians()), float(M_PI) * 2.0f) - float(M_PI));
+	}
+
+	template<typename T>
+	constexpr T Lerp(T a, T b, float f)
+	{
+		return static_cast<T>((a * (1.0f - f)) + (b * f));
+	}
+
+	template<>
+	constexpr sf::Angle Lerp<sf::Angle>(sf::Angle a, sf::Angle b, float f)
+	{
+		return a + sf::radians(ShortestAngle(a, b) * f);
 	}
 
 	constexpr std::string RemoveTrailingZeroes(const std::string_view str)

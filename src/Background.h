@@ -3,7 +3,7 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 
-#include "../window/ResourceHolder.hpp"
+#include "ResourceHolder.hpp"
 
 class Background
 {

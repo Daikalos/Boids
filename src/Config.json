@@ -16,7 +16,8 @@
 
         "Boids" :
         {
-            "Count" : 4000,
+            "Texture" : "boid.png",
+            "Count" : 10000,
             "Width" : 22.0,
             "Height" : 11.0,
             "SpeedMax" : 240.0,

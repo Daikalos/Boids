@@ -15,7 +15,7 @@ public:
 	[[nodiscard]] const sf::Vector2f& GetScale() const;
 	[[nodiscard]] const sf::Vector2f& GetSize() const;
 
-	[[nodiscard]] sf::Vector2f ViewToWorld(const sf::Vector2f& position) const;
+	[[nodiscard]] sf::Vector2f WorldToView(const sf::Vector2f& position) const;
 
 	[[nodiscard]] const float* GetWorldMatrix() const;
 	[[nodiscard]] const sf::Transform& GetViewMatrix() const;

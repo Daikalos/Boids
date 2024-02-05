@@ -3,7 +3,7 @@
 #include <SFML/OpenGL.hpp>
 #include <SFML/Window/Event.hpp>
 
-#include "../utilities/WindowsUtilities.h"
+#include "WindowsUtilities.h"
 
 #include "Camera.h"
 

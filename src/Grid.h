@@ -4,19 +4,20 @@
 
 #include <SFML/System/Vector2.hpp>
 
-#include "../utilities/Rectangle.hpp"
+#include "Rectangle.hpp"
 
 class Grid
 {
 public:
 	Grid() = default;
+
 	Grid(const Grid&) = delete;
 	Grid(Grid&&) = default;
 
-	Grid(const RectFloat& rect, const sf::Vector2f& contDims);
-
 	Grid& operator=(const Grid&) = delete;
 	Grid& operator=(Grid&&) = default;
+
+	void Initialize(const RectFloat& rect, const sf::Vector2f& contDims);
 
 public:
 	[[nodiscard]] const RectFloat& GetRootRect() const noexcept;

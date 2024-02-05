@@ -5,19 +5,20 @@
 
 #include <memory>
 
-#include "../utilities/ThreadPool.h"
+#include "ThreadPool.h"
 
 class Fluid final
 {
 public:
 	Fluid() = default;
+
 	Fluid(const Fluid&) = delete;
 	Fluid(Fluid&&) = default;
 
-	Fluid(const sf::Vector2u& size);
-
 	Fluid& operator=(const Fluid&) = delete;
 	Fluid& operator=(Fluid&&) = default;
+
+	void Initialize(const sf::Vector2u& size);
 
 public:
 	[[nodiscard]] sf::Vector3f GetColor(const sf::Vector2f& origin) const;
