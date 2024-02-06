@@ -14,10 +14,10 @@ void Grid::Initialize(const RectFloat& rect, const sf::Vector2f& contDims)
 	float sizeMax = std::max(Config::Inst().Boids.Width, Config::Inst().Boids.Height);
 	sf::Vector2f offset = sf::Vector2f(sizeMax, sizeMax) / 2.0f;
 
-	m_rootRect.left -= offset.x;
-	m_rootRect.top -= offset.y;
-	m_rootRect.width += offset.x * 2.0f;
-	m_rootRect.height += offset.y * 2.0f;
+	m_rootRect.left		-= offset.x;
+	m_rootRect.top		-= offset.y;
+	m_rootRect.width	+= offset.x * 2.0f;
+	m_rootRect.height	+= offset.y * 2.0f;
 
 	float a = m_rootRect.width / m_contDims.x;
 	float b = m_rootRect.height / m_contDims.y;

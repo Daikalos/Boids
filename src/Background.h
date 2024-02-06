@@ -18,7 +18,7 @@ public:
 	void Draw(sf::RenderWindow& window) const;
 
 private:
-	void LoadTexture(TextureHolder& textureHolder);
+	void LoadTexture(const TextureHolder& textureHolder);
 
 private:
 	sf::Sprite m_background;

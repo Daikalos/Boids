@@ -51,8 +51,7 @@ struct BackgroundConfig
 {
 	std::string		Texture				{""};
 	sf::Vector3f	Color				{0.0f, 0.0f, 0.0f};
-	int				PositionX			{0};
-	int				PositionY			{0};
+	sf::Vector2i	Position			{0, 0};
 	int				Width				{0};
 	int				Height				{0};
 	bool			FitScreen			{true};

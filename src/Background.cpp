@@ -45,12 +45,16 @@ void Background::Load(TextureHolder& textureHolder, const sf::Vector2i& size)
 		});
 }
 
-void Background::LoadTexture(TextureHolder& textureHolder)
+void Background::LoadTexture(const TextureHolder& textureHolder)
 {
 	if (textureHolder.Contains(TextureID::Background))
+	{
 		m_background.setTexture(textureHolder.Get(TextureID::Background), true);
+	}
 	else
+	{
 		m_background.setTextureRect(sf::IntRect{});
+	}
 }
 
 void Background::LoadProperties(const sf::Vector2i& size)
@@ -70,10 +74,7 @@ void Background::LoadProperties(const sf::Vector2i& size)
 			Config::Inst().Background.Height / m_background.getLocalBounds().height);
 	}
 
-	m_background.setPosition(sf::Vector2f(
-		(float)Config::Inst().Background.PositionX,
-		(float)Config::Inst().Background.PositionY));
-
+	m_background.setPosition(sf::Vector2f(Config::Inst().Background.Position));
 	m_background.setScale(desiredScale);
 
 	bool setColor =

@@ -73,7 +73,6 @@ inline auto ResourceHolder<R, I>::operator[](const I& id) -> ReturnType
 {
 	return Get();
 }
-
 template<class R, typename I>
 inline auto ResourceHolder<R, I>::operator[](const I& id) const -> ConstReturnType
 {
@@ -83,6 +82,12 @@ inline auto ResourceHolder<R, I>::operator[](const I& id) const -> ConstReturnTy
 template<class R, typename I>
 inline auto ResourceHolder<R, I>::Get(const I& id) -> ReturnType
 {
+	return const_cast<ReturnType&>(std::as_const(*this).Get(id));
+}
+
+template<class R, typename I>
+inline auto ResourceHolder<R, I>::Get(const I& id) const -> ConstReturnType
+{
 	std::shared_lock lock(m_mutex);
 
 	const auto it = m_resources.find(id);
@@ -90,12 +95,6 @@ inline auto ResourceHolder<R, I>::Get(const I& id) -> ReturnType
 		throw std::runtime_error("Resource does not exist");
 
 	return *it->second;
-}
-
-template<class R, typename I>
-inline auto ResourceHolder<R, I>::Get(const I& id) const -> ConstReturnType
-{
-	return const_cast<ResourceHolder<R, I>&>(*this).Get(id);
 }
 
 template<class R, typename I>

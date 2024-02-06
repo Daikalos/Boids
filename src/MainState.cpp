@@ -98,90 +98,7 @@ bool MainState::PreUpdate(float dt)
 		Config prev = Config::Inst();
 		for (Rebuild rebuild : Config::Inst().Refresh(prev))
 		{
-			switch (rebuild)
-			{
-				case Rebuild::Grid:
-				{
-					m_minDistance = GetMinDistance();
-					m_grid.Initialize(GetGridBorder(), sf::Vector2f(m_minDistance, m_minDistance) * 2.0f);
-
-					break;
-				}
-				case Rebuild::Boids:
-				{
-					if (Config::Inst().Boids.Count > prev.Boids.Count) // new is larger
-					{
-						m_boids.Reserve(Config::Inst().Boids.Count);
-
-						for (std::size_t i = prev.Boids.Count; i < Config::Inst().Boids.Count; ++i)
-						{
-							sf::Vector2f pos = sf::Vector2f(
-								util::Random(0.0f, m_border.width) - m_border.left,
-								util::Random(0.0f, m_border.height) - m_border.top);
-
-							m_boids.Push(pos);
-						}
-					}
-					else
-					{
-						m_boids.Pop(m_boids.GetSize() - Config::Inst().Boids.Count);
-					}
-
-					UpdateVertices();
-					UpdatePolicy();
-
-					break;
-				}
-				case Rebuild::BoidsTex:
-				{
-					SetBoidTexture(GetContext().GetTextureHolder().Acquire(TextureID::Boid,
-						FromFile<sf::Texture>(RESOURCE_FOLDER + Config::Inst().Boids.Texture), res::LoadStrategy::Reload));
-
-					break;
-				}
-				case Rebuild::BoidsCycle:
-				{
-					m_boids.ResetCycleTimes();
-					break;
-				}
-				case Rebuild::BackgroundTex:
-				{
-					m_background.Load(GetContext().GetTextureHolder(), sf::Vector2i(m_window->getSize()));
-					break;
-				}
-				case Rebuild::BackgroundProp:
-				{
-					m_background.LoadProperties(sf::Vector2i(m_window->getSize()));
-
-					m_window->SetClearColor(sf::Color(
-						(std::uint8_t)(Config::Inst().Background.Color.x * 255.999f),
-						(std::uint8_t)(Config::Inst().Background.Color.y * 255.999f),
-						(std::uint8_t)(Config::Inst().Background.Color.z * 255.999f)));
-
-					break;
-				}
-				case Rebuild::Audio:
-				{
-					m_audioMeter->Clear();
-					break;
-				}
-				case Rebuild::Window:
-				{
-					m_window->SetFramerate(Config::Inst().Misc.MaxFramerate);
-					m_window->SetVerticalSync(Config::Inst().Misc.VerticalSync);
-					break;
-				}
-				case Rebuild::Camera:
-				{
-					m_camera->SetScale(sf::Vector2f(Config::Inst().Misc.CameraZoom, Config::Inst().Misc.CameraZoom));
-					break;
-				}
-				case Rebuild::Fluid:
-				{
-					m_fluid.Initialize(m_window->getSize());
-					break;
-				}
-			}
+			PerformRebuild(rebuild, prev);
 		}
 	}
 
@@ -195,65 +112,15 @@ bool MainState::Update(float dt)
 	m_mousePosPrev = m_mousePos;
 	m_mousePos = sf::Vector2f(m_camera->GetMouseWorldPosition(*m_window));
 
-	if (m_inputHandler->GetKeyHeld(sf::Keyboard::Key::RAlt) && m_inputHandler->GetButtonHeld(sf::Mouse::Button::Middle))
-	{
-		const sf::Vector2f mouseDelta = vu::Direction(m_mousePosPrev, m_mousePos);
-		if (mouseDelta.lengthSq() > Config::Inst().Interaction.BoidAddMouseDiff)
-		{
-			for (int i = 0; i < Config::Inst().Interaction.BoidAddAmount; ++i)
-			{
-				m_boids.Push(m_mousePos, vu::RotatePoint(mouseDelta, {}, util::Random(-1.0f, 1.0f)));
-			}
+	InteractionFluid(dt);
 
-			UpdateVertices();
-			UpdatePolicy();
-		}
-	}
-	if (m_inputHandler->GetKeyHeld(sf::Keyboard::Key::Delete) && m_boids.GetSize() > Config::Inst().Boids.Count)
-	{
-		std::size_t removeAmount = std::min(
-			m_boids.GetSize() - Config::Inst().Boids.Count, 
-			(std::size_t)Config::Inst().Interaction.BoidRemoveAmount);
+	InteractionAddBoids();
 
-		m_boids.Pop(removeAmount);
+	InteractionRemoveBoids();
 
-		UpdateVertices();
-		UpdatePolicy();
-	}
+	InteractionAddImpulse();
 
-	if (Config::Inst().Impulse.Enabled && m_inputHandler->GetButtonPressed(sf::Mouse::Button::Left))
-	{
-		m_impulses.emplace_back(m_mousePos, Config::Inst().Impulse.Speed, Config::Inst().Impulse.Size, -Config::Inst().Impulse.Size);
-	}
-
-	for (auto i = std::ssize(m_impulses) - 1; i >= 0; --i)
-	{
-		Impulse& impulse = m_impulses[i];
-
-		impulse.Update(dt);
-		if (impulse.GetLength() > Config::Inst().Impulse.FadeDistance)
-		{
-			m_impulses.erase(m_impulses.begin() + i);
-		}
-	}
-
-	if ((Config::Inst().Color.Flags & CF_Fluid) == CF_Fluid)
-	{
-		m_fluidMousePosPrev = m_fluidMousePos;
-		m_fluidMousePos = sf::Vector2i(m_mousePos / (float)Config::Inst().Fluid.Scale);
-
-		const sf::Vector2i amount = vu::Abs(m_fluidMousePos - m_fluidMousePosPrev);
-
-		if (std::abs(amount.x) > 0 || std::abs(amount.y) > 0)
-		{
-			m_fluid.StepLine(
-				m_fluidMousePosPrev.x, m_fluidMousePosPrev.y,
-				m_fluidMousePos.x, m_fluidMousePos.y,
-				amount.x, amount.y, Config::Inst().Fluid.MouseStrength);
-		}
-
-		m_fluid.Update(dt);
-	}
+	UpdateImpulses(dt);
 
     return true;
 }
@@ -352,4 +219,168 @@ void MainState::UpdateVertices()
 void MainState::UpdatePolicy()
 {
 	m_policy = m_boids.GetSize() <= Config::Inst().Misc.PolicyThreshold ? Policy::unseq : Policy::par_unseq;
+}
+
+void MainState::PerformRebuild(Rebuild rebuild, Config& prev)
+{
+	switch (rebuild)
+	{
+		case Rebuild::Grid:
+		{
+			m_minDistance = GetMinDistance();
+			m_grid.Initialize(GetGridBorder(), sf::Vector2f(m_minDistance, m_minDistance) * 2.0f);
+
+			break;
+		}
+		case Rebuild::Boids:
+		{
+			if (Config::Inst().Boids.Count > prev.Boids.Count) // new is larger
+			{
+				m_boids.Reserve(Config::Inst().Boids.Count);
+
+				for (std::size_t i = prev.Boids.Count; i < Config::Inst().Boids.Count; ++i)
+				{
+					sf::Vector2f pos = sf::Vector2f(
+						util::Random(0.0f, m_border.width) - m_border.left,
+						util::Random(0.0f, m_border.height) - m_border.top);
+
+					m_boids.Push(pos);
+				}
+			}
+			else
+			{
+				m_boids.Pop(m_boids.GetSize() - Config::Inst().Boids.Count);
+			}
+
+			UpdateVertices();
+			UpdatePolicy();
+
+			break;
+		}
+		case Rebuild::BoidsTex:
+		{
+			SetBoidTexture(GetContext().GetTextureHolder().Acquire(TextureID::Boid,
+				FromFile<sf::Texture>(RESOURCE_FOLDER + Config::Inst().Boids.Texture), res::LoadStrategy::Reload));
+
+			break;
+		}
+		case Rebuild::BoidsCycle:
+		{
+			m_boids.ResetCycleTimes();
+			break;
+		}
+		case Rebuild::BackgroundTex:
+		{
+			m_background.Load(GetContext().GetTextureHolder(), sf::Vector2i(m_window->getSize()));
+			break;
+		}
+		case Rebuild::BackgroundProp:
+		{
+			m_background.LoadProperties(sf::Vector2i(m_window->getSize()));
+
+			m_window->SetClearColor(sf::Color(
+				(std::uint8_t)(Config::Inst().Background.Color.x * 255.999f),
+				(std::uint8_t)(Config::Inst().Background.Color.y * 255.999f),
+				(std::uint8_t)(Config::Inst().Background.Color.z * 255.999f)));
+
+			break;
+		}
+		case Rebuild::Audio:
+		{
+			m_audioMeter->Clear();
+			break;
+		}
+		case Rebuild::Window:
+		{
+			m_window->SetFramerate(Config::Inst().Misc.MaxFramerate);
+			m_window->SetVerticalSync(Config::Inst().Misc.VerticalSync);
+			break;
+		}
+		case Rebuild::Camera:
+		{
+			m_camera->SetScale(sf::Vector2f(Config::Inst().Misc.CameraZoom, Config::Inst().Misc.CameraZoom));
+			break;
+		}
+		case Rebuild::Fluid:
+		{
+			m_fluid.Initialize(m_window->getSize());
+			break;
+		}
+	}
+}
+
+void MainState::InteractionFluid(float dt)
+{
+	if ((Config::Inst().Color.Flags & CF_Fluid) == CF_Fluid)
+	{
+		m_fluidMousePosPrev = m_fluidMousePos;
+		m_fluidMousePos = sf::Vector2i(m_mousePos / (float)Config::Inst().Fluid.Scale);
+
+		const sf::Vector2i amount = vu::Abs(m_fluidMousePos - m_fluidMousePosPrev);
+
+		if (std::abs(amount.x) > 0 || std::abs(amount.y) > 0)
+		{
+			m_fluid.StepLine(
+				m_fluidMousePosPrev.x, m_fluidMousePosPrev.y,
+				m_fluidMousePos.x, m_fluidMousePos.y,
+				amount.x, amount.y, Config::Inst().Fluid.MouseStrength);
+		}
+
+		m_fluid.Update(dt);
+	}
+}
+
+void MainState::InteractionAddBoids()
+{
+	if (m_inputHandler->GetKeyHeld(sf::Keyboard::Key::RAlt) && m_inputHandler->GetButtonHeld(sf::Mouse::Button::Middle))
+	{
+		const sf::Vector2f mouseDelta = vu::Direction(m_mousePosPrev, m_mousePos);
+		if (mouseDelta.lengthSq() > Config::Inst().Interaction.BoidAddMouseDiff)
+		{
+			for (int i = 0; i < Config::Inst().Interaction.BoidAddAmount; ++i)
+			{
+				m_boids.Push(m_mousePos, vu::RotatePoint(mouseDelta, {}, util::Random(-1.0f, 1.0f)));
+			}
+
+			UpdateVertices();
+			UpdatePolicy();
+		}
+	}
+}
+
+void MainState::InteractionRemoveBoids()
+{
+	if (m_inputHandler->GetKeyHeld(sf::Keyboard::Key::Delete) && m_boids.GetSize() > Config::Inst().Boids.Count)
+	{
+		std::size_t removeAmount = std::min(
+			m_boids.GetSize() - Config::Inst().Boids.Count,
+			(std::size_t)Config::Inst().Interaction.BoidRemoveAmount);
+
+		m_boids.Pop(removeAmount);
+
+		UpdateVertices();
+		UpdatePolicy();
+	}
+}
+
+void MainState::InteractionAddImpulse()
+{
+	if (Config::Inst().Impulse.Enabled && m_inputHandler->GetButtonPressed(sf::Mouse::Button::Left))
+	{
+		m_impulses.emplace_back(m_mousePos, Config::Inst().Impulse.Speed, Config::Inst().Impulse.Size, -Config::Inst().Impulse.Size);
+	}
+}
+
+void MainState::UpdateImpulses(float dt)
+{
+	for (auto i = std::ssize(m_impulses) - 1; i >= 0; --i)
+	{
+		Impulse& impulse = m_impulses[i];
+
+		impulse.Update(dt);
+		if (impulse.GetLength() > Config::Inst().Impulse.FadeDistance)
+		{
+			m_impulses.erase(m_impulses.begin() + i);
+		}
+	}
 }

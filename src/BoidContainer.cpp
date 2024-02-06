@@ -405,21 +405,6 @@ void BoidContainer::Update(const RectFloat& border, const std::vector<Impulse>& 
 			vu::Angle(velocity.y, velocity.x) : 0.0f;
 	}
 
-	//for (std::size_t i = 0; i < m_size; ++i)
-	//{
-	//	auto& tri = m_triangles[i];
-
-	//	const auto ori = GetOrigin(m_positions[i]);
-	//	const auto angle = m_angles[i];
-
-	//	tri =
-	//	{
-	//		vu::RotatePoint({ ori.x + Config::Inst().BoidHalfSize.x, ori.y								   }, ori, angle), // middle right tip
-	//		vu::RotatePoint({ ori.x - Config::Inst().BoidHalfSize.x, ori.y - Config::Inst().BoidHalfSize.y }, ori, angle), // top left corner
-	//		vu::RotatePoint({ ori.x - Config::Inst().BoidHalfSize.x, ori.y + Config::Inst().BoidHalfSize.y }, ori, angle)	// bot left corner
-	//	};
-	//}
-
 	if (!Config::Inst().Interaction.TurnAtBorder)
 	{
 		for (std::size_t i = 0; i < m_size; ++i)
@@ -471,7 +456,7 @@ void BoidContainer::Update(const RectFloat& border, const std::vector<Impulse>& 
 
 void BoidContainer::UpdateColors(const RectFloat& border, const Fluid& fluid, const IAudioMeterInfo* audioMeter, const std::vector<Impulse>& impulses)
 {
-	Config& config = Config::Inst();
+	const Config& config = Config::Inst();
 	std::uint32_t flag = config.Color.Flags;
 
 	std::fill_n(m_colors.get(), m_size, sf::Vector3f());
@@ -503,7 +488,7 @@ void BoidContainer::UpdateColors(const RectFloat& border, const Fluid& fluid, co
 	}
 	if ((flag & CF_Audio) == CF_Audio && !config.Audio.Colors.empty() && audioMeter != nullptr)
 	{
-		float volume = std::fminf(audioMeter->GetVolume() * Config::Inst().Audio.Strength, Config::Inst().Audio.Limit);
+		float volume = std::fminf(audioMeter->GetVolume() * config.Audio.Strength, config.Audio.Limit);
 
 		for (std::size_t i = 0; i < m_size; ++i)
 			m_colors[i] += AudioColor(m_densities[i], volume) * config.Color.AudioWeight;

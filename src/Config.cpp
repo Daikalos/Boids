@@ -40,8 +40,7 @@ void ReadJSON(Config& oc, nlohmann::json& json)
 
 	oc.Background.Color				= ConvertToColor(background["Color"]);
 	oc.Background.Texture			= background["Texture"];
-	oc.Background.PositionX			= background["PositionX"];
-	oc.Background.PositionY			= background["PositionY"];
+	oc.Background.Position			= sf::Vector2i((int)background["Position"]["x"], (int)background["Position"]["y"]);
 	oc.Background.FitScreen			= background["FitScreen"];
 	oc.Background.OverrideSize		= background["OverrideSize"];
 	oc.Background.UseWallpaper		= background["UseWallpaper"];
@@ -247,8 +246,7 @@ std::vector<Rebuild> Config::Refresh(Config& prev)
 		result.emplace_back(Rebuild::Fluid);
 
 	if (prev.Background.Color != Background.Color ||
-		prev.Background.PositionX != Background.PositionX ||
-		prev.Background.PositionY != Background.PositionY ||
+		prev.Background.Position != Background.Position ||
 		prev.Background.FitScreen != Background.FitScreen ||
 		prev.Background.OverrideSize != Background.OverrideSize ||
 		prev.Background.Width != Background.Width ||

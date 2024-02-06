@@ -18,6 +18,9 @@
 class Window;
 class Camera;
 class InputHandler;
+class Config;
+
+enum class Rebuild;
 
 class MainState final : public State
 {
@@ -42,8 +45,17 @@ private:
 
 	void SetBoidTexture(sf::Texture& texture);
 
+private:
 	void UpdateVertices();
 	void UpdatePolicy();
+
+	void PerformRebuild(Rebuild rebuild, Config& prev);
+
+	void InteractionFluid(float dt);
+	void InteractionAddBoids();
+	void InteractionRemoveBoids();
+	void InteractionAddImpulse();
+	void UpdateImpulses(float dt);
 
 private:
 	Window*						m_window		{nullptr};
