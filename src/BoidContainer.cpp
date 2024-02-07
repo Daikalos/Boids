@@ -3,8 +3,6 @@
 #include <ranges>
 #include <cassert>
 
-#include <SFML/Graphics/Transform.hpp>
-
 #include "VectorUtilities.hpp"
 #include "CommonUtilities.hpp"
 
@@ -539,7 +537,7 @@ void BoidContainer::UpdateVertices(sf::VertexArray& vertices, float interp, Poli
 
 					const sf::Vector2f hSize = Config::Inst().BoidHalfSize;
 
-					const float cos	= std::cos(lerpAngle);
+					const float cos	= std::cos(lerpAngle); // build a transform
 					const float sin	= std::sin(lerpAngle);
 					const float sxc = hSize.x * cos;
 					const float syc = hSize.y * cos;
@@ -548,19 +546,19 @@ void BoidContainer::UpdateVertices(sf::VertexArray& vertices, float interp, Poli
 					const float tx	= -0.5f * sxc - 0.5f * sys + lerpPosition.x;
 					const float ty	=  0.5f * sxs - 0.5f * syc + lerpPosition.y;
 
-					sf::Transform transform
-					{
-						 sxc,  sys,  tx,
-						-sxs,  syc,  ty,
-						 0.0f, 0.0f, 1.0f
-					};
+					const sf::Vector2f translation(tx, ty);
+
+					const sf::Vector2f x0 =  1.0f * sf::Vector2f(sxc, -sxs);
+					const sf::Vector2f x1 = -1.0f * sf::Vector2f(sxc, -sxs);
+					const sf::Vector2f y0 =  1.0f * sf::Vector2f(sys,  syc);
+					const sf::Vector2f y1 = -1.0f * sf::Vector2f(sys,  syc);
+
+					const sf::Vector2f topLeft	= x1 + y0 + translation;
+					const sf::Vector2f topRight = x0 + y0 + translation;
+					const sf::Vector2f botLeft	= x1 + y1 + translation;
+					const sf::Vector2f botRight	= x0 + y1 + translation;
 
 					const std::size_t v = (std::size_t)i * 6;
-
-					const sf::Vector2f topLeft	= transform.transformPoint(sf::Vector2f(-1.0f,  1.0f));
-					const sf::Vector2f topRight	= transform.transformPoint(sf::Vector2f( 1.0f,  1.0f));
-					const sf::Vector2f botLeft	= transform.transformPoint(sf::Vector2f(-1.0f, -1.0f));
-					const sf::Vector2f botRight	= transform.transformPoint(sf::Vector2f( 1.0f, -1.0f));
 
 					vertices[v + 0].position = botLeft;
 					vertices[v + 1].position = botRight;
