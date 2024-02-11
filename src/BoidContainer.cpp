@@ -58,7 +58,7 @@ void BoidContainer::Push(const sf::Vector2f& pos, const sf::Vector2f& velocity)
 	m_prevVelocities[m_size] = m_velocities[m_size]	= velocity;
 
 	m_prevPositions[m_size] = m_positions[m_size] = pos;
-	m_prevAngles[m_size] = m_angles[m_size] = velocity.angle().asRadians();
+	m_prevAngles[m_size] = m_angles[m_size] = ((velocity != sf::Vector2f()) ? velocity.angle().asRadians() : 0.0f);
 
 	if (Config::Inst().Cycle.Random)
 		m_cycleTimes[m_size] = util::Random(0.0f, 1.0f);
@@ -459,42 +459,50 @@ void BoidContainer::UpdateColors(const RectFloat& border, const Fluid& fluid, co
 
 	std::fill_n(m_colors.get(), m_size, sf::Vector3f());
 
-	if ((flag & CF_Positional) == CF_Positional)
+	if (flag == CF_None) [[unlikely]]
 	{
 		for (std::size_t i = 0; i < m_size; ++i)
-			m_colors[i] += PositionColor(m_positions[i], border) * config.Color.PositionalWeight;
+			m_colors[i] = sf::Vector3f(1.0f, 1.0f, 1.0f);
 	}
-	if ((flag & CF_Cycle) == CF_Cycle && !config.Cycle.Colors.empty())
+	else
 	{
-		for (std::size_t i = 0; i < m_size; ++i)
-			m_colors[i] += CycleColor(m_cycleTimes[i]) * config.Color.CycleWeight;
-	}
-	if ((flag & CF_Density) == CF_Density && !config.Density.Colors.empty() && config.Density.Density > 0)
-	{
-		for (std::size_t i = 0; i < m_size; ++i)
-			m_colors[i] += DensityColor(m_densities[i], m_densityTimes[i]) * config.Color.DensityWeight;
-	}
-	if ((flag & CF_Velocity) == CF_Velocity && !config.Velocity.Colors.empty())
-	{
-		for (std::size_t i = 0; i < m_size; ++i)
-			m_colors[i] += VelocityColor(m_speeds[i]) * config.Color.VelocityWeight;
-	}
-	if ((flag & CF_Rotation) == CF_Rotation && !config.Rotation.Colors.empty())
-	{
-		for (std::size_t i = 0; i < m_size; ++i)
-			m_colors[i] += RotationColor(m_angles[i]) * config.Color.RotationWeight;
-	}
-	if ((flag & CF_Audio) == CF_Audio && !config.Audio.Colors.empty() && audioMeter != nullptr)
-	{
-		float volume = std::fminf(audioMeter->GetVolume() * config.Audio.Strength, config.Audio.Limit);
+		if ((flag & CF_Positional) == CF_Positional)
+		{
+			for (std::size_t i = 0; i < m_size; ++i)
+				m_colors[i] += PositionColor(m_positions[i], border) * config.Color.PositionalWeight;
+		}
+		if ((flag & CF_Cycle) == CF_Cycle && !config.Cycle.Colors.empty())
+		{
+			for (std::size_t i = 0; i < m_size; ++i)
+				m_colors[i] += CycleColor(m_cycleTimes[i]) * config.Color.CycleWeight;
+		}
+		if ((flag & CF_Density) == CF_Density && !config.Density.Colors.empty() && config.Density.Density > 0)
+		{
+			for (std::size_t i = 0; i < m_size; ++i)
+				m_colors[i] += DensityColor(m_densities[i], m_densityTimes[i]) * config.Color.DensityWeight;
+		}
+		if ((flag & CF_Velocity) == CF_Velocity && !config.Velocity.Colors.empty())
+		{
+			for (std::size_t i = 0; i < m_size; ++i)
+				m_colors[i] += VelocityColor(m_speeds[i]) * config.Color.VelocityWeight;
+		}
+		if ((flag & CF_Rotation) == CF_Rotation && !config.Rotation.Colors.empty())
+		{
+			for (std::size_t i = 0; i < m_size; ++i)
+				m_colors[i] += RotationColor(m_angles[i]) * config.Color.RotationWeight;
+		}
+		if ((flag & CF_Audio) == CF_Audio && !config.Audio.Colors.empty() && audioMeter != nullptr)
+		{
+			float volume = std::fminf(audioMeter->GetVolume() * config.Audio.Strength, config.Audio.Limit);
 
-		for (std::size_t i = 0; i < m_size; ++i)
-			m_colors[i] += AudioColor(m_densities[i], volume) * config.Color.AudioWeight;
-	}
-	if ((flag & CF_Fluid) == CF_Fluid && !config.Fluid.Colors.empty())
-	{
-		for (std::size_t i = 0; i < m_size; ++i)
-			m_colors[i] += fluid.GetColor(m_positions[i]);
+			for (std::size_t i = 0; i < m_size; ++i)
+				m_colors[i] += AudioColor(m_densities[i], volume) * config.Color.AudioWeight;
+		}
+		if ((flag & CF_Fluid) == CF_Fluid && !config.Fluid.Colors.empty())
+		{
+			for (std::size_t i = 0; i < m_size; ++i)
+				m_colors[i] += fluid.GetColor(m_positions[i]);
+		}
 	}
 
 	if (!config.Impulse.Colors.empty() && !impulses.empty())
@@ -543,8 +551,8 @@ void BoidContainer::UpdateVertices(sf::VertexArray& vertices, float interp, Poli
 					const float syc = hSize.y * cos;
 					const float sxs = hSize.x * sin;
 					const float sys = hSize.y * sin;
-					const float tx	= -0.5f * sxc - 0.5f * sys + lerpPosition.x;
-					const float ty	=  0.5f * sxs - 0.5f * syc + lerpPosition.y;
+					const float tx	= lerpPosition.x;
+					const float ty	= lerpPosition.y;
 
 					const sf::Vector2f translation(tx, ty);
 
@@ -579,7 +587,9 @@ void BoidContainer::UpdateVertices(sf::VertexArray& vertices, float interp, Poli
 
 void BoidContainer::TurnAtBorder(const sf::Vector2f& pos, sf::Vector2f& vel, std::uint32_t den, const RectFloat& border, float dt)
 {
-	const float maxSize = std::max(Config::Inst().Boids.Width, Config::Inst().Boids.Height);
+	const float sizeHalf = std::max(
+		Config::Inst().Boids.Width, 
+		Config::Inst().Boids.Height) * 0.5f;
 
 	float widthMargin	= border.width - (border.width * Config::Inst().Interaction.TurnMarginFactor);
 	float heightMargin	= border.width - (border.height * Config::Inst().Interaction.TurnMarginFactor);
@@ -592,38 +602,38 @@ void BoidContainer::TurnAtBorder(const sf::Vector2f& pos, sf::Vector2f& vel, std
 	widthMargin		= std::max(widthMargin, 1.0f);
 	heightMargin	= std::max(heightMargin, 1.0f);
 
-	if (pos.x + maxSize < leftMargin)
+	if (pos.x + sizeHalf < leftMargin)
 		vel.x += Config::Inst().Interaction.TurnFactor * std::powf(std::abs(pos.x - leftMargin) / widthMargin, 2.0f) * (1.0f / (den + 1.0f)) * dt;
 
-	if (pos.x > rightMargin)
+	if (pos.x - sizeHalf > rightMargin)
 		vel.x -= Config::Inst().Interaction.TurnFactor * std::powf(std::abs(pos.x - rightMargin) / widthMargin, 2.0f) * (1.0f / (den + 1.0f)) * dt;
 
-	if (pos.y + maxSize < topMargin)
+	if (pos.y + sizeHalf < topMargin)
 		vel.y += Config::Inst().Interaction.TurnFactor * std::powf(std::abs(pos.y - topMargin) / heightMargin, 2.0f) * (1.0f / (den + 1.0f)) * dt;
 
-	if (pos.y > botMargin)
+	if (pos.y - sizeHalf > botMargin)
 		vel.y -= Config::Inst().Interaction.TurnFactor * std::powf(std::abs(pos.y - botMargin) / heightMargin, 2.0f) * (1.0f / (den + 1.0f)) * dt;
 }
 
 bool BoidContainer::TeleportAtBorder(sf::Vector2f& pos, const RectFloat& border)
 {
-	const float maxSize = std::max(
+	const float sizeHalf = std::max(
 		Config::Inst().Boids.Width, 
-		Config::Inst().Boids.Height);
+		Config::Inst().Boids.Height) * 0.5f;
 
 	const sf::Vector2f previous = pos;
 
-	if (pos.x + maxSize < border.left)
-		pos.x = (float)border.Right();
+	if (pos.x + sizeHalf < border.left)
+		pos.x = (float)border.Right() + sizeHalf;
 
-	if (pos.x > border.Right())
-		pos.x = border.left - maxSize;
+	if (pos.x - sizeHalf > border.Right())
+		pos.x = border.left - sizeHalf;
 
-	if (pos.y + maxSize < border.top)
-		pos.y = (float)border.Bottom();
+	if (pos.y + sizeHalf < border.top)
+		pos.y = (float)border.Bottom() + sizeHalf;
 
-	if (pos.y > border.Bottom())
-		pos.y = border.top - maxSize;
+	if (pos.y - sizeHalf > border.Bottom())
+		pos.y = border.top - sizeHalf;
 
 	return (previous != pos);
 }

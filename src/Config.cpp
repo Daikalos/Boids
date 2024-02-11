@@ -81,7 +81,7 @@ void ReadJSON(Config& oc, nlohmann::json& json)
 	oc.Interaction.TurnFactor			= interaction["TurnFactor"];
 
 	std::vector<int> temp_color_options = color["ColorOptions"];
-	oc.Color.Flags = !temp_color_options.empty() ? CF_None : CF_Cycle;
+	oc.Color.Flags = CF_None;
 	for (std::size_t i = 0; i < temp_color_options.size(); ++i)
 		oc.Color.Flags |= util::Pow(2, temp_color_options[i] - 1);
 
@@ -225,7 +225,8 @@ std::vector<Rebuild> Config::Refresh(Config& prev)
 	if (prev.Boids.Texture != Boids.Texture)
 		result.emplace_back(Rebuild::BoidsTex);
 
-	if (prev.Cycle.Random != Cycle.Random)
+	if (prev.Color.Flags != Color.Flags ||
+		prev.Cycle.Random != Cycle.Random)
 		result.emplace_back(Rebuild::BoidsCycle);
 
 	if (prev.Background.Texture != Background.Texture ||
