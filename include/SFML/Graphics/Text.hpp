@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -29,19 +29,25 @@
 ////////////////////////////////////////////////////////////
 #include <SFML/Graphics/Export.hpp>
 
+#include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/Drawable.hpp>
+#include <SFML/Graphics/PrimitiveType.hpp>
 #include <SFML/Graphics/Rect.hpp>
+#include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/Graphics/Transformable.hpp>
 #include <SFML/Graphics/VertexArray.hpp>
 
 #include <SFML/System/String.hpp>
+#include <SFML/System/Vector2.hpp>
 
-#include <vector>
+#include <cstddef>
+#include <cstdint>
 
 
 namespace sf
 {
 class Font;
+class RenderTarget;
 
 ////////////////////////////////////////////////////////////
 /// \brief Graphical text that can be drawn to a render target
@@ -84,12 +90,12 @@ public:
     /// \brief Disallow construction from a temporary font
     ///
     ////////////////////////////////////////////////////////////
-    Text(Font&& font, String string = "", unsigned int characterSize = 30) = delete;
+    Text(const Font&& font, String string = "", unsigned int characterSize = 30) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the text's string
     ///
-    /// The \a string argument is a sf::String, which can
+    /// The `string` argument is a `sf::String`, which can
     /// automatically be constructed from standard string types.
     /// So, the following calls are all valid:
     /// \code
@@ -102,7 +108,7 @@ public:
     ///
     /// \param string New string
     ///
-    /// \see getString
+    /// \see `getString`
     ///
     ////////////////////////////////////////////////////////////
     void setString(const String& string);
@@ -110,7 +116,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Set the text's font
     ///
-    /// The \a font argument refers to a font that must
+    /// The `font` argument refers to a font that must
     /// exist as long as the text uses it. Indeed, the text
     /// doesn't store its own copy of the font, but rather keeps
     /// a pointer to the one that you passed to this function.
@@ -119,7 +125,7 @@ public:
     ///
     /// \param font New font
     ///
-    /// \see getFont
+    /// \see `getFont`
     ///
     ////////////////////////////////////////////////////////////
     void setFont(const Font& font);
@@ -128,7 +134,7 @@ public:
     /// \brief Disallow setting from a temporary font
     ///
     ////////////////////////////////////////////////////////////
-    void setFont(Font&& font) = delete;
+    void setFont(const Font&& font) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the character size
@@ -144,7 +150,7 @@ public:
     ///
     /// \param size New character size, in pixels
     ///
-    /// \see getCharacterSize
+    /// \see `getCharacterSize`
     ///
     ////////////////////////////////////////////////////////////
     void setCharacterSize(unsigned int size);
@@ -158,7 +164,7 @@ public:
     ///
     /// \param spacingFactor New line spacing factor
     ///
-    /// \see getLineSpacing
+    /// \see `getLineSpacing`
     ///
     ////////////////////////////////////////////////////////////
     void setLineSpacing(float spacingFactor);
@@ -177,7 +183,7 @@ public:
     ///
     /// \param spacingFactor New letter spacing factor
     ///
-    /// \see getLetterSpacing
+    /// \see `getLetterSpacing`
     ///
     ////////////////////////////////////////////////////////////
     void setLetterSpacing(float spacingFactor);
@@ -186,12 +192,12 @@ public:
     /// \brief Set the text's style
     ///
     /// You can pass a combination of one or more styles, for
-    /// example sf::Text::Bold | sf::Text::Italic.
-    /// The default style is sf::Text::Regular.
+    /// example `sf::Text::Bold | sf::Text::Italic`.
+    /// The default style is `sf::Text::Regular`.
     ///
     /// \param style New style
     ///
-    /// \see getStyle
+    /// \see `getStyle`
     ///
     ////////////////////////////////////////////////////////////
     void setStyle(std::uint32_t style);
@@ -205,10 +211,10 @@ public:
     ///
     /// \param color New fill color of the text
     ///
-    /// \see getFillColor
+    /// \see `getFillColor`
     ///
     ////////////////////////////////////////////////////////////
-    void setFillColor(const Color& color);
+    void setFillColor(Color color);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the outline color of the text
@@ -217,10 +223,10 @@ public:
     ///
     /// \param color New outline color of the text
     ///
-    /// \see getOutlineColor
+    /// \see `getOutlineColor`
     ///
     ////////////////////////////////////////////////////////////
-    void setOutlineColor(const Color& color);
+    void setOutlineColor(Color color);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the thickness of the text's outline
@@ -232,7 +238,7 @@ public:
     ///
     /// \param thickness New outline thickness, in pixels
     ///
-    /// \see getOutlineThickness
+    /// \see `getOutlineThickness`
     ///
     ////////////////////////////////////////////////////////////
     void setOutlineThickness(float thickness);
@@ -240,7 +246,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Get the text's string
     ///
-    /// The returned string is a sf::String, which can automatically
+    /// The returned string is a `sf::String`, which can automatically
     /// be converted to standard string types. So, the following
     /// lines of code are all valid:
     /// \code
@@ -251,10 +257,10 @@ public:
     ///
     /// \return Text's string
     ///
-    /// \see setString
+    /// \see `setString`
     ///
     ////////////////////////////////////////////////////////////
-    const String& getString() const;
+    [[nodiscard]] const String& getString() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the text's font
@@ -264,89 +270,89 @@ public:
     ///
     /// \return Reference to the text's font
     ///
-    /// \see setFont
+    /// \see `setFont`
     ///
     ////////////////////////////////////////////////////////////
-    const Font& getFont() const;
+    [[nodiscard]] const Font& getFont() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the character size
     ///
     /// \return Size of the characters, in pixels
     ///
-    /// \see setCharacterSize
+    /// \see `setCharacterSize`
     ///
     ////////////////////////////////////////////////////////////
-    unsigned int getCharacterSize() const;
+    [[nodiscard]] unsigned int getCharacterSize() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the size of the letter spacing factor
     ///
     /// \return Size of the letter spacing factor
     ///
-    /// \see setLetterSpacing
+    /// \see `setLetterSpacing`
     ///
     ////////////////////////////////////////////////////////////
-    float getLetterSpacing() const;
+    [[nodiscard]] float getLetterSpacing() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the size of the line spacing factor
     ///
     /// \return Size of the line spacing factor
     ///
-    /// \see setLineSpacing
+    /// \see `setLineSpacing`
     ///
     ////////////////////////////////////////////////////////////
-    float getLineSpacing() const;
+    [[nodiscard]] float getLineSpacing() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the text's style
     ///
     /// \return Text's style
     ///
-    /// \see setStyle
+    /// \see `setStyle`
     ///
     ////////////////////////////////////////////////////////////
-    std::uint32_t getStyle() const;
+    [[nodiscard]] std::uint32_t getStyle() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the fill color of the text
     ///
     /// \return Fill color of the text
     ///
-    /// \see setFillColor
+    /// \see `setFillColor`
     ///
     ////////////////////////////////////////////////////////////
-    const Color& getFillColor() const;
+    [[nodiscard]] Color getFillColor() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the outline color of the text
     ///
     /// \return Outline color of the text
     ///
-    /// \see setOutlineColor
+    /// \see `setOutlineColor`
     ///
     ////////////////////////////////////////////////////////////
-    const Color& getOutlineColor() const;
+    [[nodiscard]] Color getOutlineColor() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the outline thickness of the text
     ///
     /// \return Outline thickness of the text, in pixels
     ///
-    /// \see setOutlineThickness
+    /// \see `setOutlineThickness`
     ///
     ////////////////////////////////////////////////////////////
-    float getOutlineThickness() const;
+    [[nodiscard]] float getOutlineThickness() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Return the position of the \a index-th character
+    /// \brief Return the position of the `index`-th character
     ///
     /// This function computes the visual position of a character
     /// from its index in the string. The returned position is
     /// in global coordinates (translation, rotation, scale and
     /// origin are applied).
-    /// If \a index is out of range, the position of the end of
+    /// If `index` is out of range, the position of the end of
     /// the string is returned.
     ///
     /// \param index Index of the character
@@ -354,7 +360,7 @@ public:
     /// \return Position of the character
     ///
     ////////////////////////////////////////////////////////////
-    Vector2f findCharacterPos(std::size_t index) const;
+    [[nodiscard]] Vector2f findCharacterPos(std::size_t index) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the local bounding rectangle of the entity
@@ -368,7 +374,7 @@ public:
     /// \return Local bounding rectangle of the entity
     ///
     ////////////////////////////////////////////////////////////
-    FloatRect getLocalBounds() const;
+    [[nodiscard]] FloatRect getLocalBounds() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the global bounding rectangle of the entity
@@ -382,7 +388,7 @@ public:
     /// \return Global bounding rectangle of the entity
     ///
     ////////////////////////////////////////////////////////////
-    FloatRect getGlobalBounds() const;
+    [[nodiscard]] FloatRect getGlobalBounds() const;
 
 private:
     ////////////////////////////////////////////////////////////
@@ -392,7 +398,7 @@ private:
     /// \param states Current render states
     ///
     ////////////////////////////////////////////////////////////
-    void draw(RenderTarget& target, const RenderStates& states) const override;
+    void draw(RenderTarget& target, RenderStates states) const override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Make sure the text's geometry is updated
@@ -429,10 +435,10 @@ private:
 /// \class sf::Text
 /// \ingroup graphics
 ///
-/// sf::Text is a drawable class that allows to easily display
+/// `sf::Text` is a drawable class that allows to easily display
 /// some text with custom style and color on a render target.
 ///
-/// It inherits all the functions from sf::Transformable:
+/// It inherits all the functions from `sf::Transformable`:
 /// position, rotation, scale, origin. It also adds text-specific
 /// properties such as the font to use, the character size,
 /// the font style (bold, italic, underlined and strike through), the
@@ -442,32 +448,28 @@ private:
 /// graphical size of the text, or to get the global position
 /// of a given character.
 ///
-/// sf::Text works in combination with the sf::Font class, which
+/// `sf::Text` works in combination with the `sf::Font` class, which
 /// loads and provides the glyphs (visual characters) of a given font.
 ///
-/// The separation of sf::Font and sf::Text allows more flexibility
-/// and better performances: indeed a sf::Font is a heavy resource,
+/// The separation of `sf::Font` and `sf::Text` allows more flexibility
+/// and better performances: indeed a `sf::Font` is a heavy resource,
 /// and any operation on it is slow (often too slow for real-time
-/// applications). On the other side, a sf::Text is a lightweight
-/// object which can combine the glyphs data and metrics of a sf::Font
+/// applications). On the other side, a `sf::Text` is a lightweight
+/// object which can combine the glyphs data and metrics of a `sf::Font`
 /// to display any text on a render target.
 ///
-/// It is important to note that the sf::Text instance doesn't
+/// It is important to note that the `sf::Text` instance doesn't
 /// copy the font that it uses, it only keeps a reference to it.
-/// Thus, a sf::Font must not be destructed while it is
-/// used by a sf::Text (i.e. never write a function that
-/// uses a local sf::Font instance for creating a text).
+/// Thus, a `sf::Font` must not be destructed while it is
+/// used by a `sf::Text` (i.e. never write a function that
+/// uses a local `sf::Font` instance for creating a text).
 ///
-/// See also the note on coordinates and undistorted rendering in sf::Transformable.
+/// See also the note on coordinates and undistorted rendering in `sf::Transformable`.
 ///
 /// Usage example:
 /// \code
-/// // Declare and load a font
-/// sf::Font font;
-/// if (!font.loadFromFile("arial.ttf"))
-/// {
-///     // Handle error...
-/// }
+/// // Open a font
+/// const sf::Font font("arial.ttf");
 ///
 /// // Create a text
 /// sf::Text text(font, "hello");
@@ -479,6 +481,6 @@ private:
 /// window.draw(text);
 /// \endcode
 ///
-/// \see sf::Font, sf::Transformable
+/// \see `sf::Font`, `sf::Transformable`
 ///
 ////////////////////////////////////////////////////////////

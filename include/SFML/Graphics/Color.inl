@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,11 +22,14 @@
 //
 ////////////////////////////////////////////////////////////
 
-
 ////////////////////////////////////////////////////////////
-constexpr Color::Color() = default;
+// Headers
+////////////////////////////////////////////////////////////
+#include <SFML/Graphics/Color.hpp> // NOLINT(misc-header-include-cycle)
 
 
+namespace sf
+{
 ////////////////////////////////////////////////////////////
 constexpr Color::Color(std::uint8_t red, std::uint8_t green, std::uint8_t blue, std::uint8_t alpha) :
 r(red),
@@ -55,23 +58,23 @@ constexpr std::uint32_t Color::toInteger() const
 
 
 ////////////////////////////////////////////////////////////
-constexpr bool operator==(const Color& left, const Color& right)
+constexpr bool operator==(Color left, Color right)
 {
     return (left.r == right.r) && (left.g == right.g) && (left.b == right.b) && (left.a == right.a);
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr bool operator!=(const Color& left, const Color& right)
+constexpr bool operator!=(Color left, Color right)
 {
     return !(left == right);
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Color operator+(const Color& left, const Color& right)
+constexpr Color operator+(Color left, Color right)
 {
-    const auto clampedAdd = [](std::uint8_t lhs, std::uint8_t rhs) -> std::uint8_t
+    const auto clampedAdd = [](std::uint8_t lhs, std::uint8_t rhs)
     {
         const int intResult = int{lhs} + int{rhs};
         return static_cast<std::uint8_t>(intResult < 255 ? intResult : 255);
@@ -85,9 +88,9 @@ constexpr Color operator+(const Color& left, const Color& right)
 
 
 ////////////////////////////////////////////////////////////
-constexpr Color operator-(const Color& left, const Color& right)
+constexpr Color operator-(Color left, Color right)
 {
-    const auto clampedSub = [](std::uint8_t lhs, std::uint8_t rhs) -> std::uint8_t
+    const auto clampedSub = [](std::uint8_t lhs, std::uint8_t rhs)
     {
         const int intResult = int{lhs} - int{rhs};
         return static_cast<std::uint8_t>(intResult > 0 ? intResult : 0);
@@ -101,9 +104,9 @@ constexpr Color operator-(const Color& left, const Color& right)
 
 
 ////////////////////////////////////////////////////////////
-constexpr Color operator*(const Color& left, const Color& right)
+constexpr Color operator*(Color left, Color right)
 {
-    const auto scaledMul = [](std::uint8_t lhs, std::uint8_t rhs) -> std::uint8_t
+    const auto scaledMul = [](std::uint8_t lhs, std::uint8_t rhs)
     {
         const auto uint16Result = static_cast<std::uint16_t>(std::uint16_t{lhs} * std::uint16_t{rhs});
         return static_cast<std::uint8_t>(uint16Result / 255u);
@@ -114,21 +117,21 @@ constexpr Color operator*(const Color& left, const Color& right)
 
 
 ////////////////////////////////////////////////////////////
-constexpr Color& operator+=(Color& left, const Color& right)
+constexpr Color& operator+=(Color& left, Color right)
 {
     return left = left + right;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Color& operator-=(Color& left, const Color& right)
+constexpr Color& operator-=(Color& left, Color right)
 {
     return left = left - right;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Color& operator*=(Color& left, const Color& right)
+constexpr Color& operator*=(Color& left, Color right)
 {
     return left = left * right;
 }
@@ -149,3 +152,5 @@ inline constexpr Color Color::Yellow(255, 255, 0);
 inline constexpr Color Color::Magenta(255, 0, 255);
 inline constexpr Color Color::Cyan(0, 255, 255);
 inline constexpr Color Color::Transparent(0, 0, 0, 0);
+
+} // namespace sf

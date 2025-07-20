@@ -100,11 +100,9 @@ void Camera::Update(const InputHandler& inputHandler, const sf::RenderWindow& wi
 
 void Camera::HandleEvent(const sf::Event& event)
 {
-	switch (event.type)
+	if (const auto* resized = event.getIf<sf::Event::Resized>())
 	{
-	case sf::Event::Resized:
-		SetSize(sf::Vector2f((float)event.size.width, (float)event.size.height));
+		SetSize(sf::Vector2f((float)resized->size.x, (float)resized->size.y));
 		SetPosition(GetSize() / 2.0f);
-		break;
 	}
 }

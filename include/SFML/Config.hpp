@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -26,12 +26,12 @@
 
 
 ////////////////////////////////////////////////////////////
-// Define the SFML version
+// SFML version
 ////////////////////////////////////////////////////////////
 #define SFML_VERSION_MAJOR      3
 #define SFML_VERSION_MINOR      0
 #define SFML_VERSION_PATCH      0
-#define SFML_VERSION_IS_RELEASE false
+#define SFML_VERSION_IS_RELEASE true
 
 
 ////////////////////////////////////////////////////////////
@@ -112,7 +112,7 @@
 
 
 ////////////////////////////////////////////////////////////
-// Define a portable debug macro
+// Portable debug macro
 ////////////////////////////////////////////////////////////
 #if !defined(NDEBUG)
 
@@ -122,7 +122,7 @@
 
 
 ////////////////////////////////////////////////////////////
-// Define helpers to create portable import / export macros for each module
+// Helpers to create portable import / export macros for each module
 ////////////////////////////////////////////////////////////
 #if !defined(SFML_STATIC)
 

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -22,11 +22,18 @@
 //
 ////////////////////////////////////////////////////////////
 
-
 ////////////////////////////////////////////////////////////
-constexpr Time::Time() = default;
+// Headers
+////////////////////////////////////////////////////////////
+#include <SFML/System/Time.hpp> // NOLINT(misc-header-include-cycle)
+
+#include <ratio>
+
+#include <cassert>
 
 
+namespace sf
+{
 ////////////////////////////////////////////////////////////
 template <typename Rep, typename Period>
 constexpr Time::Time(const std::chrono::duration<Rep, Period>& duration) : m_microseconds(duration)
@@ -273,3 +280,5 @@ constexpr Time& operator%=(Time& left, Time right)
 // Note: the 'inline' keyword here is technically not required, but VS2019 fails
 // to compile with a bogus "multiple definition" error if not explicitly used.
 inline constexpr Time Time::Zero;
+
+} // namespace sf

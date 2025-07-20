@@ -73,13 +73,15 @@ void Application::Run()
 
 void Application::ProcessInput()
 {
-	sf::Event event;
-	while (m_window.pollEvent(event))
+	while (const std::optional event = m_window.pollEvent())
 	{
-		m_inputHandler.HandleEvent(event);
-		m_camera.HandleEvent(event);
-		m_window.HandleEvent(event);
-		m_mainState.HandleEvent(event);
+		if (!event.has_value())
+			continue;
+
+		m_inputHandler.HandleEvent(event.value());
+		m_camera.HandleEvent(event.value());
+		m_window.HandleEvent(event.value());
+		m_mainState.HandleEvent(event.value());
 	}
 }
 

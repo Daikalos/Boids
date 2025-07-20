@@ -66,10 +66,8 @@ void InputHandler::Update(float dt)
 
 void InputHandler::HandleEvent(const sf::Event& event)
 {
-	switch (event.type)
+	if (const auto* mouseWheelScrolled = event.getIf<sf::Event::MouseWheelScrolled>())
 	{
-	case sf::Event::MouseWheelScrolled:
-		m_scrollDelta = event.mouseWheelScroll.delta;
-		break;
+		m_scrollDelta = mouseWheelScrolled->delta;
 	}
 }

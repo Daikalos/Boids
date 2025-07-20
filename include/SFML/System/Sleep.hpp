@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -38,13 +38,13 @@ class Time;
 /// \ingroup system
 /// \brief Make the current thread sleep for a given duration
 ///
-/// sf::sleep is the best way to block a program or one of its
+/// `sf::sleep` is the best way to block a program or one of its
 /// threads, as it doesn't consume any CPU power. Compared to
-/// the standard std::this_thread::sleep_for function, this
+/// the standard `std::this_thread::sleep_for` function, this
 /// one provides more accurate sleeping time thanks to some
 /// platform-specific tweaks.
 ///
-/// sf::sleep only guarantees millisecond precision. Sleeping
+/// `sf::sleep` only guarantees millisecond precision. Sleeping
 /// for a duration less than 1 millisecond is prone to result
 /// in the actual sleep duration being less than what is
 /// requested.

@@ -18,9 +18,9 @@
 x64/
 x86/
 bld/
-[Bb]in/
 [Oo]bj/
 [Ll]og/
+[Ii]ntermediate/
 
 # Visual Studio 2015 cache/options directory
 .vs/
@@ -261,7 +261,6 @@ __pycache__/
 *.pyc
 
 .vscode/
-/bin
 
 # ignore stuff from SFML.Net
 
@@ -276,3 +275,4 @@ examples/*/*.xml
 *.VC.db
 
 misc/
+

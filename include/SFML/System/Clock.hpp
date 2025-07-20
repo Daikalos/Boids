@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -46,12 +46,12 @@ namespace priv
 ////////////////////////////////////////////////////////////
 /// \brief Chooses a monotonic clock of highest resolution
 ///
-/// The high_resolution_clock is usually an alias for other
-/// clocks: steady_clock or system_clock, whichever has a
+/// The `high_resolution_clock` is usually an alias for other
+/// clocks: `steady_clock` or `system_clock`, whichever has a
 /// higher precision.
 ///
-/// sf::Clock, however, is aimed towards monotonic time
-/// measurements and so system_clock could never be a choice
+/// `sf::Clock`, however, is aimed towards monotonic time
+/// measurements and so `system_clock` could never be a choice
 /// as its subject to discontinuous jumps in the system time
 /// (e.g., if the system administrator manually changes
 /// the clock), and by the incremental adjustments performed
@@ -60,8 +60,8 @@ namespace priv
 ///
 /// Note: Linux implementation of a monotonic clock that
 /// takes sleep time into account is represented by
-/// CLOCK_BOOTTIME. Android devices can define the macro:
-/// SFML_ANDROID_USE_SUSPEND_AWARE_CLOCK to use a separate
+/// `CLOCK_BOOTTIME`. Android devices can define the macro:
+/// `SFML_ANDROID_USE_SUSPEND_AWARE_CLOCK` to use a separate
 /// implementation of that clock, instead.
 ///
 /// For more information on Linux clocks visit:
@@ -95,26 +95,26 @@ public:
     /// \brief Get the elapsed time
     ///
     /// This function returns the time elapsed since the last call
-    /// to restart() (or the construction of the instance if restart()
+    /// to `restart()` (or the construction of the instance if `restart()`
     /// has not been called).
     ///
     /// \return Time elapsed
     ///
     ////////////////////////////////////////////////////////////
-    Time getElapsedTime() const;
+    [[nodiscard]] Time getElapsedTime() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Check whether the clock is running
     ///
-    /// \return True if the clock is running, false otherwise
+    /// \return `true` if the clock is running, `false` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    bool isRunning() const;
+    [[nodiscard]] bool isRunning() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Start the clock
     ///
-    /// \see stop
+    /// \see `stop`
     ///
     ////////////////////////////////////////////////////////////
     void start();
@@ -122,7 +122,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Stop the clock
     ///
-    /// \see start
+    /// \see `start`
     ///
     ////////////////////////////////////////////////////////////
     void stop();
@@ -135,7 +135,7 @@ public:
     ///
     /// \return Time elapsed
     ///
-    /// \see reset
+    /// \see `reset`
     ///
     ////////////////////////////////////////////////////////////
     Time restart();
@@ -148,7 +148,7 @@ public:
     ///
     /// \return Time elapsed
     ///
-    /// \see restart
+    /// \see `restart`
     ///
     ////////////////////////////////////////////////////////////
     Time reset();
@@ -168,7 +168,7 @@ private:
 /// \class sf::Clock
 /// \ingroup system
 ///
-/// sf::Clock is a lightweight class for measuring time.
+/// `sf::Clock` is a lightweight class for measuring time.
 ///
 /// It provides the most precise time that the underlying
 /// OS can achieve (generally microseconds or nanoseconds).
@@ -187,10 +187,10 @@ private:
 /// Time time3 = clock.reset();
 /// \endcode
 ///
-/// The sf::Time value returned by the clock can then be
+/// The `sf::Time` value returned by the clock can then be
 /// converted to a number of seconds, milliseconds or even
 /// microseconds.
 ///
-/// \see sf::Time
+/// \see `sf::Time`
 ///
 ////////////////////////////////////////////////////////////

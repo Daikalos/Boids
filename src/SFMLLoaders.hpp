@@ -27,6 +27,28 @@ inline ResourceLoader<R> FromFile(const std::filesystem::path& path, T arg)
 		});
 }
 
+template<class R> 
+	requires requires (R res) { res.openFromFile(std::filesystem::path()); }
+inline ResourceLoader<R> OpenFile(const std::filesystem::path& path)
+{
+	return MakeResourceLoader<R>(
+		[=](R& resource)
+		{
+			return resource.openFromFile(path);
+		});
+}
+
+template<class R, typename T> 
+	requires requires (R res) { res.openFromFile(std::filesystem::path(), T()); }
+inline ResourceLoader<R> OpenFile(const std::filesystem::path& path, T arg)
+{
+	return MakeResourceLoader<R>(
+		[=](R& resource)
+		{
+			return resource.openFromFile(path, arg);
+		});
+}
+
 template<class R, typename T, typename U> 
 	requires requires (R res) { res.loadFromMemory(T(), U()); }
 inline ResourceLoader<R> FromMemory(T arg1, U arg2)

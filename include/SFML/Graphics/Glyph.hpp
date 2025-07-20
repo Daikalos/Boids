@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -56,12 +56,12 @@ struct SFML_GRAPHICS_API Glyph
 ///
 /// A glyph is the visual representation of a character.
 ///
-/// The sf::Glyph structure provides the information needed
+/// The `sf::Glyph` structure provides the information needed
 /// to handle the glyph:
 /// \li its coordinates in the font's texture
 /// \li its bounding rectangle
 /// \li the offset to apply to get the starting position of the next glyph
 ///
-/// \see sf::Font
+/// \see `sf::Font`
 ///
 ////////////////////////////////////////////////////////////

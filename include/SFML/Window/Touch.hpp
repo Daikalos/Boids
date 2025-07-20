@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -47,10 +47,10 @@ namespace Touch
 ///
 /// \param finger Finger index
 ///
-/// \return True if \a finger is currently touching the screen, false otherwise
+/// \return `true` if \a finger is currently touching the screen, `false` otherwise
 ///
 ////////////////////////////////////////////////////////////
-SFML_WINDOW_API bool isDown(unsigned int finger);
+[[nodiscard]] SFML_WINDOW_API bool isDown(unsigned int finger);
 
 ////////////////////////////////////////////////////////////
 /// \brief Get the current position of a touch in desktop coordinates
@@ -63,7 +63,7 @@ SFML_WINDOW_API bool isDown(unsigned int finger);
 /// \return Current position of \a finger, or undefined if it's not down
 ///
 ////////////////////////////////////////////////////////////
-SFML_WINDOW_API Vector2i getPosition(unsigned int finger);
+[[nodiscard]] SFML_WINDOW_API Vector2i getPosition(unsigned int finger);
 
 ////////////////////////////////////////////////////////////
 /// \brief Get the current position of a touch in window coordinates
@@ -77,7 +77,7 @@ SFML_WINDOW_API Vector2i getPosition(unsigned int finger);
 /// \return Current position of \a finger, or undefined if it's not down
 ///
 ////////////////////////////////////////////////////////////
-SFML_WINDOW_API Vector2i getPosition(unsigned int finger, const WindowBase& relativeTo);
+[[nodiscard]] SFML_WINDOW_API Vector2i getPosition(unsigned int finger, const WindowBase& relativeTo);
 } // namespace Touch
 
 } // namespace sf
@@ -87,13 +87,13 @@ SFML_WINDOW_API Vector2i getPosition(unsigned int finger, const WindowBase& rela
 /// \namespace sf::Touch
 /// \ingroup window
 ///
-/// sf::Touch provides an interface to the state of the
+/// `sf::Touch` provides an interface to the state of the
 /// touches.
 ///
 /// This namespace allows users to query the touches state at any
 /// time and directly, without having to deal with a window and
-/// its events. Compared to the TouchBegan, TouchMoved
-/// and TouchEnded events, sf::Touch can retrieve the
+/// its events. Compared to the `TouchBegan`, `TouchMoved`
+/// and `TouchEnded` events, `sf::Touch` can retrieve the
 /// state of the touches at any time (you don't need to store and
 /// update a boolean on your side in order to know if a touch is down),
 /// and you always get the real state of the touches, even if they
@@ -126,6 +126,6 @@ SFML_WINDOW_API Vector2i getPosition(unsigned int finger, const WindowBase& rela
 /// sf::Vector2i relativePos = sf::Touch::getPosition(1, window);
 /// \endcode
 ///
-/// \see sf::Joystick, sf::Keyboard, sf::Mouse
+/// \see `sf::Joystick`, `sf::Keyboard`, `sf::Mouse`
 ///
 ////////////////////////////////////////////////////////////

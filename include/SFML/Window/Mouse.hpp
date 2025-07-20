@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -71,15 +71,15 @@ enum class Wheel
 ////////////////////////////////////////////////////////////
 /// \brief Check if a mouse button is pressed
 ///
-/// \warning Checking the state of buttons Mouse::Button::Extra1 and
-/// Mouse::Button::Extra2 is not supported on Linux with X11.
+/// \warning Checking the state of buttons `Mouse::Button::Extra1` and
+/// `Mouse::Button::Extra2` is not supported on Linux with X11.
 ///
 /// \param button Button to check
 ///
-/// \return True if the button is pressed, false otherwise
+/// \return `true` if the button is pressed, `false` otherwise
 ///
 ////////////////////////////////////////////////////////////
-SFML_WINDOW_API bool isButtonPressed(Button button);
+[[nodiscard]] SFML_WINDOW_API bool isButtonPressed(Button button);
 
 ////////////////////////////////////////////////////////////
 /// \brief Get the current position of the mouse in desktop coordinates
@@ -90,7 +90,7 @@ SFML_WINDOW_API bool isButtonPressed(Button button);
 /// \return Current position of the mouse
 ///
 ////////////////////////////////////////////////////////////
-SFML_WINDOW_API Vector2i getPosition();
+[[nodiscard]] SFML_WINDOW_API Vector2i getPosition();
 
 ////////////////////////////////////////////////////////////
 /// \brief Get the current position of the mouse in window coordinates
@@ -103,7 +103,7 @@ SFML_WINDOW_API Vector2i getPosition();
 /// \return Current position of the mouse
 ///
 ////////////////////////////////////////////////////////////
-SFML_WINDOW_API Vector2i getPosition(const WindowBase& relativeTo);
+[[nodiscard]] SFML_WINDOW_API Vector2i getPosition(const WindowBase& relativeTo);
 
 ////////////////////////////////////////////////////////////
 /// \brief Set the current position of the mouse in desktop coordinates
@@ -114,7 +114,7 @@ SFML_WINDOW_API Vector2i getPosition(const WindowBase& relativeTo);
 /// \param position New position of the mouse
 ///
 ////////////////////////////////////////////////////////////
-SFML_WINDOW_API void setPosition(const Vector2i& position);
+SFML_WINDOW_API void setPosition(Vector2i position);
 
 ////////////////////////////////////////////////////////////
 /// \brief Set the current position of the mouse in window coordinates
@@ -126,7 +126,7 @@ SFML_WINDOW_API void setPosition(const Vector2i& position);
 /// \param relativeTo Reference window
 ///
 ////////////////////////////////////////////////////////////
-SFML_WINDOW_API void setPosition(const Vector2i& position, const WindowBase& relativeTo);
+SFML_WINDOW_API void setPosition(Vector2i position, const WindowBase& relativeTo);
 } // namespace Mouse
 
 } // namespace sf
@@ -136,13 +136,13 @@ SFML_WINDOW_API void setPosition(const Vector2i& position, const WindowBase& rel
 /// \namespace sf::Mouse
 /// \ingroup window
 ///
-/// sf::Mouse provides an interface to the state of the
+/// `sf::Mouse` provides an interface to the state of the
 /// mouse. A single mouse is assumed.
 ///
 /// This namespace allows users to query the mouse state at any
 /// time and directly, without having to deal with a window and
-/// its events. Compared to the MouseMoved, MouseButtonPressed
-/// and MouseButtonReleased events, sf::Mouse can retrieve the
+/// its events. Compared to the `MouseMoved`, `MouseButtonPressed`
+/// and `MouseButtonReleased` events, `sf::Mouse` can retrieve the
 /// state of the cursor and the buttons at any time
 /// (you don't need to store and update a boolean on your side
 /// in order to know if a button is pressed or released), and you
@@ -150,7 +150,7 @@ SFML_WINDOW_API void setPosition(const Vector2i& position, const WindowBase& rel
 /// moved, pressed or released when your window is out of focus
 /// and no event is triggered.
 ///
-/// The setPosition and getPosition functions can be used to change
+/// The `setPosition` and `getPosition` functions can be used to change
 /// or retrieve the current position of the mouse pointer. There are
 /// two versions: one that operates in global coordinates (relative
 /// to the desktop) and one that operates in window coordinates
@@ -170,6 +170,6 @@ SFML_WINDOW_API void setPosition(const Vector2i& position, const WindowBase& rel
 /// sf::Mouse::setPosition(sf::Vector2i(100, 200), window);
 /// \endcode
 ///
-/// \see sf::Joystick, sf::Keyboard, sf::Touch
+/// \see `sf::Joystick`, `sf::Keyboard`, `sf::Touch`
 ///
 ////////////////////////////////////////////////////////////

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -51,7 +51,7 @@
 ///
 /// SFML defines a helper macro to easily do this.
 ///
-/// Place SFML_DEFINE_DISCRETE_GPU_PREFERENCE in the
+/// Place `SFML_DEFINE_DISCRETE_GPU_PREFERENCE` in the
 /// global scope of a source file that will be linked into
 /// the final executable. Typically it is best to place it
 /// where the main function is also defined.

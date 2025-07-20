@@ -64,14 +64,14 @@ void Background::LoadProperties(const sf::Vector2i& size)
 	if (Config::Inst().Background.FitScreen)
 	{
 		desiredScale = sf::Vector2f(
-			size.x / m_background.getLocalBounds().width,
-			size.y / m_background.getLocalBounds().height);
+			size.x / m_background.getLocalBounds().size.x,
+			size.y / m_background.getLocalBounds().size.y);
 	}
 	else if (Config::Inst().Background.OverrideSize)
 	{
 		desiredScale = sf::Vector2f(
-			Config::Inst().Background.Width / m_background.getLocalBounds().width,
-			Config::Inst().Background.Height / m_background.getLocalBounds().height);
+			Config::Inst().Background.Width / m_background.getLocalBounds().size.x,
+			Config::Inst().Background.Height / m_background.getLocalBounds().size.y);
 	}
 
 	m_background.setPosition(sf::Vector2f(Config::Inst().Background.Position));

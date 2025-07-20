@@ -44,7 +44,7 @@ namespace vu
 	template<Arithmetic T>
 	constexpr float DistanceSq(const sf::Vector2<T>& from, const sf::Vector2<T>& to)
 	{
-		return Direction(from, to).lengthSq();
+		return Direction(from, to).lengthSquared();
 	}
 	template<Arithmetic T>
 	inline float DistanceOpt(const sf::Vector2<T>& from, const sf::Vector2<T>& to)

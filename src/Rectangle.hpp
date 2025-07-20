@@ -138,13 +138,13 @@ inline constexpr T Rect<T>::Bottom() const
 template<typename T>
 inline constexpr sf::Vector2<T> Rect<T>::Position() const
 {
-	return rect.getPosition();
+	return rect.position;
 }
 
 template<typename T>
 inline constexpr sf::Vector2<T> Rect<T>::Size() const
 {
-	return rect.getSize();
+	return rect.size;
 }
 
 template<typename T>

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -31,8 +31,6 @@
 
 #include <vector>
 
-#include <cstdint>
-
 
 using VkInstance = struct VkInstance_T*;
 
@@ -42,6 +40,9 @@ using VkInstance = struct VkInstance_T*;
 using VkSurfaceKHR = struct VkSurfaceKHR_T*;
 
 #else
+
+#include <cstdint>
+
 
 using VkSurfaceKHR = std::uint64_t;
 
@@ -65,19 +66,19 @@ namespace Vulkan
 /// \brief Tell whether or not the system supports Vulkan
 ///
 /// This function should always be called before using
-/// the Vulkan features. If it returns false, then
+/// the Vulkan features. If it returns `false`, then
 /// any attempt to use Vulkan will fail.
 ///
-/// If only compute is required, set \a requireGraphics
-/// to false to skip checking for the extensions necessary
+/// If only compute is required, set `requireGraphics`
+/// to `false` to skip checking for the extensions necessary
 /// for graphics rendering.
 ///
 /// \param requireGraphics
 ///
-/// \return True if Vulkan is supported, false otherwise
+/// \return `true` if Vulkan is supported, `false` otherwise
 ///
 ////////////////////////////////////////////////////////////
-SFML_WINDOW_API bool isAvailable(bool requireGraphics = true);
+[[nodiscard]] SFML_WINDOW_API bool isAvailable(bool requireGraphics = true);
 
 ////////////////////////////////////////////////////////////
 /// \brief Get the address of a Vulkan function
@@ -87,7 +88,7 @@ SFML_WINDOW_API bool isAvailable(bool requireGraphics = true);
 /// \return Address of the Vulkan function, 0 on failure
 ///
 ////////////////////////////////////////////////////////////
-SFML_WINDOW_API VulkanFunctionPointer getFunction(const char* name);
+[[nodiscard]] SFML_WINDOW_API VulkanFunctionPointer getFunction(const char* name);
 
 ////////////////////////////////////////////////////////////
 /// \brief Get Vulkan instance extensions required for graphics
@@ -95,7 +96,7 @@ SFML_WINDOW_API VulkanFunctionPointer getFunction(const char* name);
 /// \return Vulkan instance extensions required for graphics
 ///
 ////////////////////////////////////////////////////////////
-SFML_WINDOW_API const std::vector<const char*>& getGraphicsRequiredInstanceExtensions();
+[[nodiscard]] SFML_WINDOW_API const std::vector<const char*>& getGraphicsRequiredInstanceExtensions();
 } // namespace Vulkan
 
 } // namespace sf

@@ -204,7 +204,7 @@ void BoidContainer::Interaction(const InputHandler& inputHandler, const sf::Vect
 		{
 			sf::Vector2f dir = vu::Direction(m_positions[i], mousePos);
 
-			float lengthSqr = dir.lengthSq();
+			float lengthSqr = dir.lengthSquared();
 			if (lengthSqr <= Config::Inst().Interaction.PredatorDistance)
 			{
 				float weight = 1.0f / (std::sqrtf(lengthSqr / (Config::Inst().Interaction.PredatorDistance + FLT_EPSILON)) + FLT_EPSILON);
@@ -288,7 +288,7 @@ void BoidContainer::Flock(const Grid& grid, Policy policy)
 								continue;
 
 							const sf::Vector2f dir	= cellRel + m_relativePositions[rhs];
-							const float distanceSqr = dir.lengthSq();
+							const float distanceSqr = dir.lengthSquared();
 
 							const bool withinCohesion	= distanceSqr < cohDistance;
 							const bool withinAlignment	= distanceSqr < aliDistance;
@@ -356,21 +356,21 @@ void BoidContainer::Update(const RectFloat& border, const std::vector<Impulse>& 
 		auto& velocity	= m_velocities[i];
 		auto& speed		= m_speeds[i];
 
-		float lengthSq = m_velocities[i].lengthSq();
+		float lengthSquared = m_velocities[i].lengthSquared();
 
-		if (lengthSq < Config::Inst().BoidSpeedMinSq)
+		if (lengthSquared < Config::Inst().BoidSpeedMinSq)
 		{
-			velocity = vu::Normalize(velocity, std::sqrt(lengthSq), Config::Inst().Boids.SpeedMin);
+			velocity = vu::Normalize(velocity, std::sqrt(lengthSquared), Config::Inst().Boids.SpeedMin);
 			speed = Config::Inst().Boids.SpeedMin;
 		}
-		else if (lengthSq > Config::Inst().BoidSpeedMaxSq)
+		else if (lengthSquared > Config::Inst().BoidSpeedMaxSq)
 		{
-			velocity = vu::Normalize(velocity, std::sqrt(lengthSq), Config::Inst().Boids.SpeedMax);
+			velocity = vu::Normalize(velocity, std::sqrt(lengthSquared), Config::Inst().Boids.SpeedMax);
 			speed = Config::Inst().Boids.SpeedMax;
 		}
 		else
 		{
-			speed = std::sqrt(lengthSq);
+			speed = std::sqrt(lengthSquared);
 		}
 	}
 

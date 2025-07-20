@@ -29,7 +29,7 @@ void MainState::Initialize()
 		FromFile<sf::Texture>(RESOURCE_FOLDER + Config::Inst().Boids.Texture));
 
 	auto loadFont = GetContext().GetFontHolder().AcquireAsync(FontID::F8Bit, 
-		FromFile<sf::Font>(RESOURCE_FOLDER + std::string("8bit.ttf")));
+		OpenFile<sf::Font>(RESOURCE_FOLDER + std::string("8bit.ttf")));
 
 	loadBoidTex.wait();
 	loadFont.wait();
@@ -73,19 +73,16 @@ void MainState::Initialize()
 
 bool MainState::HandleEvent(const sf::Event& event)
 {
-    switch (event.type)
-    {
-		case sf::Event::Resized:
-        {
-			m_background.LoadProperties(sf::Vector2i(m_window->getSize()));
+	if (event.is<sf::Event::Resized>())
+	{
+		m_background.LoadProperties(sf::Vector2i(m_window->getSize()));
 
-			m_fluid.Initialize(m_window->getSize());
-			m_border = m_window->GetBorder();
+		m_fluid.Initialize(m_window->getSize());
+		m_border = m_window->GetBorder();
 
-			m_grid.Initialize(GetGridBorder(), sf::Vector2f(m_minDistance, m_minDistance) * 2.0f);
-        }
-        break;
-    }
+		m_grid.Initialize(GetGridBorder(), sf::Vector2f(m_minDistance, m_minDistance) * 2.0f);
+	}
+
     return false;
 }
 
@@ -335,7 +332,7 @@ void MainState::InteractionAddBoids()
 	if (m_inputHandler->GetKeyHeld(sf::Keyboard::Key::RAlt) && m_inputHandler->GetButtonHeld(sf::Mouse::Button::Middle))
 	{
 		const sf::Vector2f mouseDelta = vu::Direction(m_mousePosPrev, m_mousePos);
-		if (mouseDelta.lengthSq() > Config::Inst().Interaction.BoidAddMouseDiff)
+		if (mouseDelta.lengthSquared() > Config::Inst().Interaction.BoidAddMouseDiff)
 		{
 			for (int i = 0; i < Config::Inst().Interaction.BoidAddAmount; ++i)
 			{

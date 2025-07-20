@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -68,27 +68,27 @@ public:
     /// \param size   Size of zone to display
     ///
     ////////////////////////////////////////////////////////////
-    View(const Vector2f& center, const Vector2f& size);
+    View(Vector2f center, Vector2f size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the center of the view
     ///
     /// \param center New center
     ///
-    /// \see setSize, getCenter
+    /// \see `setSize`, `getCenter`
     ///
     ////////////////////////////////////////////////////////////
-    void setCenter(const Vector2f& center);
+    void setCenter(Vector2f center);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the size of the view
     ///
     /// \param size New size
     ///
-    /// \see setCenter, getCenter
+    /// \see `setCenter`, `getCenter`
     ///
     ////////////////////////////////////////////////////////////
-    void setSize(const Vector2f& size);
+    void setSize(Vector2f size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the orientation of the view
@@ -97,7 +97,7 @@ public:
     ///
     /// \param angle New angle
     ///
-    /// \see getRotation
+    /// \see `getRotation`
     ///
     ////////////////////////////////////////////////////////////
     void setRotation(Angle angle);
@@ -109,12 +109,12 @@ public:
     /// view are displayed, expressed as a factor (between 0 and 1)
     /// of the size of the RenderTarget to which the view is applied.
     /// For example, a view which takes the left side of the target would
-    /// be defined with View.setViewport(sf::FloatRect({0.f, 0.f}, {0.5f, 1.f})).
+    /// be defined with `view.setViewport(sf::FloatRect({0.f, 0.f}, {0.5f, 1.f}))`.
     /// By default, a view has a viewport which covers the entire target.
     ///
     /// \param viewport New viewport rectangle
     ///
-    /// \see getViewport
+    /// \see `getViewport`
     ///
     ////////////////////////////////////////////////////////////
     void setViewport(const FloatRect& viewport);
@@ -129,7 +129,7 @@ public:
     /// not be modified by draw or clear operations.
     /// For example, a scissor rectangle which only allows modifications
     /// to the right side of the target would be defined
-    /// with View.setScissor(sf::FloatRect({0.5f, 0.f}, {0.5f, 1.f})).
+    /// with `view.setScissor(sf::FloatRect({0.5f, 0.f}, {0.5f, 1.f}))`.
     /// By default, a view has a scissor rectangle which allows
     /// modifications to the entire target. This is equivalent to
     /// disabling the scissor test entirely. Passing the default
@@ -138,89 +138,77 @@ public:
     ///
     /// \param scissor New scissor rectangle
     ///
-    /// \see getScissor
+    /// \see `getScissor`
     ///
     ////////////////////////////////////////////////////////////
     void setScissor(const FloatRect& scissor);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Reset the view to the given rectangle
-    ///
-    /// Note that this function resets the rotation angle to 0.
-    ///
-    /// \param rectangle Rectangle defining the zone to display
-    ///
-    /// \see setCenter, setSize, setRotation
-    ///
-    ////////////////////////////////////////////////////////////
-    void reset(const FloatRect& rectangle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the center of the view
     ///
     /// \return Center of the view
     ///
-    /// \see getSize, setCenter
+    /// \see `getSize`, `setCenter`
     ///
     ////////////////////////////////////////////////////////////
-    const Vector2f& getCenter() const;
+    [[nodiscard]] Vector2f getCenter() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the size of the view
     ///
     /// \return Size of the view
     ///
-    /// \see getCenter, setSize
+    /// \see `getCenter`, `setSize`
     ///
     ////////////////////////////////////////////////////////////
-    const Vector2f& getSize() const;
+    [[nodiscard]] Vector2f getSize() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the current orientation of the view
     ///
     /// \return Rotation angle of the view
     ///
-    /// \see setRotation
+    /// \see `setRotation`
     ///
     ////////////////////////////////////////////////////////////
-    Angle getRotation() const;
+    [[nodiscard]] Angle getRotation() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the target viewport rectangle of the view
     ///
     /// \return Viewport rectangle, expressed as a factor of the target size
     ///
-    /// \see setViewport
+    /// \see `setViewport`
     ///
     ////////////////////////////////////////////////////////////
-    const FloatRect& getViewport() const;
+    [[nodiscard]] const FloatRect& getViewport() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the scissor rectangle of the view
     ///
     /// \return Scissor rectangle, expressed as a factor of the target size
     ///
-    /// \see setScissor
+    /// \see `setScissor`
     ///
     ////////////////////////////////////////////////////////////
-    const FloatRect& getScissor() const;
+    [[nodiscard]] const FloatRect& getScissor() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move the view relatively to its current position
     ///
     /// \param offset Move offset
     ///
-    /// \see setCenter, rotate, zoom
+    /// \see `setCenter`, `rotate`, `zoom`
     ///
     ////////////////////////////////////////////////////////////
-    void move(const Vector2f& offset);
+    void move(Vector2f offset);
 
     ////////////////////////////////////////////////////////////
     /// \brief Rotate the view relatively to its current orientation
     ///
     /// \param angle Angle to rotate
     ///
-    /// \see setRotation, move, zoom
+    /// \see `setRotation`, `move`, `zoom`
     ///
     ////////////////////////////////////////////////////////////
     void rotate(Angle angle);
@@ -237,7 +225,7 @@ public:
     ///
     /// \param factor Zoom factor to apply
     ///
-    /// \see setSize, move, rotate
+    /// \see `setSize`, `move`, `rotate`
     ///
     ////////////////////////////////////////////////////////////
     void zoom(float factor);
@@ -249,10 +237,10 @@ public:
     ///
     /// \return Projection transform defining the view
     ///
-    /// \see getInverseTransform
+    /// \see `getInverseTransform`
     ///
     ////////////////////////////////////////////////////////////
-    const Transform& getTransform() const;
+    [[nodiscard]] const Transform& getTransform() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the inverse projection transform of the view
@@ -261,10 +249,10 @@ public:
     ///
     /// \return Inverse of the projection transform defining the view
     ///
-    /// \see getTransform
+    /// \see `getTransform`
     ///
     ////////////////////////////////////////////////////////////
-    const Transform& getInverseTransform() const;
+    [[nodiscard]] const Transform& getInverseTransform() const;
 
 private:
     ////////////////////////////////////////////////////////////
@@ -288,7 +276,7 @@ private:
 /// \class sf::View
 /// \ingroup graphics
 ///
-/// sf::View defines a camera in the 2D scene. This is a
+/// `sf::View` defines a camera in the 2D scene. This is a
 /// very powerful concept: you can scroll, rotate or zoom
 /// the entire scene without altering the way that your
 /// drawable objects are drawn.
@@ -339,10 +327,9 @@ private:
 /// Usage example:
 /// \code
 /// sf::RenderWindow window;
-/// sf::View view;
 ///
 /// // Initialize the view to a rectangle located at (100, 100) and with a size of 400x200
-/// view.reset(sf::FloatRect({100, 100}, {400, 200}));
+/// sf::View view(sf::FloatRect({100, 100}, {400, 200}));
 ///
 /// // Rotate it by 45 degrees
 /// view.rotate(sf::degrees(45));
@@ -363,8 +350,8 @@ private:
 /// window.draw(someText);
 /// \endcode
 ///
-/// See also the note on coordinates and undistorted rendering in sf::Transformable.
+/// See also the note on coordinates and undistorted rendering in `sf::Transformable`.
 ///
-/// \see sf::RenderWindow, sf::RenderTexture
+/// \see `sf::RenderWindow`, `sf::RenderTexture`
 ///
 ////////////////////////////////////////////////////////////

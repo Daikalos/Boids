@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -76,8 +76,7 @@ using WindowHandle = "platform-specific";
 /// \typedef sf::WindowHandle
 /// \ingroup window
 ///
-/// Define a low-level window handle type, specific to
-/// each platform.
+/// Low-level window handle type, specific to each platform.
 ///
 /// Platform        | Type
 /// ----------------|------------------------------------------------------------
@@ -89,10 +88,10 @@ using WindowHandle = "platform-specific";
 ///
 /// \par macOS Specification
 ///
-/// On macOS, a sf::Window can be created either from an
+/// On macOS, a `sf::Window` can be created either from an
 /// existing \p NSWindow* or an \p NSView*. When the window
 /// is created from a window, SFML will use its content view
-/// as the OpenGL area. sf::Window::getNativeHandle() will
+/// as the OpenGL area. `sf::Window::getNativeHandle()` will
 /// return the handle that was used to create the window,
 /// which is a \p NSWindow* by default.
 ///

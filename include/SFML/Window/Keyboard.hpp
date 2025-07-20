@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -155,7 +155,7 @@ enum class Key
 };
 
 ////////////////////////////////////////////////////////////
-/// \brief The total number of keyboard keys, ignoring Key::Unknown
+/// \brief The total number of keyboard keys, ignoring `Key::Unknown`
 ///
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(readability-identifier-naming)
@@ -329,7 +329,7 @@ enum class Scan
 using Scancode = Scan;
 
 ////////////////////////////////////////////////////////////
-/// \brief The total number of scancodes, ignoring Scan::Unknown
+/// \brief The total number of scancodes, ignoring `Scan::Unknown`
 ///
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(readability-identifier-naming)
@@ -338,22 +338,28 @@ static constexpr unsigned int ScancodeCount{static_cast<unsigned int>(Scan::Laun
 ////////////////////////////////////////////////////////////
 /// \brief Check if a key is pressed
 ///
+/// \warning On macOS you're required to grant input monitoring access for
+///          your application in order for `isKeyPressed` to work.
+///
 /// \param key Key to check
 ///
-/// \return True if the key is pressed, false otherwise
+/// \return `true` if the key is pressed, `false` otherwise
 ///
 ////////////////////////////////////////////////////////////
-SFML_WINDOW_API bool isKeyPressed(Key key);
+[[nodiscard]] SFML_WINDOW_API bool isKeyPressed(Key key);
 
 ////////////////////////////////////////////////////////////
 /// \brief Check if a key is pressed
 ///
+/// \warning On macOS you're required to grant input monitoring access for
+///          your application in order for `isKeyPressed` to work.
+///
 /// \param code Scancode to check
 ///
-/// \return True if the physical key is pressed, false otherwise
+/// \return `true` if the physical key is pressed, `false` otherwise
 ///
 ////////////////////////////////////////////////////////////
-SFML_WINDOW_API bool isKeyPressed(Scancode code);
+[[nodiscard]] SFML_WINDOW_API bool isKeyPressed(Scancode code);
 
 ////////////////////////////////////////////////////////////
 /// \brief Localize a physical key to a logical one
@@ -362,13 +368,13 @@ SFML_WINDOW_API bool isKeyPressed(Scancode code);
 ///
 /// \return The key corresponding to the scancode under the current
 ///         keyboard layout used by the operating system, or
-///         sf::Keyboard::Key::Unknown when the scancode cannot be mapped
+///         `sf::Keyboard::Key::Unknown` when the scancode cannot be mapped
 ///         to a Key.
 ///
-/// \see delocalize
+/// \see `delocalize`
 ///
 ////////////////////////////////////////////////////////////
-SFML_WINDOW_API Key localize(Scancode code);
+[[nodiscard]] SFML_WINDOW_API Key localize(Scancode code);
 
 ////////////////////////////////////////////////////////////
 /// \brief Identify the physical key corresponding to a logical one
@@ -377,13 +383,13 @@ SFML_WINDOW_API Key localize(Scancode code);
 ///
 /// \return The scancode corresponding to the key under the current
 ///         keyboard layout used by the operating system, or
-///         sf::Keyboard::Scan::Unknown when the key cannot be mapped
-///         to a sf::Keyboard::Scancode.
+///         `sf::Keyboard::Scan::Unknown` when the key cannot be mapped
+///         to a `sf::Keyboard::Scancode`.
 ///
-/// \see localize
+/// \see `localize`
 ///
 ////////////////////////////////////////////////////////////
-SFML_WINDOW_API Scancode delocalize(Key key);
+[[nodiscard]] SFML_WINDOW_API Scancode delocalize(Key key);
 
 ////////////////////////////////////////////////////////////
 /// \brief Provide a string representation for a given scancode
@@ -393,18 +399,20 @@ SFML_WINDOW_API Scancode delocalize(Key key);
 /// used in user interfaces, as the description for the key takes
 /// the users keyboard layout into consideration.
 ///
-/// \warning The result is OS-dependent: for example, sf::Keyboard::Scan::LSystem
+/// \warning The result is OS-dependent: for example, `sf::Keyboard::Scan::LSystem`
 ///          is "Left Meta" on Linux, "Left Windows" on Windows and
 ///          "Left Command" on macOS.
 ///
 /// The current keyboard layout set by the operating system is used to
-/// interpret the scancode: for example, sf::Keyboard::Key::Semicolon is
+/// interpret the scancode: for example, `sf::Keyboard::Key::Semicolon` is
 /// mapped to ";" for layout and to "é" for others.
+///
+/// \param code Scancode to check
 ///
 /// \return The localized description of the code
 ///
 ////////////////////////////////////////////////////////////
-SFML_WINDOW_API String getDescription(Scancode code);
+[[nodiscard]] SFML_WINDOW_API String getDescription(Scancode code);
 
 ////////////////////////////////////////////////////////////
 /// \brief Show or hide the virtual keyboard
@@ -416,7 +424,7 @@ SFML_WINDOW_API String getDescription(Scancode code);
 /// If the virtual keyboard is not available, this function does
 /// nothing.
 ///
-/// \param visible True to show, false to hide
+/// \param visible `true` to show, `false` to hide
 ///
 ////////////////////////////////////////////////////////////
 SFML_WINDOW_API void setVirtualKeyboardVisible(bool visible);
@@ -429,13 +437,13 @@ SFML_WINDOW_API void setVirtualKeyboardVisible(bool visible);
 /// \namespace sf::Keyboard
 /// \ingroup window
 ///
-/// sf::Keyboard provides an interface to the state of the
+/// `sf::Keyboard` provides an interface to the state of the
 /// keyboard.
 ///
 /// This namespace allows users to query the keyboard state at any
 /// time and directly, without having to deal with a window and
-/// its events. Compared to the KeyPressed and KeyReleased events,
-/// sf::Keyboard can retrieve the state of a key at any time
+/// its events. Compared to the `KeyPressed` and `KeyReleased` events,
+/// `sf::Keyboard` can retrieve the state of a key at any time
 /// (you don't need to store and update a boolean on your side
 /// in order to know if a key is pressed or released), and you
 /// always get the real state of the keyboard, even if keys are
@@ -462,6 +470,6 @@ SFML_WINDOW_API void setVirtualKeyboardVisible(bool visible);
 /// }
 /// \endcode
 ///
-/// \see sf::Joystick, sf::Mouse, sf::Touch
+/// \see `sf::Joystick`, `sf::Mouse`, `sf::Touch`
 ///
 ////////////////////////////////////////////////////////////

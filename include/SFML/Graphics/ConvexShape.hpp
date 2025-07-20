@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////
 //
 // SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
+// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
 //
 // This software is provided 'as-is', without any express or implied warranty.
 // In no event will the authors be held liable for any damages arising from the use of this software.
@@ -33,6 +33,8 @@
 
 #include <vector>
 
+#include <cstddef>
+
 
 namespace sf
 {
@@ -54,12 +56,12 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Set the number of points of the polygon
     ///
-    /// For the shape to be rendered as expected, \a count must
+    /// For the shape to be rendered as expected, `count` must
     /// be greater or equal to 3.
     ///
     /// \param count New number of points of the polygon
     ///
-    /// \see getPointCount
+    /// \see `getPointCount`
     ///
     ////////////////////////////////////////////////////////////
     void setPointCount(std::size_t count);
@@ -69,10 +71,10 @@ public:
     ///
     /// \return Number of points of the polygon
     ///
-    /// \see setPointCount
+    /// \see `setPointCount`
     ///
     ////////////////////////////////////////////////////////////
-    std::size_t getPointCount() const override;
+    [[nodiscard]] std::size_t getPointCount() const override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the position of a point
@@ -84,15 +86,15 @@ public:
     /// when not drawn (e.g. during shape initialization).
     ///
     /// Point count must be specified beforehand. The behavior is
-    /// undefined if \a index is greater than or equal to getPointCount.
+    /// undefined if `index` is greater than or equal to getPointCount.
     ///
     /// \param index Index of the point to change, in range [0 .. getPointCount() - 1]
     /// \param point New position of the point
     ///
-    /// \see getPoint
+    /// \see `getPoint`
     ///
     ////////////////////////////////////////////////////////////
-    void setPoint(std::size_t index, const Vector2f& point);
+    void setPoint(std::size_t index, Vector2f point);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the position of a point
@@ -100,16 +102,16 @@ public:
     /// The returned point is in local coordinates, that is,
     /// the shape's transforms (position, rotation, scale) are
     /// not taken into account.
-    /// The result is undefined if \a index is out of the valid range.
+    /// The result is undefined if `index` is out of the valid range.
     ///
     /// \param index Index of the point to get, in range [0 .. getPointCount() - 1]
     ///
-    /// \return Position of the index-th point of the polygon
+    /// \return Position of the `index`-th point of the polygon
     ///
-    /// \see setPoint
+    /// \see `setPoint`
     ///
     ////////////////////////////////////////////////////////////
-    Vector2f getPoint(std::size_t index) const override;
+    [[nodiscard]] Vector2f getPoint(std::size_t index) const override;
 
 private:
     ////////////////////////////////////////////////////////////
@@ -125,9 +127,9 @@ private:
 /// \class sf::ConvexShape
 /// \ingroup graphics
 ///
-/// This class inherits all the functions of sf::Transformable
+/// This class inherits all the functions of `sf::Transformable`
 /// (position, rotation, scale, bounds, ...) as well as the
-/// functions of sf::Shape (outline, color, texture, ...).
+/// functions of `sf::Shape` (outline, color, texture, ...).
 ///
 /// It is important to keep in mind that a convex shape must
 /// always be... convex, otherwise it may not be drawn correctly.
@@ -143,11 +145,11 @@ private:
 /// polygon.setPoint(2, sf::Vector2f(25, 5));
 /// polygon.setOutlineColor(sf::Color::Red);
 /// polygon.setOutlineThickness(5);
-/// polygon.setPosition(10, 20);
+/// polygon.setPosition({10, 20});
 /// ...
 /// window.draw(polygon);
 /// \endcode
 ///
-/// \see sf::Shape, sf::RectangleShape, sf::CircleShape
+/// \see `sf::Shape`, `sf::RectangleShape`, `sf::CircleShape`
 ///
 ////////////////////////////////////////////////////////////
