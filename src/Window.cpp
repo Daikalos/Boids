@@ -32,18 +32,10 @@ void Window::Initialize()
 
 void Window::HandleEvent(const sf::Event& event)
 {
-	if (const auto* close = event.getIf<sf::Event::Closed>())
+	if ([[maybe_unused]] const auto* close = event.getIf<sf::Event::Closed>())
 	{
 
 	}
-	//switch (event.type)
-	//{
-	//	case sf::Event::Closed:
-	//	{
-	//		//close();
-	//		break;
-	//	}
-	//}
 }
 
 void Window::Setup()
